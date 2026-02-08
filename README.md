@@ -67,3 +67,75 @@ Dieses Projekt ist unter der MIT Lizenz veröffentlicht. Siehe `LICENSE` Datei f
 ## Feedback & Support
 
 Fehler gefunden oder Ideen für neue Features? Erstellen Sie gerne ein [Issue](https://github.com/Vulfharban/webtrees-datencheck-plugin/issues) auf GitHub.
+
+---
+
+# English Version
+
+## webtrees Datencheck Plugin
+
+A webtrees module for advanced validation and verification of genealogical data.
+
+This plugin provides powerful tools to identify duplicates, logical errors, and missing data in your family tree, extending the standard capabilities of webtrees.
+
+## Features
+
+### 🔍 Deep Duplicate Detection
+- **Real-time Warnings** when creating new individuals.
+- **Phonetic Matching** (Cologne Phonetic & Levenshtein Distance) finds similar-sounding names.
+- **Family Context**: Checks not only names but also parents and sibling constellations.
+- **Side-by-Side Comparison**: Detailed modal for comparing duplicate candidates.
+
+### ✅ Advanced Validation (Plausibility Checks)
+- **Biological Plausibility**:
+  - Warns about parents who were unusually young (<14) or old (>50/80) at the time of birth.
+  - Detects births occurring after the death of parents (accounting for posthumous births).
+- **Temporal Logic**:
+  - Marriage before birth or after death.
+  - Burial before death or baptism before birth.
+- **Name Consistency**: Checks for missing surnames or inconsistencies with the father's surname.
+- **Source Verification**: Flags key life events (birth, death, marriage) missing source citations.
+
+### 📊 Bulk Analysis & Reporting
+- **Full Tree Check**: Scan your entire family tree at once.
+- **CSV Export**: Download the error list as an Excel-compatible CSV file.
+- **Progress Tracking**: Robust processing even for large trees (using chunking).
+
+### 🛠️ Workflow Tools
+- **Family Merging**: Easily link parents to existing families.
+- **Ignore List**: Mark "False Positives" as ignored so they don't reappear.
+- **Automatic Updates**: Notifications about new versions directly in the dashboard.
+
+## Installation
+
+### Manual (Recommended)
+1. Download the latest version from the [Releases Page](https://github.com/Vulfharban/webtrees-datencheck-plugin/releases).
+2. Unzip the folder into the `modules_v4/` directory of your webtrees installation.
+3. The folder name should be `webtrees-datencheck-plugin` (or similar).
+4. Go to **Modules** in the webtrees admin area and enable "Datencheck".
+
+### Via Git
+```bash
+cd modules_v4/
+git clone https://github.com/Vulfharban/webtrees-datencheck-plugin.git datencheck
+```
+
+## Configuration
+
+The module can be configured under **Control Panel > Datencheck > Settings**:
+- Adjust tolerance thresholds for fuzzy search.
+- Define age limits (e.g., minimum age for parents).
+- Enable/Disable specific check categories (e.g., Geography, Sources).
+
+## Requirements
+
+- **webtrees 2.1+**
+- PHP 7.4 or higher
+
+## License
+
+This project is released under the MIT License. See `LICENSE` file for details.
+
+## Feedback & Support
+
+Found a bug or have an idea for a new feature? Feel free to create an [Issue](https://github.com/Vulfharban/webtrees-datencheck-plugin/issues) on GitHub.
