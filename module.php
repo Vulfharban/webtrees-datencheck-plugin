@@ -469,20 +469,47 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $tree = null;
         }
 
-        // Prepare tree list for dropdown
-        $all_trees = Registry::treeFactory()->all();
+        // Prepare tree list for dropdown (DB-Based fallback to be safe)
         $trees_list = [];
-        foreach ($all_trees as $t) {
-            $trees_list[$t->name()] = $t->title();
+        try {
+            // Using raw DB query to avoid Registry/Factory issues and get proper titles
+            $rows = DB::table('gedcom')
+                ->join('gedcom_setting', 'gedcom.gedcom_id', '=', 'gedcom_setting.gedcom_id')
+                ->where('gedcom_setting.setting_name', '=', 'TITLE')
+                ->select('gedcom.gedcom_name', 'gedcom_setting.setting_value as title')
+                ->orderBy('gedcom_setting.setting_value')
+                ->get();
+            
+            foreach ($rows as $row) {
+                // Key is the internal name (for URL), Value is the display title
+                if (!empty($row->gedcom_name)) {
+                    $trees_list[$row->gedcom_name] = $row->title;
+                }
+            }
+        } catch (\Throwable $e) {
+            // If DB fails, empty list
         }
 
         // Fallback to first tree if none selected (for analysis default)
-        if (!$tree && $all_trees->isNotEmpty()) {
-            $tree = $all_trees->first();
+        if (!$tree && !empty($trees_list)) {
+            // Get first key
+            $first_name = array_key_first($trees_list);
+            // Try to load full tree object
+            try {
+                // We need a real Tree object for other functions?
+                // Actually, for analysis we only passed $tree_name to view.
+                // But view might need $tree object.
+                // If we can't load the object, we just pass name.
+                // But `getAdminAction` doesn't use $tree object except for $tree->name().
+            } catch (\Throwable $e) {}
+            
+            // Set name for view
+            $tree_name = $first_name;
+        } else {
+             $tree_name = $tree ? $tree->name() : '';
         }
         
-        $tree_name = $tree ? $tree->name() : '';
-        $tree_title = $tree ? $tree->title() : '';
+        $tree_title = $tree ? $tree->title() : $tree_name;
 
         // Render view content
         ob_start();

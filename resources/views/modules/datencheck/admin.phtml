@@ -473,7 +473,6 @@
                             <th scope="col">Person</th>
                             <th scope="col">Code / Typ</th>
                             <th scope="col">Beschreibung</th>
-                            <th scope="col">Aktion</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -652,11 +651,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${issue.message}
                             ${issue.debug_dump ? `<div class="text-danger small mt-2" style="white-space: pre-wrap; font-family: monospace; border: 1px dashed red;">Dump: ${issue.debug_dump}</div>` : ''}
                             ${issue.debug_class ? `<div class="text-danger small fw-bold">Class: ${issue.debug_class}</div>` : ''}
-                        </td>
-                         <td>
-                            <a href="#" class="btn btn-sm btn-outline-secondary" onclick="alert('TODO: Quick Fix not implemented'); return false;">
-                                <i class="fa fa-wrench"></i>
-                            </a>
                         </td>
                     `;
                     resultsTableBody.appendChild(row);
