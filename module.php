@@ -168,7 +168,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function getFooter(ServerRequestInterface $request): string
     {
-        $tree = Validator::attributes($request)->tree();
+        try {
+            $tree = Validator::attributes($request)->tree();
+        } catch (\Throwable $e) {
+            return '';
+        }
+
         if ($tree === null) {
             return '';
         }
@@ -458,8 +463,26 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $i18n_cancel = \Fisharebest\Webtrees\I18N::translate('cancel');
         
         // Detect tree from request to pass to view
-        $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+        try {
+            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+        } catch (\Throwable $e) {
+            $tree = null;
+        }
+
+        // Prepare tree list for dropdown
+        $all_trees = Registry::treeFactory()->all();
+        $trees_list = [];
+        foreach ($all_trees as $t) {
+            $trees_list[$t->name()] = $t->title();
+        }
+
+        // Fallback to first tree if none selected (for analysis default)
+        if (!$tree && $all_trees->isNotEmpty()) {
+            $tree = $all_trees->first();
+        }
+        
         $tree_name = $tree ? $tree->name() : '';
+        $tree_title = $tree ? $tree->title() : '';
 
         // Render view content
         ob_start();

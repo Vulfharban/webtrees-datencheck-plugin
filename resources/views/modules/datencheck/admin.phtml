@@ -390,6 +390,27 @@
                 <h4><i class="fa fa-stethoscope"></i> Qualitäts-Analyse</h4>
                 <p>Diese Funktion prüft <strong>alle Personen</strong> im Stammbaum auf die oben aktivierten Probleme.</p>
                 <hr>
+                
+                <?php if (count($trees_list) > 1): ?>
+                <div class="form-group row mb-4">
+                     <label class="col-sm-3 col-form-label" for="analysis_tree_select">
+                        Stammbaum auswählen:
+                    </label>
+                    <div class="col-sm-6">
+                        <select class="form-control form-select" id="analysis_tree_select">
+                            <?php foreach($trees_list as $t_name => $t_title): ?>
+                                <option value="<?= htmlspecialchars($t_name) ?>" <?= $t_name === $tree_name ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($t_title) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <?php else: ?>
+                    <p>Aktiver Stammbaum: <strong><?= htmlspecialchars($tree_title) ?></strong></p>
+                    <input type="hidden" id="analysis_tree_select" value="<?= htmlspecialchars($tree_name) ?>">
+                <?php endif; ?>
+
                 <div class="d-flex align-items-center">
                     <button type="button" class="btn btn-success btn-lg me-3" id="btn-start-analysis">
                         <i class="fa fa-play"></i> Analyse starten
@@ -494,11 +515,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let totalIssues = 0;
     
-    // API Route
-    const apiRoute = '<?= e(route('module', ['module' => $module->name(), 'action' => 'BatchAnalysis', 'tree' => $tree_name])) ?>';
+    // API Route Base
+    const apiRouteBase = '<?= e(route('module', ['module' => $module->name(), 'action' => 'BatchAnalysis', 'tree' => 'TREE_PLACEHOLDER'])) ?>';
+    
+    // Helper to get current tree from dropdown or hidden input
+    function getSelectedTree() {
+        const select = document.getElementById('analysis_tree_select');
+        return select ? select.value : '<?= $tree_name ?>';
+    }
     
     // Base URL for linking to individuals
-    const personUrlTemplate = '<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage::class, ['tree' => $tree_name, 'xref' => 'XREF_PLACEHOLDER'])) ?>';
+    // Need to dynamically replace tree name in URL if user switches tree
+    const personUrlBase = '<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage::class, ['tree' => 'TREE_PLACEHOLDER', 'xref' => 'XREF_PLACEHOLDER'])) ?>';
 
     // Filter Logic
     function applyFilters() {
@@ -555,13 +583,16 @@ document.addEventListener('DOMContentLoaded', () => {
         visibleCountEl.innerText = '0';
         totalResultsCountEl.innerText = '0';
 
-        await runBatch(0);
+        await runBatch(0, getSelectedTree());
     });
 
-    async function runBatch(offset) {
+    async function runBatch(offset, treeName) {
         try {
-            const separator = apiRoute.includes('?') ? '&' : '?';
-            const response = await fetch(`${apiRoute}${separator}offset=${offset}&limit=200`);
+            // Construct API URL with selected tree
+            let url = apiRouteBase.replace('TREE_PLACEHOLDER', treeName);
+            const separator = url.includes('?') ? '&' : '?';
+            
+            const response = await fetch(`${url}${separator}offset=${offset}&limit=200`);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -612,8 +643,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Translate severity for display if needed, but badge color works well
                     
+                    // Build Person URL dynamically
+                    let pUrl = personUrlBase.replace('TREE_PLACEHOLDER', treeName).replace('XREF_PLACEHOLDER', issue.xref);
+                    
                     row.innerHTML = `
-                        <td><a href="${personUrlTemplate.replace('XREF_PLACEHOLDER', issue.xref)}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
+                        <td><a href="${pUrl}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
                         <td><span class="badge ${badgeClass}">${issue.label || issue.code}</span></td>
                         <td>${issue.message}
                             ${issue.debug_dump ? `<div class="text-danger small mt-2" style="white-space: pre-wrap; font-family: monospace; border: 1px dashed red;">Dump: ${issue.debug_dump}</div>` : ''}
@@ -638,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.finished) {
                 // Next Batch
                 // setTimeout ensures UI update happens before next intensive task
-                setTimeout(() => runBatch(data.offset), 10);
+                setTimeout(() => runBatch(data.offset, treeName), 10);
             } else {
                 // Done
                 btn.disabled = false;
