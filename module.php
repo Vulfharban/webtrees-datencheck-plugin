@@ -138,12 +138,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function getMenuOrder(): int
     {
-        return $this->menu_order;
+        return 99;
     }
 
     public function defaultMenuOrder(): int
     {
-        return 0;
+        return 99;
     }
 
     public function customModuleSupportUrl(): string
@@ -246,40 +246,45 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         if (file_exists($file)) {
             $data   = file_get_contents($file);
             $base64 = base64_encode($data);
-            $icon   = '<img src="data:image/png;base64,' . $base64 . '" style="width:64px; height:64px; object-fit:contain; display:block; margin:0 auto 2px;">';
+            // Use 40px size and block display to mimic native menu items (Icon above Text)
+            $icon   = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" style="width:40px; height:40px; object-fit:contain; display:block; margin:0 auto 2px;">';
         }
 
         $label = $icon . '<span>' . $this->title() . '</span>';
 
+        // Create main menu item (Dropdown)
+        // Note: webtrees handles the dropdown arrow and structure automatically for items with submenus
         $menu = new Menu($label, '#', $id);
+        $menu->setAttribute('class', 'menu-datencheck');
 
-        $style = 'padding: 8px 15px; display: block;';
-        $url   = route('module', [
+        // 1. Analyse / Dashboard
+        $url_dashboard = route('module', [
             'module' => $this->name(),
             'action' => 'Admin',
             'tree'   => $tree->name(),
         ]);
         
-        // Use direct href with onclick to force full page reload
-        // Unified dashboard link instead of separate identical links
-        $menu->addSubmenu(new Menu('<i class="fa fa-cog fa-fw"></i> <span style="margin-left:5px;">Einstellungen & Prüfungen</span>', $url, 'menu-datencheck-dashboard', [
-            'style'   => $style,
-            'onclick' => "window.location.href=this.href; return true;",
-        ]));
+        $menu->addSubmenu(new Menu(
+            'Übersicht & Analyse', 
+            $url_dashboard, 
+            'menu-datencheck-dashboard'
+        ));
 
-        // Only show ignored errors to editors (Moderators)
+        // 2. Ignorierte Fehler (für Moderatoren)
         if (Auth::isModerator($tree)) {
-            $ignoredUrl = route('module', [
+            $url_ignored = route('module', [
                 'module' => $this->name(),
                 'action' => 'AdminIgnored',
                 'tree'   => $tree->name(),
             ]);
             
-            $menu->addSubmenu(new Menu('<i class="fa fa-eye-slash fa-fw"></i> <span style="margin-left:5px;">Ignorierte Fehler</span>', $ignoredUrl, 'menu-datencheck-ignored', [
-                'style'   => $style,
-            ]));
+            $menu->addSubmenu(new Menu(
+                'Ignorierte Einträge', 
+                $url_ignored, 
+                'menu-datencheck-ignored'
+            ));
         }
-
+        
         return $menu;
     }
 

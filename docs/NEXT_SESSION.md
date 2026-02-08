@@ -24,7 +24,11 @@
 - (Keine kritischen Bugs bekannt)
 
 ## Ziele für die nächste Session (v1.0.0?)
-1.  **Geografische Validierung (Advanced):**
+1.  **Multi-Language Support (I18N):**
+    - Alle hardcodierten Strings durch Übersetzungsfunktionen ersetzen.
+    - Sprachdateien anlegen für: Deutsch, Englisch, Niederländisch (NL), Französisch (FR).
+    - Sicherstellen, dass die UI automatisch die richtige Sprache wählt.
+2.  **Geografische Validierung (Advanced):**
     - Echte Distanzberechnung (km) zwischen Ereignissen (Tod/Geburt).
     - Caching für Geodaten (um externe API-Calls zu minimieren, falls wir solche einführen).
 2.  **Performance:**
