@@ -61,11 +61,18 @@
 - [x] **Ergebnis-Dashboard:** Tabellarische Auflistung aller gefundenen Fehler
 - [x] **Version 0.9.0 Release (Beta)**
 
-## 📋 Phase 9: Reporting & Refinement (PLANNED)
-- [ ] **Erweiterte Quellen-Prüfung:** API-Anbindung für Sources (`SOUR` Tags)
-- [ ] **Export:** PDF/CSV Bericht über alle Validierungsfehler
-- [ ] **Orts-Korrektur:** Vorschlag von existierenden Ortsnamen
-- [ ] **Performance:** Caching und Optimierung für sehr große Bäume (>100k)
+## ✅ Phase 9: Reporting & Release-Prep (COMPLETE - 2026-02-08)
+- [x] **Export:** CSV-Bericht aller Validierungsfehler.
+- [x] **Datums-Formatierung:** Lesbare Datumsangaben im gesamten UI.
+- [x] **GitHub-Integration:** Updates via Release-Tag und `latest-version.txt`.
+- [x] **Version 0.9.2 Release** (Feature Complete)
+
+## 📋 Phase 10: V1.0.0 Refinement (PLANNED)
+- [ ] **Geografische Validierung:** 
+  - Caching für Geodaten (Vermeidung externer API-Limits).
+  - Distanz-Warnungen (z.B. Geburt -> Tod > 500km in < 1 Tag).
+- [ ] **Orts-Korrektur:** Vorschlag basierend auf ähnlichen Ortsnamen.
+- [ ] **Performance:** Testen und Optimieren für extrem große Bäume (Chunking-Anpassung).
 
 ---
 
@@ -74,4 +81,5 @@
 - **v0.6.0:** Detaillierter Vergleichs-Modal, Konfigurierbare Schwellwerte
 - **v0.7.0:** Modularisierung (Services/Views), Erweiterte Plausibilitäts-Checks
 - **v0.8.0:** Ignore-Feature, Admin-Liste, DB-Schema-Management
-- **v0.9.0 (Current):** Bulk-Analyse, Batch-Processing, Reporting-Dashboard
+- **v0.9.0:** Bulk-Analyse, Batch-Processing, Reporting-Dashboard
+- **v0.9.2:** CSV-Export, GitHub-Update-Check, Formatiertes Datum

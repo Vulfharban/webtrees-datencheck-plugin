@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [0.9.2] - 2026-02-08
+### Hinzugefügt
+- **CSV-Export**: Schaltfläche im Analyse-Dashboard zum Herunterladen aller Ergebnisse als CSV-Datei (Excel-optimiert).
+- **GitHub-Update**: Automatische Prüfung auf neue Versionen via `latest-version.txt` (direkt vom GitHub-Release).
+- **Public Repository**: Codebase für Open-Source-Feedback veröffentlicht.
+
+### Geändert
+- **Verbesserte Fehlermeldungen**:
+  - Datumsangaben in Validierungsmeldungen sind nun vollständig formatiert (z.B. "01.05.1850" statt nur "1850").
+  - Kontext-Informationen (z.B. Geburtsdatum der Eltern bei Alters-Warnung) werden detaillierter angezeigt.
+
 ## [0.9.1] - 2026-02-08
 ### Hinzugefügt
 - **Ergebnis-Filter**: Dropdowns in der Analyse-Tabelle zum Filtern nach Schweregrad (Fehler/Warnung) und Kategorie.

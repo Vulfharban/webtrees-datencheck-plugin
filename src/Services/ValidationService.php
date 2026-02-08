@@ -100,6 +100,29 @@ class ValidationService
     }
 
     /**
+     * Format date for display (e.g. 01.05.1980 or just 1980 if day/month missing)
+     */
+    private static function formatDate(?Individual $person, string $tag, string $override = ''): string
+    {
+        if ($override) {
+            return $override;
+        }
+
+        if (!$person) {
+            return '';
+        }
+
+        $fact = $person->facts([$tag])->first();
+        if ($fact && $fact->date()->isOK()) {
+            // Use Webtrees date object which handles localization and formatting (e.g. "01 May 1980")
+            // Or fallback to YMD
+            return $fact->date()->display();
+        }
+
+        return '';
+    }
+
+    /**
      * Check biological plausibility (parent ages, birth after death, etc.)
      *
      * @param Individual|null $person
@@ -369,9 +392,11 @@ class ValidationService
                     'label' => 'Alter der Mutter',
                     'severity' => 'error',
                     'message' => sprintf(
-                        'Mutter "%s" war bei Geburt nur %d Jahre alt',
+                        'Mutter "%s" war bei Geburt (%s) nur %d Jahre alt (Mutter geb. %s)',
                         $mother->fullName(),
-                        $motherAge
+                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
+                        $motherAge,
+                        self::formatDate($mother, 'BIRT') ?: $motherYear
                     ),
                     'details' => [
                         'mother_name' => $mother->fullName(),
@@ -389,9 +414,11 @@ class ValidationService
                     'label' => 'Alter der Mutter',
                     'severity' => 'warning',
                     'message' => sprintf(
-                        'Mutter "%s" war bei Geburt %d Jahre alt (ungewöhnlich)',
+                        'Mutter "%s" war bei Geburt (%s) %d Jahre alt (Mutter geb. %s)',
                         $mother->fullName(),
-                        $motherAge
+                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
+                        $motherAge,
+                        self::formatDate($mother, 'BIRT') ?: $motherYear
                     ),
                     'details' => [
                         'mother_name' => $mother->fullName(),
@@ -434,9 +461,11 @@ class ValidationService
                     'label' => 'Alter des Vaters',
                     'severity' => 'error',
                     'message' => sprintf(
-                        'Vater "%s" war bei Geburt nur %d Jahre alt',
+                        'Vater "%s" war bei Geburt (%s) nur %d Jahre alt (Vater geb. %s)',
                         $father->fullName(),
-                        $fatherAge
+                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
+                        $fatherAge,
+                        self::formatDate($father, 'BIRT') ?: $fatherYear
                     ),
                     'details' => [
                         'father_name' => $father->fullName(),
@@ -453,9 +482,11 @@ class ValidationService
                     'type' => 'biological_implausibility',
                     'severity' => 'warning',
                     'message' => sprintf(
-                        'Vater "%s" war bei Geburt %d Jahre alt (ungewöhnlich)',
+                        'Vater "%s" war bei Geburt (%s) %d Jahre alt (Vater geb. %s)',
                         $father->fullName(),
-                        $fatherAge
+                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
+                        $fatherAge,
+                        self::formatDate($father, 'BIRT') ?: $fatherYear
                     ),
                     'details' => [
                         'father_name' => $father->fullName(),
@@ -495,8 +526,10 @@ class ValidationService
                     'label' => 'Unmögliche Geburt',
                     'severity' => 'error',
                     'message' => sprintf(
-                        'Kind geboren %d Jahr(e) nach Tod/Bestattung der Mutter "%s"',
+                        'Kind geboren (%s) %d Jahr(e) nach Tod/Bestattung (%s) der Mutter "%s"',
+                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
                         $childYear - $motherEndYear,
+                        $deathYear ? self::formatDate($mother, 'DEAT') : self::formatDate($mother, 'BURI'),
                         $mother->fullName()
                     ),
                     'details' => [
@@ -660,10 +693,10 @@ class ValidationService
                 'label' => 'Datumskonflikt',
                 'severity' => 'error',
                 'message' => sprintf(
-                    'Geburtsdatum liegt nach %s (%d vs. %d)',
+                    'Geburtsdatum (%s) liegt nach %s (%s)',
+                    self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
                     $label === 'Todesdatum' ? 'dem Todesdatum' : 'der Bestattung',
-                    $birthYear,
-                    $endYear
+                    $label === 'Todesdatum' ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
                 ),
             ];
         }
@@ -701,9 +734,11 @@ class ValidationService
                     'label' => 'Alter prüfen',
                     'severity' => 'warning',
                     'message' => sprintf(
-                        'Person%s lebte %d Jahre (ungewöhnlich lang)',
+                        'Person%s lebte %d Jahre (Geb. %s - Tod %s)',
                         $person ? ' "' . $person->fullName() . '"' : '',
-                        $lifespan
+                        $lifespan,
+                        self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
+                        self::formatDate($person, 'DEAT', $overrideDeath) ?: (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
                     ),
                     'details' => [
                         'birth_date' => $birthYear,
@@ -737,9 +772,9 @@ class ValidationService
                 'type' => 'temporal_impossibility',
                 'severity' => 'error',
                 'message' => sprintf(
-                    'Heirat (%d) vor Geburt (%d) von "%s"',
-                    $marriageYear,
-                    $birthYear,
+                    'Heirat (%s) vor Geburt (%s) von "%s"',
+                    $marriage->display(),
+                    self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
                     $person->fullName()
                 ),
                 'details' => [
@@ -772,9 +807,9 @@ class ValidationService
                 'type' => 'temporal_impossibility',
                 'severity' => 'error',
                 'message' => sprintf(
-                    'Heirat (%d) nach Tod (%d) von "%s"',
-                    $marriageYear,
-                    $deathYear,
+                    'Heirat (%s) nach Tod (%s) von "%s"',
+                    $marriage->display(),
+                    self::formatDate($person, 'DEAT', $overrideDeath) ?: $deathYear,
                     $person->fullName()
                 ),
                 'details' => [
