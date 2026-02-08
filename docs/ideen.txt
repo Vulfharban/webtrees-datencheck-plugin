@@ -1,0 +1,33 @@
+Dublettenprüfung & Familien-Matching
+
+Das Webtrees Plugin, soll beim Anlegen eines Datensatzes prüfen on die Person schon vorhanden ist (Name, errechnetes Alter, Wohnort usw)
+Bei Eingabe von Eltern soll gechecht werden ob es diese Familie schon gibt, und wahlweise dann dieser Familie mit zuordnen.
+
+Webtrees eingabe Felder direkt nativ nutzen.
+
+
+Prüfung der Person (Deduplizierung)
+
+Um zu verhindern, dass "Johann Schmidt" zweimal angelegt wird, reicht ein exakter Namensvergleich oft nicht aus. In Rust könntest du Bibliotheken für Fuzzy Matching nutzen:
+
+    - Levenshtein-Distanz: Misst Tippfehler in Namen.
+
+    - Phonetische Algorithmen: (z.B. Soundex oder Cologne Phonetic), um Namen zu finden, die gleich klingen.
+
+    - Alters-Validierung: Rust berechnet aus dem Geburtsdatum im GEDCOM-Format und dem aktuellen Datum das Alter und vergleicht es mit vorhandenen Datensätzen in einer gewissen Toleranzspanne.
+
+Prüfung der Eltern/Familie
+
+In webtrees (und GEDCOM) sind Familien eigene Datensätze (FAM).
+
+    - Logik: Wenn Eltern eingegeben werden, sucht dein Rust-Kern nach einer FAM, in der genau diese beiden Personen als HUSB (Ehemann) und WIFE (Ehefrau) verknüpft sind.
+
+    - Aktion: Wenn gefunden, gibt Rust die FAM_ID zurück, und dein PHP-Plugin verknüpft die neue Person automatisch als CHIL (Kind) mit dieser Familie, anstatt eine neue zu erstellen.
+
+3. Umsetzung im webtrees-Plugin
+
+In webtrees würdest du ein Modul erstellen, das auf bestimmte Hooks reagiert:
+
+    1. GedcomRecordSaving: Dieser Hook feuert, bevor ein Datensatz in die Datenbank geschrieben wird. Hier kannst du die Eingabe unterbrechen und den Nutzer warnen: "Halt, diese Person scheint schon zu existieren!"
+
+    2. GedcomRecordCreated: Nachdem ein Datensatz erstellt wurde, um Folgeaktionen (wie die Familienverknüpfung) durchzuführen.

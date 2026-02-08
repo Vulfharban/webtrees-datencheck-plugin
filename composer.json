@@ -1,0 +1,24 @@
+{
+    "name": "wolfrum/datencheck",
+    "type": "webtrees-module",
+    "description": "A webtrees plugin to check for data consistency using a Rust backend.",
+    "authors": [
+        {
+            "name": "Christian Wolfrum",
+            "email": "c.wolfrum@example.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wolfrum\\Datencheck\\": "src/"
+        }
+    },
+    "extra": {
+        "webtrees": {
+            "icon": "icon.png"
+        }
+    }
+}

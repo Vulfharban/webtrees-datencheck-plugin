@@ -1,0 +1,662 @@
+<?php
+/**
+ * Admin configuration view for Datencheck module
+ * 
+ * Available variables:
+ * @var string $title Module title
+ * @var string $fuzzy_diff_high_age Current high age threshold
+ * @var string $fuzzy_diff_default Current default threshold
+ * @var string $csrf CSRF token field (HTML)
+ * @var string $control_panel_url URL to control panel
+ * @var string $modules_all_url URL to modules page
+ * @var string $i18n_control_panel Translated "Control panel"
+ * @var string $i18n_modules Translated "Modules"
+ * @var string $i18n_save Translated "save"
+ * @var string $i18n_cancel Translated "cancel"
+ * @var DatencheckModule $module Module instance
+ */
+?>
+
+<?= view('components/breadcrumbs', ['links' => [$control_panel_url => $i18n_control_panel, $modules_all_url => $i18n_modules, $title]]) ?>
+
+<h1><?= htmlspecialchars($title) ?></h1>
+
+<form method="post" class="form-horizontal">
+    <?= $csrf ?>
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="datencheckTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Allgemein</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="plausibility-tab" data-bs-toggle="tab" href="#plausibility" role="tab" aria-controls="plausibility" aria-selected="false">Plausibilität</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="features-tab" data-bs-toggle="tab" href="#features" role="tab" aria-controls="features" aria-selected="false">Funktionen</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="analysis-tab" data-bs-toggle="tab" href="#analysis" role="tab" aria-controls="analysis" aria-selected="false">Analyse</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="datencheckTabsContent">
+        <!-- Tab 1: General Settings -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <!-- Content omitted for brevity, keeping existing structure -->
+            <div class="rowMK mb-3"> 
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label" for="fuzzy_diff_high_age">
+                        Fuzzy-Schwellenwert bei hohem Alter (&gt;80 Jahre)
+                    </label>
+                    <div class="col-sm-9">
+                        <input 
+                            type="number" 
+                            class="form-control" 
+                            id="fuzzy_diff_high_age" 
+                            name="fuzzy_diff_high_age" 
+                            value="<?= htmlspecialchars($fuzzy_diff_high_age) ?>"
+                            min="0"
+                            max="20"
+                            required
+                        >
+                        <small class="form-text text-muted">
+                            Maximale Jahresabweichung bei Geburtsdaten, wenn Person über 80 Jahre alt wurde (höhere Unsicherheit bei alten Aufzeichnungen).
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="form-group row mt-3">
+                    <label class="col-sm-3 col-form-label" for="fuzzy_diff_default">
+                        Fuzzy-Schwellenwert (Standard)
+                    </label>
+                    <div class="col-sm-9">
+                        <input 
+                            type="number" 
+                            class="form-control" 
+                            id="fuzzy_diff_default" 
+                            name="fuzzy_diff_default" 
+                            value="<?= htmlspecialchars($fuzzy_diff_default) ?>"
+                            min="0"
+                            max="10"
+                            required
+                        >
+                        <small class="form-text text-muted">
+                            Maximale Jahresabweichung bei Geburtsdaten in den meisten Fällen (Tauf-, Heiratsurkunden).
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <h4><i class="fa fa-info-circle"></i> Hilfe: Allgemein</h4>
+                <p>Diese Einstellungen steuern die Empfindlichkeit der automatischen Dubletten-Erkennung.</p>
+                <ul>
+                    <li><strong>Fuzzy-Matching:</strong> Nutzt Algorithmen (z.B. Levenshtein-Distanz), um Tippfehler in Namen zu tolerieren.</li>
+                    <li><strong>Warn-Schwellen:</strong> Ein höherer Wert bedeutet mehr Toleranz bei Datumsabweichungen.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 2: Plausibility Settings -->
+        <div class="tab-pane fade" id="plausibility" role="tabpanel" aria-labelledby="plausibility-tab">
+            <!-- Content omitted, existing structure maintained -->
+            <h3>Validierungseinstellungen</h3>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="max_marriages_warning">
+                    Max. Ehen-Warnung
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="max_marriages_warning" 
+                        name="max_marriages_warning" 
+                        value="<?= htmlspecialchars($module->getPreference('max_marriages_warning', '5')) ?>"
+                        min="1"
+                        max="20"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Anzahl Ehen ab der eine Warnung angezeigt wird (Standard: 5).
+                    </small>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            <h3>Biologische & Zeitliche Plausibilitäts-Schwellwerte</h3>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="min_mother_age">
+                    Min. Mutter-Alter bei Geburt
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="min_mother_age" 
+                        name="min_mother_age" 
+                        value="<?= htmlspecialchars($module->getPreference('min_mother_age', '14')) ?>"
+                        min="10"
+                        max="20"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Fehler wenn Mutter jünger war (Standard: 14 Jahre).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="max_mother_age">
+                    Max. Mutter-Alter bei Geburt
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="max_mother_age" 
+                        name="max_mother_age" 
+                        value="<?= htmlspecialchars($module->getPreference('max_mother_age', '50')) ?>"
+                        min="40"
+                        max="70"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung wenn Mutter älter war (Standard: 50 Jahre).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="min_father_age">
+                    Min. Vater-Alter bei Geburt
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="min_father_age" 
+                        name="min_father_age" 
+                        value="<?= htmlspecialchars($module->getPreference('min_father_age', '14')) ?>"
+                        min="10"
+                        max="20"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Fehler wenn Vater jünger war (Standard: 14 Jahre).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="max_father_age">
+                    Max. Vater-Alter bei Geburt
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="max_father_age" 
+                        name="max_father_age" 
+                        value="<?= htmlspecialchars($module->getPreference('max_father_age', '80')) ?>"
+                        min="60"
+                        max="100"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung wenn Vater älter war (Standard: 80 Jahre).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="max_lifespan">
+                    Max. Lebensdauer
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="max_lifespan" 
+                        name="max_lifespan" 
+                        value="<?= htmlspecialchars($module->getPreference('max_lifespan', '120')) ?>"
+                        min="100"
+                        max="150"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung bei ungewöhnlich langer Lebensdauer (Standard: 120 Jahre).
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="max_marriage_age_warning">
+                    Max. Heiratsalter
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="max_marriage_age_warning" 
+                        name="max_marriage_age_warning" 
+                        value="<?= htmlspecialchars($module->getPreference('max_marriage_age_warning', '100')) ?>"
+                        min="60"
+                        max="120"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung bei ungewöhnlich spätem Heiratsalter (Standard: 100 Jahre).
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="min_marriage_age_warning">
+                    Min. Heiratsalter
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="min_marriage_age_warning" 
+                        name="min_marriage_age_warning" 
+                        value="<?= htmlspecialchars($module->getPreference('min_marriage_age_warning', '15')) ?>"
+                        min="10"
+                        max="30"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung bei ungewöhnlich frühem Heiratsalter (Standard: 15 Jahre).
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group row mb-3">
+                <label class="col-sm-3 col-form-label" for="min_sibling_spacing_warning">
+                    Min. Geschwisterabstand
+                </label>
+                <div class="col-sm-9">
+                    <input 
+                        type="number" 
+                        class="form-control" 
+                        id="min_sibling_spacing_warning" 
+                        name="min_sibling_spacing_warning" 
+                        value="<?= htmlspecialchars($module->getPreference('min_sibling_spacing_warning', '9')) ?>"
+                        min="1"
+                        max="24"
+                        required
+                    >
+                    <small class="form-text text-muted">
+                        Warnung bei zu kurzem Abstand zwischen Geschwistern (in Monaten, Standard: 9).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <h4><i class="fa fa-info-circle"></i> Hilfe: Plausibilität</h4>
+                <p>Hier definieren Sie die Grenzen für biologische und zeitliche Prüfungen.</p>
+                <ul>
+                    <li><strong>Eltern-Alter:</strong> Warnt bei biologisch unwahrscheinlichem Alter bei der Geburt des Kindes.</li>
+                    <li><strong>Geschwister-Abstand:</strong> Warnt, wenn Geburten zu dicht beieinander liegen (< 9 Monate).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 3: Additional Features Settings -->
+        <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+            <div class="row mb-3">
+                <div class="col-sm-3">
+                    <strong>Optionale Checks</strong>
+                </div>
+                <div class="col-sm-9">
+                    <div class="form-check">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_missing_data_checks" 
+                            name="enable_missing_data_checks" 
+                            value="1"
+                            <?= $module->getPreference('enable_missing_data_checks', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_missing_data_checks">
+                            <strong>Fehlende Daten prüfen</strong><br>
+                            <small class="text-muted">Warnt bei: Kind ohne Geburtsdatum, Tod ohne Geburt, Familie ohne Kinder</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_geographic_checks" 
+                            name="enable_geographic_checks" 
+                            value="1"
+                            <?= $module->getPreference('enable_geographic_checks', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_geographic_checks">
+                            <strong>Geografische Plausibilität prüfen</strong><br>
+                            <small class="text-muted">Warnt bei: Große Distanz zwischen Geburts-/Todesort, ungültige Ortsangaben</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_name_consistency_checks" 
+                            name="enable_name_consistency_checks" 
+                            value="1"
+                            <?= $module->getPreference('enable_name_consistency_checks', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_name_consistency_checks">
+                            <strong>Namens-Konsistenz prüfen</strong><br>
+                            <small class="text-muted">Warnt bei: Leere Namen, nur Vor- oder Nachname, Sonderzeichen-Probleme</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_source_checks" 
+                            name="enable_source_checks" 
+                            value="1"
+                            <?= $module->getPreference('enable_source_checks', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_source_checks">
+                            <strong>Quellen-Pflicht prüfen</strong><br>
+                            <small class="text-muted">Warnt bei: Fakten ohne Quellenangabe</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <h4><i class="fa fa-info-circle"></i> Hilfe: Funktionen</h4>
+                <p>Aktivieren Sie spezialisierte Validierungen für Ihren Stammbaum.</p>
+                <ul>
+                    <li><strong>Geografie:</strong> Prüft auf unrealistische Reisegeschwindigkeiten (>500km in < 2 Tagen).</li>
+                    <li><strong>Quellen:</strong> Markiert wichtige Ereignisse (Geburt, Tod, Ehe) ohne Quellenangabe.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tab 4: Analysis/Bulk Check -->
+        <div class="tab-pane fade" id="analysis" role="tabpanel" aria-labelledby="analysis-tab">
+            <div class="alert alert-light border">
+                <h4><i class="fa fa-stethoscope"></i> Qualitäts-Analyse</h4>
+                <p>Diese Funktion prüft <strong>alle Personen</strong> im Stammbaum auf die oben aktivierten Probleme.</p>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <button type="button" class="btn btn-success btn-lg me-3" id="btn-start-analysis">
+                        <i class="fa fa-play"></i> Analyse starten
+                    </button>
+                    <div class="flex-grow-1 ms-3" style="display:none;" id="progress-container">
+                        <label>Verarbeite Personen: <span id="progress-text">0 / 0</span></label>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" id="analysis-progress" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="card mt-4 mb-3 shadow-sm" id="analysis-controls" style="display:none;">
+                <div class="card-header bg-light">
+                    <strong><i class="fa fa-filter"></i> Ergebnisse filtern</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="filter-severity" class="form-label">Schweregrad</label>
+                            <select class="form-select form-control" id="filter-severity">
+                                <option value="all">Alle Probleme anzeigen</option>
+                                <option value="error">Nur Fehler (Rot)</option>
+                                <option value="warning">Warnungen (Gelb)</option>
+                                <option value="info">Hinweise (Blau)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="filter-category" class="form-label">Kategorie / Fehlertyp</label>
+                            <select class="form-select form-control" id="filter-category">
+                                <option value="all">Alle Kategorien</option>
+                                <option value="missing_source">Fehlende Quellen</option>
+                                <option value="geography">Geografische Probleme</option>
+                                <option value="temporal_impossibility">Zeitliche Unmöglichkeit</option>
+                                <option value="duplicate_check">Mögliche Dubletten</option>
+                                <option value="sibling_spacing">Geschwister-Abstand</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end justify-content-end">
+                            <div class="text-end">
+                                <span class="fs-4 fw-bold" id="visible-count">0</span>
+                                <span class="text-muted">von <span id="total-results-count">0</span> gezeigt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analysis-results" style="display:none;" class="mt-4">
+                <h5>Gefundene Probleme <span class="badge bg-danger" id="issue-count">0</span></h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mt-3" id="results-table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Person</th>
+                            <th scope="col">Code / Typ</th>
+                            <th scope="col">Beschreibung</th>
+                            <th scope="col">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Results via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-3 mt-4">
+        <div class="offset-sm-3 col-sm-9">
+            <button type="submit" class="btn btn-primary">
+                <?= $i18n_save ?>
+            </button>
+            
+            <a href="<?= $control_panel_url ?>" class="btn btn-secondary">
+                <?= $i18n_cancel ?>
+            </a>
+        </div>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-start-analysis');
+    const filterControls = document.getElementById('analysis-controls');
+    const filterSeverity = document.getElementById('filter-severity');
+    const filterCategory = document.getElementById('filter-category');
+    const visibleCountEl = document.getElementById('visible-count');
+    const totalResultsCountEl = document.getElementById('total-results-count');
+
+    const progressContainer = document.getElementById('progress-container');
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('analysis-progress');
+    const resultsContainer = document.getElementById('analysis-results');
+    const resultsTableBody = document.querySelector('#results-table tbody');
+    const issueCountBadge = document.getElementById('issue-count');
+
+    let totalIssues = 0;
+    
+    // API Route
+    const apiRoute = '<?= e(route('module', ['module' => $module->name(), 'action' => 'BatchAnalysis', 'tree' => $tree_name])) ?>';
+    
+    // Base URL for linking to individuals
+    const personUrlTemplate = '<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage::class, ['tree' => $tree_name, 'xref' => 'XREF_PLACEHOLDER'])) ?>';
+
+    // Filter Logic
+    function applyFilters() {
+        const severity = filterSeverity.value;
+        const category = filterCategory.value;
+        const rows = resultsTableBody.querySelectorAll('tr');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const rowSev = row.getAttribute('data-severity'); // error, warning, info
+            const rowCat = row.getAttribute('data-category'); // e.g. missing_source
+
+            let show = true;
+
+            // Filter Severity
+            if (severity !== 'all') {
+                if (severity === 'error' && rowSev !== 'error') show = false;
+                if (severity === 'warning' && rowSev !== 'warning') show = false;
+                if (severity === 'info' && rowSev !== 'info') show = false;
+            }
+
+            // Filter Category
+            if (category !== 'all') {
+                if (rowCat !== category && rowCat !== 'unknown') show = false;
+            }
+
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        visibleCountEl.innerText = visible;
+    }
+
+    filterSeverity.addEventListener('change', applyFilters);
+    filterCategory.addEventListener('change', applyFilters);
+
+    btn.addEventListener('click', async () => {
+        // Reset UI
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Analysiere...';
+        progressContainer.style.display = 'block';
+        resultsContainer.style.display = 'none';
+        filterControls.style.display = 'none'; // Hide filters during run
+        resultsTableBody.innerHTML = '';
+        progressBar.style.width = '0%';
+        progressBar.innerText = '0%';
+        progressBar.classList.add('progress-bar-animated');
+        progressBar.classList.remove('bg-primary');
+        progressBar.classList.add('bg-success');
+        
+        progressText.innerText = 'Initialisiere...';
+        totalIssues = 0;
+        issueCountBadge.innerText = '0';
+        visibleCountEl.innerText = '0';
+        totalResultsCountEl.innerText = '0';
+
+        await runBatch(0);
+    });
+
+    async function runBatch(offset) {
+        try {
+            const separator = apiRoute.includes('?') ? '&' : '?';
+            const response = await fetch(`${apiRoute}${separator}offset=${offset}&limit=200`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 100)}...`);
+            }
+            
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.error('Server response was not JSON:', await response.text());
+                throw new Error('Server response was not valid JSON.');
+            }
+
+            if (data.error) {
+                throw new Error(`Server Error: ${data.message} (File: ${data.file}, Line: ${data.line})`);
+            }
+
+            // Update Progress
+            const percentage = data.total > 0 ? Math.round((data.offset / data.total) * 100) : 0;
+            progressBar.style.width = `${percentage}%`;
+            progressBar.innerText = `${percentage}%`;
+            progressText.innerText = `${data.offset} / ${data.total}`;
+
+            // Handle Results
+            if (data.issues && data.issues.length > 0) {
+                totalIssues += data.issues.length;
+                issueCountBadge.innerText = totalIssues;
+                totalResultsCountEl.innerText = totalIssues;
+                visibleCountEl.innerText = totalIssues; // Initially all visible
+
+                resultsContainer.style.display = 'block'; // Show if issues found
+                // Don't show filters yet until finished? Or show immediately? Show immediately is better for long runs.
+                filterControls.style.display = 'block'; 
+                
+                data.issues.forEach(issue => {
+                    const row = document.createElement('tr');
+                    
+                    // Add data attributes for filtering
+                    row.setAttribute('data-severity', issue.severity || 'info');
+                    row.setAttribute('data-category', issue.type || 'unknown');
+                    
+                    // Severity badge
+                    let badgeClass = 'bg-secondary';
+                    if (issue.severity === 'error') badgeClass = 'bg-danger';
+                    if (issue.severity === 'warning') badgeClass = 'bg-warning text-dark';
+                    if (issue.severity === 'info') badgeClass = 'bg-info text-dark';
+                    
+                    // Translate severity for display if needed, but badge color works well
+                    
+                    row.innerHTML = `
+                        <td><a href="${personUrlTemplate.replace('XREF_PLACEHOLDER', issue.xref)}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
+                        <td><span class="badge ${badgeClass}">${issue.label || issue.code}</span></td>
+                        <td>${issue.message}
+                            ${issue.debug_dump ? `<div class="text-danger small mt-2" style="white-space: pre-wrap; font-family: monospace; border: 1px dashed red;">Dump: ${issue.debug_dump}</div>` : ''}
+                            ${issue.debug_class ? `<div class="text-danger small fw-bold">Class: ${issue.debug_class}</div>` : ''}
+                        </td>
+                         <td>
+                            <a href="#" class="btn btn-sm btn-outline-secondary" onclick="alert('TODO: Quick Fix not implemented'); return false;">
+                                <i class="fa fa-wrench"></i>
+                            </a>
+                        </td>
+                    `;
+                    resultsTableBody.appendChild(row);
+                });
+                
+                // Re-apply filters if user changed them during run
+                if (filterSeverity.value !== 'all' || filterCategory.value !== 'all') {
+                    applyFilters();
+                }
+            }
+
+            // Continue or Finish
+            if (!data.finished) {
+                // Next Batch
+                // setTimeout ensures UI update happens before next intensive task
+                setTimeout(() => runBatch(data.offset), 10);
+            } else {
+                // Done
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-check"></i> Fertig!';
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.remove('bg-success');
+                progressBar.classList.add('bg-primary');
+                
+                if (totalIssues === 0) {
+                     resultsContainer.style.display = 'block';
+                     resultsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> Keine Probleme gefunden!</h4><p>Ihr Stammbaum ist sauber.</p></td></tr>';
+                     filterControls.style.display = 'none'; // No need to filter nothing
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Fehler bei der Analyse: ' + error.message);
+            btn.disabled = false;
+            btn.innerText = 'Fehler! Neustart?';
+            progressBar.classList.add('bg-danger');
+        }
+    }
+});
+</script>

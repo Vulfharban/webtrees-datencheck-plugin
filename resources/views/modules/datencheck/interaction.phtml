@@ -1,0 +1,828 @@
+<?php
+/**
+ * @var string $check_url
+ * @var string $sibling_url
+ * @var string $family_url
+ * @var string $details_url
+ * @var string $validation_url
+ * @var string $individual_url
+ */
+?>
+<style>
+    #datencheck-validation-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        width: 320px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        font-family: sans-serif;
+        border: 1px solid rgba(0,0,0,0.1);
+        animation: dcFadeIn 0.3s ease-out;
+    }
+    @keyframes dcFadeIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    #datencheck-validation-header {
+        padding: 10px 15px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        color: #666;
+        user-select: none;
+    }
+    #datencheck-validation-header .close-btn {
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+    }
+    #datencheck-validation-body {
+        padding: 15px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    .dc-bubble-issue {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    .dc-bubble-issue:last-child { margin-bottom: 0; }
+    .dc-issue-warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+    .dc-issue-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+    .dc-issue-info { background: #d1e7dd; color: #0f5132; border-left: 4px solid #198754; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let personTimeout = null;
+    let familyTimeout = null;
+    let siblingTimeout = null;
+    let validationTimeout = null;
+
+    function makeDraggable(el, header) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        header.onmousedown = dragMouseDown;
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            el.style.top = (el.offsetTop - pos2) + "px";
+            el.style.left = (el.offsetLeft - pos1) + "px";
+            el.style.bottom = "auto";
+            el.style.right = "auto";
+        }
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    const checkDuplicate = (e) => {
+        const given = document.querySelector('[id*="GIVN"]')?.value || "";
+        const surname = document.querySelector('[id*="SURN"]')?.value || "";
+        const birth = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
+
+        if (given.length < 2 && surname.length < 2) return;
+
+        fetch("<?= $check_url ?>?given_name=" + encodeURIComponent(given) + "&surname=" + encodeURIComponent(surname) + "&birth_date=" + encodeURIComponent(birth))
+            .then(response => response.json())
+            .then(data => {
+                let warningArea = document.getElementById("datencheck-warning");
+                if (!warningArea) {
+                    warningArea = document.createElement("div");
+                    warningArea.id = "datencheck-warning";
+                    warningArea.className = "alert alert-warning mt-2";
+                    warningArea.style.display = "none";
+                    const target = document.querySelector('[id*="INDI-NAME"]')?.closest(".card");
+                    if (target) target.parentNode.insertBefore(warningArea, target);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    // Store current person info for comparison
+                    const context = getContext();
+                    
+                    // Robust check: if we are in an "Add" context OR the current form has no XREF, it's NEW.
+                    const form = e?.target?.closest('form');
+                    const formXrefInput = form?.querySelector('input[name="xref"]');
+                    const hasFormXref = formXrefInput && formXrefInput.value && formXrefInput.value.trim() !== "";
+                    
+                    const currentXref = (context.isAdd || !hasFormXref) ? "NEW" : getXref();
+                    
+                    let html = "<strong>Mögliche Dubletten gefunden:</strong><ul class='list-unstyled'>";
+                    data.data.forEach(item => {
+                        let label = item.name2 + " (" + item.id2 + ")";
+                        if (item.phonetic_match) {
+                            label += " <small class='text-muted'>(phonetisch)</small>";
+                        }
+                        html += "<li class='mb-1'>" + label + 
+                                " <button type='button' class='btn btn-sm btn-outline-primary ms-2' " +
+                                "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowComparison(\"" + (currentXref || "NEW") + "\", \"" + item.id2 + "\")'>" +
+                                "Vergleichen</button></li>";
+                    });
+                    html += "</ul>";
+                    warningArea.innerHTML = html;
+                    warningArea.style.display = "block";
+                } else {
+                    warningArea.style.display = "none";
+                }
+            });
+    };
+
+    const checkSibling = () => {
+        const given = document.querySelector('[id$="-GIVN"]')?.value || "";
+        const surname = document.querySelector('[id$="-SURN"]')?.value || "";
+        const birth = document.querySelector('[id$="-INDI-BIRT-DATE"]')?.value || "";
+        const husb = document.getElementById("HUSB")?.value || "";
+        const wife = document.getElementById("WIFE")?.value || "";
+
+        if ((!husb && !wife) || (given.length < 2 && surname.length < 2)) return;
+
+        fetch("<?= $sibling_url ?>?husb=" + encodeURIComponent(husb) + "&wife=" + encodeURIComponent(wife) + "&child_given=" + encodeURIComponent(given) + "&child_surname=" + encodeURIComponent(surname) + "&child_birth=" + encodeURIComponent(birth))
+            .then(response => response.json())
+            .then(data => {
+                let sibWarning = document.getElementById("datencheck-sib-warning");
+                if (!sibWarning) {
+                    sibWarning = document.createElement("div");
+                    sibWarning.id = "datencheck-sib-warning";
+                    sibWarning.className = "alert alert-danger mt-2";
+                    sibWarning.style.display = "none";
+                    const target = document.querySelector('[id*="INDI-NAME"]')?.closest(".card");
+                    if (target) target.parentNode.insertBefore(sibWarning, target);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    let html = "<strong>Diese Person existiert bereits als Kind in dieser Familie:</strong><ul>";
+                    data.data.forEach(item => {
+                        html += "<li>" + item.name2 + " (" + item.id2 + ")</li>";
+                    });
+                    html += "</ul>";
+                    sibWarning.innerHTML = html;
+                    sibWarning.style.display = "block";
+                } else {
+                    sibWarning.style.display = "none";
+                }
+            });
+    };
+
+    const checkFamily = () => {
+        const husb = document.getElementById("HUSB")?.value || "";
+        const wife = document.getElementById("WIFE")?.value || "";
+
+        if (!husb || !wife) return;
+
+        fetch("<?= $family_url ?>?husb=" + encodeURIComponent(husb) + "&wife=" + encodeURIComponent(wife))
+            .then(response => response.json())
+            .then(data => {
+                let famWarning = document.getElementById("datencheck-fam-warning");
+                if (!famWarning) {
+                    famWarning = document.createElement("div");
+                    famWarning.id = "datencheck-fam-warning";
+                    famWarning.className = "alert alert-info mt-2";
+                    famWarning.style.display = "none";
+                    const target = document.querySelector("form[name='changefamform']") || document.querySelector("#HUSB")?.closest(".row");
+                    if (target) target.parentNode.insertBefore(famWarning, target);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    let html = "<strong>Diese Eltern haben bereits eine Familie:</strong> " + data.data.join(", ");
+                    html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="window.datencheckJoinFamily(' + JSON.stringify(data.data[0]) + ')">Diese Familie nutzen</button>';
+                    famWarning.innerHTML = html;
+                    famWarning.style.display = "block";
+                } else {
+                    famWarning.style.display = "none";
+                }
+            });
+    };
+
+    window.datencheckJoinFamily = (famId) => {
+        alert("Diese Person wird der bestehenden Familie " + famId + " zugeordnet.");
+    };
+
+    // Comparison Modal Functions
+    window.datencheckShowComparison = (currentXref, duplicateXref) => {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById("datencheck-comparison-modal");
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "datencheck-comparison-modal";
+            modal.className = "modal fade";
+            modal.tabIndex = -1;
+            modal.innerHTML = "<div class='modal-dialog modal-xl'>" +
+                "<div class='modal-content'>" +
+                    "<div class='modal-header'>" +
+                        "<h5 class='modal-title'>Personen-Vergleich</h5>" +
+                        "<button type='button' class='btn-close' data-bs-dismiss='modal'></button>" +
+                    "</div>" +
+                    "<div class='modal-body'>" +
+                        "<div class='row'>" +
+                            "<div class='col-md-6'>" +
+                                "<h6 class='text-primary'>Aktuelle Eingabe</h6>" +
+                                "<div id='comparison-current' class='border rounded p-3'>" +
+                                    "<div class='text-center text-muted py-4'>" +
+                                        "<div class='spinner-border spinner-border-sm' role='status'></div>" +
+                                        "Lade Daten..." +
+                                    "</div>" +
+                                "</div>" +
+                            "</div>" +
+                            "<div class='col-md-6'>" +
+                                "<h6 class='text-warning'>Mögliche Dublette</h6>" +
+                                "<div id='comparison-duplicate' class='border rounded p-3'>" +
+                                    "<div class='text-center text-muted py-4'>" +
+                                        "<div class='spinner-border spinner-border-sm' role='status'></div>" +
+                                        "Lade Daten..." +
+                                    "</div>" +
+                                "</div>" +
+                            "</div>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div class='modal-footer'>" +
+                        "<a href='#' id='comparison-open-btn' target='_blank' class='btn btn-outline-primary me-auto'>In neuem Fenster öffnen ↗️</a>" +
+                        "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Schließen</button>" +
+                    "</div>" +
+                "</div>" +
+            "</div>";
+            document.body.appendChild(modal);
+        }
+
+        // Setup open button
+        const openBtn = document.getElementById("comparison-open-btn");
+        if (openBtn) {
+            openBtn.href = "<?= $individual_url ?>".replace("XREF_PLACEHOLDER", duplicateXref);
+        }
+
+        const fetchDuplicate = fetch("<?= $details_url ?>?xref=" + encodeURIComponent(duplicateXref)).then(r => r.json());
+        
+        // Handle Current Side: Fetch if XREF exists, otherwise use form data
+        let fetchCurrent;
+        if (currentXref && currentXref !== "NEW") {
+            fetchCurrent = fetch("<?= $details_url ?>?xref=" + encodeURIComponent(currentXref)).then(r => r.json());
+        } else {
+            // "Mock" the data from the form
+            fetchCurrent = Promise.resolve(getFormDataAsDetails());
+        }
+
+        // Fetch data for both persons
+        Promise.all([fetchCurrent, fetchDuplicate]).then(([currentData, duplicateData]) => {
+            populateComparison(currentData, duplicateData);
+        }).catch(err => {
+            console.error("Datencheck: Comparison fetch failed", err);
+            document.getElementById("comparison-current").innerHTML = "<div class='alert alert-danger'>Fehler beim Laden</div>";
+            document.getElementById("comparison-duplicate").innerHTML = "<div class='alert alert-danger'>Fehler beim Laden</div>";
+        });
+
+        // Show modal
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    };
+
+    function getFormDataAsDetails() {
+        const given = document.querySelector('[id*="GIVN"]')?.value || "";
+        const surname = document.querySelector('[id*="SURN"]')?.value || "";
+        const birthDate = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
+        const deathDate = document.querySelector('[id*="DEAT"][id*="DATE"]')?.value || "";
+
+        return {
+            name: given + " /" + surname + "/",
+            birth: { date: birthDate, place: "" },
+            death: { date: deathDate, place: "" },
+            parents: [],
+            families: [],
+            xref: "NEW"
+        };
+    }
+
+    function populateComparison(currentData, duplicateData) {
+        document.getElementById("comparison-current").innerHTML = formatPersonDetails(currentData);
+        document.getElementById("comparison-duplicate").innerHTML = formatPersonDetails(duplicateData);
+        highlightDifferences();
+    }
+
+    function formatPersonDetails(data) {
+        if (data.error) {
+            return "<div class='alert alert-danger'>" + data.error + "</div>";
+        }
+
+        let html = "<div class='person-details'>";
+        
+        // Name
+        html += "<div class='mb-3' data-field='name'><strong>Name:</strong><br>" + (data.name || "<em class='text-muted'>Nicht angegeben</em>") + "</div>";
+        
+        // Birth
+        html += "<div class='mb-3' data-field='birth'><strong>Geburt:</strong><br>";
+        if (data.birth.date || data.birth.place) {
+            if (data.birth.date) html += data.birth.date + "<br>";
+            if (data.birth.place) html += "<small class='text-muted'>" + data.birth.place + "</small>";
+        } else {
+            html += "<em class='text-muted'>Nicht angegeben</em>";
+        }
+        html += "</div>";
+        
+        // Death
+        html += "<div class='mb-3' data-field='death'><strong>Tod:</strong><br>";
+        if (data.death.date || data.death.place) {
+            if (data.death.date) html += data.death.date + "<br>";
+            if (data.death.place) html += "<small class='text-muted'>" + data.death.place + "</small>";
+        } else {
+            html += "<em class='text-muted'>Nicht angegeben</em>";
+        }
+        html += "</div>";
+        
+        // Parents
+        html += "<div class='mb-3' data-field='parents'><strong>Eltern:</strong><br>";
+        if (data.parents && data.parents.length > 0) {
+            html += "<ul class='list-unstyled mb-0'>";
+            data.parents.forEach(parent => {
+                html += "<li>" + parent.name + " (" + parent.xref + ")</li>";
+            });
+            html += "</ul>";
+        } else {
+            html += "<em class='text-muted'>Nicht angegeben</em>";
+        }
+        html += "</div>";
+        
+        // Families (Spouses & Children)
+        html += "<div class='mb-3' data-field='families'><strong>Familien:</strong><br>";
+        if (data.families && data.families.length > 0) {
+            data.families.forEach(fam => {
+                html += "<div class='mb-2'>";
+                if (fam.husband && fam.husband.xref !== data.xref) html += "Ehemann: " + fam.husband.name + "<br>";
+                if (fam.wife && fam.wife.xref !== data.xref) html += "Ehefrau: " + fam.wife.name + "<br>";
+                if (fam.children && fam.children.length > 0) {
+                    html += "Kinder: <ul class='list-unstyled mb-0'>";
+                    fam.children.forEach(child => {
+                        html += "<li>" + child.name + "</li>";
+                    });
+                    html += "</ul>";
+                }
+                html += "</div>";
+            });
+        } else {
+            html += "<em class='text-muted'>Keine Familien</em>";
+        }
+        html += "</div>";
+        
+        html += "</div>";
+        return html;
+    }
+
+    function highlightDifferences() {
+        const currentFields = document.querySelectorAll("#comparison-current .person-details > div");
+        const duplicateFields = document.querySelectorAll("#comparison-duplicate .person-details > div");
+        
+        currentFields.forEach((currentField, index) => {
+            const duplicateField = duplicateFields[index];
+            if (!duplicateField) return;
+            
+            const currentText = currentField.textContent.trim();
+            const duplicateText = duplicateField.textContent.trim();
+            
+            // Normalize for comparison (remove "Nicht angegeben" differences)
+            const currentNorm = currentText.replace(/Nicht angegeben/g, "").trim();
+            const duplicateNorm = duplicateText.replace(/Nicht angegeben/g, "").trim();
+            
+            if (currentNorm && duplicateNorm && currentNorm !== duplicateNorm) {
+                // Different values - highlight in yellow
+                currentField.style.backgroundColor = "#fff3cd";
+                currentField.style.padding = "8px";
+                currentField.style.borderRadius = "4px";
+                duplicateField.style.backgroundColor = "#fff3cd";
+                duplicateField.style.padding = "8px";
+                duplicateField.style.borderRadius = "4px";
+            } else if (currentNorm && duplicateNorm) {
+                // Matching values - highlight in green
+                currentField.style.backgroundColor = "#d1e7dd";
+                currentField.style.padding = "8px";
+                currentField.style.borderRadius = "4px";
+                duplicateField.style.backgroundColor = "#d1e7dd";
+                duplicateField.style.padding = "8px";
+                duplicateField.style.borderRadius = "4px";
+            }
+        });
+    }
+
+    const getXref = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        let xref = urlParams.get("xref") || urlParams.get("indi") || urlParams.get("id") || urlParams.get("key");
+        
+        const idPattern = /^[A-Z]\d+$/;
+        const idInUrlPattern = /\/individual\/([A-Z]\d+)/;
+
+        if (!xref) {
+            // Aggressive scan of all URL path segments
+            const segments = window.location.pathname.split('/');
+            for (const seg of segments) {
+                if (seg.match(idPattern)) {
+                    xref = seg;
+                    break;
+                }
+            }
+        }
+        
+        if (!xref) {
+            // Aggressive scan of all hidden inputs
+            const hiddenInputs = document.querySelectorAll('input[type="hidden"]');
+            for (const input of hiddenInputs) {
+                if (input.value && input.value.match(idPattern)) {
+                    if (input.name === 'xref' || input.name === 'indi' || input.name === 'id') {
+                        xref = input.value;
+                        break;
+                    }
+                    if (!xref) xref = input.value;
+                }
+                // Special case: "url" hidden field as seen in logs
+                if (input.name === 'url' && input.value) {
+                    const match = input.value.match(idInUrlPattern);
+                    if (match) {
+                        xref = match[1];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!xref) {
+            // Try matching anything in the full URL
+            const match = window.location.href.match(idInUrlPattern) || 
+                          window.location.href.match(/[?&/](indi|xref|id|key)[=/]([A-Z]\d+)/i) || 
+                          window.location.href.match(/[?&/]([A-Z]\d+)([?&/]|$)/);
+            if (match) xref = match[match.length - 1];
+        }
+
+        if (xref) {
+            xref = xref.split('.')[0];
+            xref = xref.replace(/[^A-Z0-9]/g, '');
+        }
+        
+        return xref;
+    };
+
+    const getContext = () => {
+        const url = window.location.href;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAction = urlParams.get('action') || "";
+        const pageTitle = (document.title || "").toLowerCase();
+        
+        // 1. Detect if we are adding a new relative
+        const isAdd = url.includes('add-') || url.includes('add_') || urlParams.get('action')?.includes('add') || 
+                      pageTitle.includes('hinzufügen') || pageTitle.includes('add ');
+        
+        // 2. Extract XREF from URL (might be the subject or a parent)
+        let urlXref = urlParams.get('xref') || urlParams.get('indiv') || urlParams.get('person') || "";
+        if (!urlXref) {
+           const match = url.match(/\/([XIF]\d+)(\?|&|\/|$)/) || url.match(/[\/&]([XIF]\d+)(\?|&|\/|$)/);
+           if (match) urlXref = match[1];
+        }
+
+        let xref = document.querySelector('input[name="xref"]')?.value || "";
+        let husb = "";
+        let wife = "";
+        let fam  = "";
+        let marr = "";
+        let relType = "child"; // default
+
+        if (isAdd) {
+            xref = ""; 
+            if (urlXref.startsWith('X') || urlXref.startsWith('I')) husb = urlXref;
+            if (urlXref.startsWith('F')) fam = urlXref;
+            
+            // Check for spouse keywords
+            if (pageTitle.includes('partner') || pageTitle.includes('spouse') || 
+                urlAction.includes('spouse') || url.includes('partner') ||
+                document.querySelector('input[id*="MARR"], input[id*="HUSB"], input[id*="WIFE"], [id*="FAM-MARR-DATE"]')) {
+                relType = "spouse";
+            }
+        } else {
+            if (!xref) xref = urlXref;
+        }
+
+        // 3. Scan DOM for parents/family/marriage
+        const allInputs = Array.from(document.querySelectorAll('input, select, textarea'));
+        allInputs.forEach(el => {
+            let val = (el.value || "").trim();
+            if (!val || val.length < 2) return;
+
+            const id = (el.id || "").toUpperCase();
+            const name = (el.name || "").toUpperCase();
+
+            // Capture Marriage Date
+            if (keywordsIn(['MARR', 'MARRIAGE'], id, name) && keywordsIn(['DATE'], id, name)) {
+                if (!marr) marr = val;
+            }
+
+            // Normalize XREF
+            const cleanVal = val.replace(/@/g, '');
+            if (!/^[XIF]\d+$/.test(cleanVal)) return;
+
+            if (cleanVal.startsWith('F')) {
+                if (!fam) fam = val;
+            } else {
+                // Individual XREF
+                if (keywordsIn(['HUSB', 'FATH', 'PARENT_H', 'HUSBAND'], id, name)) {
+                    husb = val;
+                } else if (keywordsIn(['WIFE', 'MOTH', 'PARENT_W', 'MOTHER'], id, name)) {
+                    wife = val;
+                } else if (name.includes("IVALUES") || id.includes("IVALUES")) {
+                    if (!husb) husb = val;
+                    else if (!wife && val !== husb) wife = val;
+                }
+            }
+        });
+
+        const clean = (s) => (s || "").replace(/[^A-Z0-9]/g, '');
+        const context = { 
+            xref: clean(xref), 
+            husb: clean(husb), 
+            wife: clean(wife), 
+            fam: clean(fam),
+            marr: marr,
+            rel_type: relType
+        };
+        
+        return context;
+    };
+
+    const keywordsIn = (keys, id, name) => {
+        return keys.some(k => id.includes(k) || name.includes(k));
+    };
+
+    // Validation check for data plausibility
+    const checkValidation = () => {
+        const context = getContext();
+        if (!context.xref && !context.husb && !context.wife && !context.fam) {
+            return;
+        }
+
+        const getVal = (keywords) => {
+            const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
+            const matches = allElements.filter(el => {
+                const id = (el.id || "").toUpperCase();
+                const name = (el.name || "").toUpperCase();
+                return keywords.some(k => id.includes(k) || name.includes(k)) && 
+                       (id.includes("DATE") || name.includes("DATE"));
+            });
+            const found = matches.find(i => i.value && i.value.trim() !== "" && i.value.trim().toUpperCase() !== "Y");
+            return found ? found.value.trim() : "";
+        };
+
+        const getBestDate = (prefTags, fallbackTags) => {
+            let d = getVal(prefTags);
+            if (!d) d = getVal(fallbackTags);
+            return d;
+        };
+
+        const getNames = (keywords) => {
+            const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
+            return allElements
+                .filter(el => {
+                    const id = (el.id || "").toUpperCase();
+                    const name = (el.name || "").toUpperCase();
+                    const matchesKeyword = keywords.some(k => id.includes(k) || name.includes(k));
+                    const isExclusion = id.includes("DATE") || name.includes("DATE") || 
+                                       id.includes("PLAC") || name.includes("PLAC");
+                    return matchesKeyword && !isExclusion;
+                })
+                .map(el => (el.value || "").trim())
+                .filter(val => val.length > 0);
+        };
+
+        const birth = getBestDate(['BIRT', 'BIRTH'], ['CHR', 'BAPM']);
+        const death = getVal(['DEAT', 'DEATH']);
+        const burial = getVal(['BURI', 'BURIAL']);
+        const givens = getNames(['GIVN', 'GIVEN']);
+        const surnames = getNames(['SURN', 'SURNAME']);
+        
+        const url = "<?= $validation_url ?>" + 
+            "?given_name=" + encodeURIComponent(givens.join('|')) + 
+            "&surname=" + encodeURIComponent(surnames.join('|')) + 
+            "&birth_date=" + encodeURIComponent(birth) +
+            "&death_date=" + encodeURIComponent(death) +
+            "&burial_date=" + encodeURIComponent(burial) +
+            "&xref=" + encodeURIComponent(context.xref) +
+            "&husb=" + encodeURIComponent(context.husb) +
+            "&wife=" + encodeURIComponent(context.wife) +
+            "&fam=" + encodeURIComponent(context.fam) +
+            "&marr_date=" + encodeURIComponent(context.marr) +
+            "&rel_type=" + encodeURIComponent(context.rel_type);
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let container = document.getElementById("datencheck-validation-container");
+                if (!container) {
+                    container = document.createElement("div");
+                    container.id = "datencheck-validation-container";
+                    container.innerHTML = '<div id="datencheck-validation-header"><span>⚖️ Datencheck</span><span class="close-btn" onclick="this.parentElement.parentElement.style.display=\'none\'">&times;</span></div><div id="datencheck-validation-body"></div>';
+                    document.body.appendChild(container);
+                    makeDraggable(container, document.getElementById("datencheck-validation-header"));
+                }
+
+                const body = document.getElementById("datencheck-validation-body");
+                body.innerHTML = "";
+
+                if (data.issues && data.issues.length > 0) {
+                    container.style.display = "flex";
+                    data.issues.forEach(issue => {
+                        const div = document.createElement("div");
+                        const icon = issue.severity === "error" ? "⛔" : issue.severity === "warning" ? "⚠️" : "ℹ️";
+                        const severityClass = issue.severity === "error" ? "dc-issue-error" : 
+                                             issue.severity === "warning" ? "dc-issue-warning" : "dc-issue-info";
+                        
+                        div.className = "dc-bubble-issue " + severityClass;
+                        
+                        let taskBtn = "";
+                        if (context.xref && /^[XIF]\d+$/.test(context.xref)) {
+                            
+                            // Define variables for dataset
+                            const title = "Datencheck: " + issue.label;
+                            const note  = issue.message;
+
+                            // Create button safely using DOM API to avoid all escaping hell
+                            const btnWrapper = document.createElement("div");
+                            btnWrapper.style.marginTop = "5px";
+                            btnWrapper.style.textAlign = "right";
+
+                            // 1. Task Button
+                            const btn = document.createElement("button");
+                            btn.className = "btn btn-sm btn-outline-secondary";
+                            btn.dataset.xref = context.xref;
+                            btn.dataset.title = title;
+                            // Replace newlines just in case, though dataset handles it better
+                            btn.dataset.note = note.replace(/(\r\n|\n|\r)/g, " ");
+                            btn.innerHTML = "📌 Aufgabe";
+                            btn.onclick = function() { window.datencheckSaveTask(this); };
+                            btnWrapper.appendChild(btn);
+
+                            // 2. Ignore Button (only if code exists)
+                            if (issue.code) {
+                                const ignoreBtn = document.createElement("button");
+                                ignoreBtn.className = "btn btn-sm btn-outline-secondary";
+                                ignoreBtn.style.marginLeft = "5px";
+                                ignoreBtn.dataset.xref = context.xref;
+                                ignoreBtn.dataset.code = issue.code;
+                                ignoreBtn.innerHTML = "🚫 Ignorieren";
+                                ignoreBtn.onclick = function() { window.datencheckIgnoreError(this); };
+                                btnWrapper.appendChild(ignoreBtn);
+                            }
+                            
+                            // Clear innerHTML before appending since we built it with DOM nodes now
+                            div.innerHTML = "";
+                            const contentDiv = document.createElement("div");
+                            contentDiv.innerHTML = "<strong>" + icon + " " + issue.label + "</strong><br>" + issue.message;
+                            div.appendChild(contentDiv);
+                            div.appendChild(btnWrapper);
+                        } else {
+                            div.innerHTML = "<strong>" + icon + " " + issue.label + "</strong><br>" + issue.message;
+                        }
+                        
+                        body.appendChild(div);
+                    });
+                } else {
+                    container.style.display = "none";
+                }
+            })
+            .catch(err => {
+                console.error("Datencheck: Validation check failed:", err);
+            });
+    };
+
+    window.datencheckSaveTask = (btn) => {
+        const xref  = btn.dataset.xref;
+        const title = btn.dataset.title;
+        const note  = btn.dataset.note;
+        
+        btn.disabled = true;
+        btn.innerHTML = "⏳...";
+        // Construct AddTask URL by replacing action
+        const baseUrl = "<?= $add_task_url ?>";
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        const url = baseUrl + separator +
+               "xref=" + encodeURIComponent(xref) +
+               "&title=" + encodeURIComponent(title) +
+               "&note=" + encodeURIComponent(note);
+        
+        console.log("Saving task to:", url);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    btn.innerHTML = "✅ Gespeichert";
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success');
+                    // Optional: remove button after delay
+                    setTimeout(() => btn.remove(), 2000);
+                } else {
+                    btn.innerHTML = "❌ Fehler";
+                    console.error(data.message);
+                    btn.disabled = false;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerHTML = "❌ Fehler";
+                btn.disabled = false;
+            });
+    };
+
+    window.datencheckIgnoreError = (btn) => {
+        const xref = btn.dataset.xref;
+        const code = btn.dataset.code;
+
+        if (!confirm('Möchtest du diesen Fehler für diese Person dauerhaft ignorieren?')) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = "⏳...";
+
+        const baseUrl = "<?= $ignore_error_url ?>";
+        const separator = baseUrl.includes("?") ? "&" : "?";
+        const url = baseUrl + separator +
+               "xref=" + encodeURIComponent(xref) +
+               "&code=" + encodeURIComponent(code);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the whole error box
+                    const errorBox = btn.closest('.dc-bubble-issue'); // Changed from .alert to .dc-bubble-issue
+                    if (errorBox) {
+                        errorBox.style.opacity = '0';
+                        setTimeout(() => errorBox.remove(), 500);
+                    }
+                } else {
+                    btn.innerHTML = "❌ Fehler";
+                    btn.disabled = false;
+                    alert(data.message || 'Fehler beim Ignorieren');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerHTML = "❌ Fehler";
+                btn.disabled = false;
+            });
+    };
+
+    // Run validation on page load for edit forms
+    if (window.location.pathname.includes("edit") || window.location.href.includes("edit")) {
+        setTimeout(checkValidation, 800);
+    }
+
+    const handleInput = (e) => {
+        const id = e.target.id || "";
+        if (id.includes("GIVN") || id.includes("SURN") || id.includes("BIRT") || id.includes("DEAT") || id.includes("BURI") || id.includes("DATE") || id.includes("AGE")) {
+           if (e.target.closest('[id*="GIVN"], [id*="SURN"], [id*="DATE"]')) {
+            clearTimeout(personTimeout);
+            personTimeout = setTimeout(() => checkDuplicate(e), 500);
+        }
+    
+            clearTimeout(siblingTimeout);
+            siblingTimeout = setTimeout(checkSibling, 400);
+
+            if (id.includes("DATE") || id.includes("AGE") || id.includes("BIRT") || id.includes("DEAT") || id.includes("BURI") || id.includes("GIVN") || id.includes("SURN")) {
+                clearTimeout(validationTimeout);
+                validationTimeout = setTimeout(checkValidation, 800);
+            }
+        }
+    };
+
+    document.addEventListener("input", handleInput);
+    document.addEventListener("change", (e) => {
+        const id = e.target.id || "";
+        handleInput(e);
+        if (id.includes("HUSB") || id.includes("WIFE") || id.includes("FAM")) {
+            clearTimeout(familyTimeout);
+            familyTimeout = setTimeout(checkFamily, 300);
+            
+            clearTimeout(siblingTimeout);
+            siblingTimeout = setTimeout(checkSibling, 400);
+
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(checkValidation, 800);
+        }
+    });
+});
+</script>
