@@ -246,16 +246,18 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         if (file_exists($file)) {
             $data   = file_get_contents($file);
             $base64 = base64_encode($data);
-            // Use 40px size and block display to mimic native menu items (Icon above Text)
-            $icon   = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" style="width:40px; height:40px; object-fit:contain; display:block; margin:0 auto 2px;">';
+            // Use 58px size (perfectly between 50 and 64)
+            $icon   = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" style="width:58px; height:58px; object-fit:contain; display:block; margin:0 auto 0;">';
         }
 
         $label = $icon . '<span>' . $this->title() . '</span>';
 
         // Create main menu item (Dropdown)
-        // Note: webtrees handles the dropdown arrow and structure automatically for items with submenus
-        $menu = new Menu($label, '#', $id);
-        $menu->setAttribute('class', 'menu-datencheck');
+        // Add bootstrap classes to match native menu behavior
+        $menu = new Menu($label, '#', $id, [
+            'class' => 'dropdown-toggle menu-datencheck', 
+            'data-bs-toggle' => 'dropdown'
+        ]);
 
         // 1. Analyse / Dashboard
         $url_dashboard = route('module', [
@@ -265,9 +267,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         ]);
         
         $menu->addSubmenu(new Menu(
-            'Übersicht & Analyse', 
+            '<i class="fas fa-stethoscope fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">Übersicht & Analyse</span>', 
             $url_dashboard, 
-            'menu-datencheck-dashboard'
+            'menu-datencheck-dashboard',
+            ['class' => 'dropdown-item']
         ));
 
         // 2. Ignorierte Fehler (für Moderatoren)
@@ -279,9 +282,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             ]);
             
             $menu->addSubmenu(new Menu(
-                'Ignorierte Einträge', 
+                '<i class="fas fa-eye-slash fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">Ignorierte Einträge</span>', 
                 $url_ignored, 
-                'menu-datencheck-ignored'
+                'menu-datencheck-ignored',
+                ['class' => 'dropdown-item']
             ));
         }
         
