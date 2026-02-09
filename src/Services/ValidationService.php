@@ -374,13 +374,13 @@ class ValidationService
      */
     private static function checkMarriageBeforeBirth(Individual $person, Family $family, string $overrideBirth = ''): ?array
     {
-        $birthYear = self::getEffectiveYear($person, true, $overrideBirth);
+        $birthJD = self::getEffectiveJD($person, 'BIRT', $overrideBirth);
         $marriage = $family->getMarriageDate();
 
-        if ($birthYear && $marriage->isOK()) {
-            $marriageYear = $marriage->minimumDate()->year();
+        if ($birthJD && $marriage->isOK()) {
+            $marriageJD = $marriage->minimumJulianDay();
             
-            if ($marriageYear >= $birthYear) {
+            if ($marriageJD >= $birthJD) {
                 return null;
             }
 
@@ -391,12 +391,12 @@ class ValidationService
                 'message' => \Fisharebest\Webtrees\I18N::translate(
                     'Marriage (%s) before birth (%s) of "%s"',
                     $marriage->display(),
-                    self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
+                    self::formatDate($person, 'BIRT', $overrideBirth) ?: ValidationService::getYearFromJD($birthJD),
                     $person->fullName()
                 ),
                 'details' => [
-                    'birth_date' => $birthYear,
-                    'marriage_date' => $marriageYear,
+                    'birth_jd' => $birthJD,
+                    'marriage_jd' => $marriageJD,
                 ],
             ];
         }
@@ -414,13 +414,13 @@ class ValidationService
      */
     private static function checkMarriageAfterDeath(Individual $person, Family $family, string $overrideDeath = ''): ?array
     {
-        $deathYear = self::getEffectiveYear($person, false, $overrideDeath);
+        $deathJD = self::getEffectiveJD($person, 'DEAT', $overrideDeath);
         $marriage = $family->getMarriageDate();
 
-        if ($deathYear && $marriage->isOK()) {
-            $marriageYear = $marriage->minimumDate()->year();
+        if ($deathJD && $marriage->isOK()) {
+            $marriageJD = $marriage->minimumJulianDay();
             
-            if ($marriageYear <= $deathYear) {
+            if ($marriageJD <= $deathJD) {
                 return null;
             }
 
@@ -431,12 +431,12 @@ class ValidationService
                 'message' => \Fisharebest\Webtrees\I18N::translate(
                     'Marriage (%s) after death (%s) of "%s"',
                     $marriage->display(),
-                    self::formatDate($person, 'DEAT', $overrideDeath) ?: $deathYear,
+                    self::formatDate($person, 'DEAT', $overrideDeath) ?: ValidationService::getYearFromJD($deathJD),
                     $person->fullName()
                 ),
                 'details' => [
-                    'death_date' => $deathYear,
-                    'marriage_date' => $marriageYear,
+                    'death_jd' => $deathJD,
+                    'marriage_jd' => $marriageJD,
                 ],
             ];
         }
