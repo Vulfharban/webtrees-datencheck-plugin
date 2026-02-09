@@ -253,6 +253,7 @@ class ValidationService
         // 2. Run checks for each identified parent pair
         foreach ($parents as $pair) {
             $mother = $pair['mother'];
+            $motherCalculable = false;
             if ($mother) {
                 // Check if we can calculate the mother's age
                 $mBirth = self::getEffectiveYear($mother, 'BIRT');
