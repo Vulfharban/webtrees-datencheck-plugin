@@ -186,7 +186,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getFooter(ServerRequestInterface $request): string
     {
         try {
-            $tree = Validator::attributes($request)->tree();
+            $tree = $this->getTree($request);
         } catch (\Throwable $e) {
             return '';
         }
@@ -337,6 +337,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             case 'PersonDetails':
                 return $this->getPersonDetailsAction($request);
                 case 'Admin':
+                case 'Config':
                     return $this->getAdminAction($request);
                 case 'BatchAnalysis':
                     return $this->getBatchAnalysisAction($request);
@@ -348,6 +349,29 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             return response(json_encode(['error' => $e->getMessage()]))
                 ->withHeader('Content-Type', 'application/json');
         }
+    }
+
+    /**
+     * Robustly retrieve the tree from the request attributes or query parameters.
+     * 
+     * @param ServerRequestInterface $request
+     * @return Tree|null
+     */
+    private function getTree(ServerRequestInterface $request): ?Tree
+    {
+        // 1. Try route attribute (resolved by webtrees)
+        $tree = $request->getAttribute('tree');
+        if ($tree instanceof Tree) {
+            return $tree;
+        }
+
+        // 2. Try query parameters (fallback)
+        $tree_name = $request->getQueryParams()['tree'] ?? '';
+        if ($tree_name) {
+            return \Fisharebest\Webtrees\Registry::container()->get(\Fisharebest\Webtrees\Services\TreeService::class)->all()->get($tree_name);
+        }
+
+        return null;
     }
 
     /**
@@ -375,11 +399,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getValidationAction(ServerRequestInterface $request): ResponseInterface
     {
         try {
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+            $tree = $this->getTree($request);
             $params = $request->getQueryParams();
             
             if ($tree === null) {
-                 return response(json_encode(['error' => 'Tree not found', 'params' => $params]))
+                 return response(json_encode(['error' => 'Tree not found']))
                     ->withHeader('Content-Type', 'application/json');
             }
 
@@ -418,7 +442,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getCheckPersonAction(ServerRequestInterface $request): ResponseInterface
     {
         try {
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+            $tree = $this->getTree($request);
             $params = $request->getQueryParams();
 
             $given = $params['given_name'] ?? '';
@@ -444,7 +468,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function getCheckFamilyAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+        $tree = $this->getTree($request);
         $params = $request->getQueryParams();
 
         $husb = $params['husb'] ?? '';
@@ -481,18 +505,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         
         // Generate route URLs (cannot be generated in view with require)
         // Detect tree from request to pass to view
-        $tree = Validator::attributes($request)->tree();
-        if (!$tree) {
-            $tree_name_param = Validator::queryParams($request)->string('tree');
-            if ($tree_name_param) {
-                $tree = Tree::findByName($tree_name_param);
-            }
-        }
+        $tree = $this->getTree($request);
         
         // Fallback to Registry (session-based active tree)
         if (!$tree) {
             try {
-                $tree = Registry::tree();
+                $tree = Registry::container()->get(Tree::class);
             } catch (\Throwable $e) {
                 $tree = null;
             }
@@ -546,7 +564,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         if (!$tree && !empty($trees_list)) {
             $first_name = array_key_first($trees_list);
             $tree_name = $first_name;
-            $tree = Tree::findByName($tree_name);
+            $tree = \Fisharebest\Webtrees\Registry::container()->get(\Fisharebest\Webtrees\Services\TreeService::class)->all()->get($tree_name);
         } else {
             $tree_name = $tree ? $tree->name() : '';
         }
@@ -624,7 +642,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function getCheckSiblingAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+        $tree = $this->getTree($request);
         $params = $request->getQueryParams();
 
         $husb = $params['husb'] ?? '';
@@ -648,7 +666,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function getPersonDetailsAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+        $tree = $this->getTree($request);
         $params = $request->getQueryParams();
 
         $xref = $params['xref'] ?? '';
@@ -672,7 +690,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getAddTaskAction(ServerRequestInterface $request): ResponseInterface
     {
         try {
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+            $tree = $this->getTree($request);
             $params = $request->getQueryParams();
 
             $xref  = $params['xref'] ?? '';
@@ -701,7 +719,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getIgnoreErrorAction(ServerRequestInterface $request): ResponseInterface
     {
         try {
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+            $tree = $this->getTree($request);
             $params = $request->getQueryParams();
 
             $xref  = $params['xref'] ?? '';
@@ -733,7 +751,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function getAdminIgnoredAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = Validator::attributes($request)->tree();
+        $tree = $this->getTree($request);
         
         // Security check: Only editors can manage ignored errors
         if (!Auth::isModerator($tree)) {
@@ -803,8 +821,13 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             // Increase execution time for larger batches
             set_time_limit(120);
             
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
+            $tree = $this->getTree($request);
             $params = $request->getQueryParams();
+
+            if (!$tree) {
+                return response(json_encode(['error' => 'Tree not found']))
+                    ->withHeader('Content-Type', 'application/json');
+            }
             
             // Pagination
             $offset = (int) ($params['offset'] ?? 0);
