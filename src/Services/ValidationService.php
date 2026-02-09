@@ -9,6 +9,7 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\ExtCalendar\GregorianCalendar;
 use Wolfrum\Datencheck\Helpers\DateParser;
 use Wolfrum\Datencheck\Services\IgnoredErrorService;
+use Wolfrum\Datencheck\Services\Validators;
 
 /**
  * Validation Service for data plausibility checks
@@ -59,7 +60,7 @@ class ValidationService
             }
 
             if ($module->getPreference('enable_name_consistency_checks', '0') === '1') {
-                $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents));
+                $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
             }
 
             if ($module->getPreference('enable_source_checks', '0') === '1') {
@@ -251,18 +252,17 @@ class ValidationService
 
         // 2. Run checks for each identified parent pair
         foreach ($parents as $pair) {
-            $motherCalculable = false;
             $mother = $pair['mother'];
             if ($mother) {
                 // Check if we can calculate the mother's age
                 $mBirth = self::getEffectiveYear($mother, 'BIRT');
                 if ($mBirth !== null) {
-                    $issue = self::checkMotherAgeAtBirth($person, $mother, $module, $overrideBirth);
+                    $issue = Validators\BiologicalValidator::checkMotherAgeAtBirth($person, $mother, $module, $overrideBirth);
                     if ($issue) $issues[] = $issue;
                     $motherCalculable = true;
                 }
 
-                $deathIssue = self::checkBirthAfterMotherDeath($person, $mother, $overrideBirth);
+                $deathIssue = Validators\BiologicalValidator::checkBirthAfterMotherDeath($person, $mother, $overrideBirth);
                 if ($deathIssue) $issues[] = $deathIssue;
             }
 
@@ -270,12 +270,12 @@ class ValidationService
             if ($father) {
                 // Only check father as fallback if mother's age was not calculable
                 if (!$mother || !$motherCalculable) {
-                    $issue = self::checkFatherAgeAtBirth($person, $father, $module, $overrideBirth);
+                    $issue = Validators\BiologicalValidator::checkFatherAgeAtBirth($person, $father, $module, $overrideBirth);
                     if ($issue) $issues[] = $issue;
                 }
 
                 // NEW: Check birth after father's death (> 9 months)
-                $fDeathIssue = self::checkBirthLongAfterFatherDeath($person, $father, $overrideBirth);
+                $fDeathIssue = Validators\BiologicalValidator::checkBirthLongAfterFatherDeath($person, $father, $overrideBirth);
                 if ($fDeathIssue) $issues[] = $fDeathIssue;
             }
 
@@ -303,21 +303,21 @@ class ValidationService
         $issues = [];
 
         // Check birth after death/burial
-        $issue = self::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial);
+        $issue = Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial);
         if ($issue) {
             $issues[] = $issue;
         }
 
         // NEW: Check baptism before birth
-        $issue = self::checkBaptismBeforeBirth($person, $overrideBirth);
+        $issue = Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth);
         if ($issue) $issues[] = $issue;
 
         // NEW: Check burial before death
-        $issue = self::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
+        $issue = Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
         if ($issue) $issues[] = $issue;
 
         // Check lifespan plausibility
-        $issue = self::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial);
+        $issue = Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial);
         if ($issue) {
             $issues[] = $issue;
         }
@@ -327,13 +327,13 @@ class ValidationService
             foreach ($person->spouseFamilies() as $family) {
                 $issue = self::checkMarriageBeforeBirth($person, $family, $overrideBirth);
                 if ($issue) {
-                    $issue['label'] = 'Heirat prüfen';
+                    $issue['label'] = \Fisharebest\Webtrees\I18N::translate('Check marriage');
                     $issues[] = $issue;
                 }
 
                 $issue = self::checkMarriageAfterDeath($person, $family, $overrideDeath);
                 if ($issue) {
-                    $issue['label'] = 'Heirat prüfen';
+                    $issue['label'] = \Fisharebest\Webtrees\I18N::translate('Check marriage');
                     $issues[] = $issue;
                 }
             }
@@ -356,400 +356,11 @@ class ValidationService
         foreach ($person->spouseFamilies() as $family) {
             $issue = self::checkGenderInFamily($person, $family);
             if ($issue) {
-                $issue['label'] = 'Geschlecht prüfen';
+                $issue['label'] = \Fisharebest\Webtrees\I18N::translate('Check gender');
                 $issues[] = $issue;
             }
         }
-
         return $issues;
-    }
-
-    /**
-     * Check mother's age at birth
-     *
-     * @param Individual $child
-     * @param Individual $mother
-     * @param object|null $module
-     * @param string $overrideBirth
-     * @return array|null
-     */
-    private static function checkMotherAgeAtBirth(?Individual $child, Individual $mother, ?object $module = null, string $overrideBirth = ''): ?array
-    {
-        $childYear = $child ? self::getEffectiveYear($child, 'BIRT', $overrideBirth) : self::parseYearOnly($overrideBirth);
-        $motherYear = self::getEffectiveYear($mother, 'BIRT');
-
-        if ($childYear && $motherYear) {
-            $motherAge = $childYear - $motherYear;
-            
-            // Get threshold from module or use defaults
-            $minAge = $module ? (int)$module->getPreference('min_mother_age', '14') : 14;
-            $maxAge = $module ? (int)$module->getPreference('max_mother_age', '50') : 50;
-
-            if ($motherAge < $minAge) {
-                return [
-                    'code' => 'MOTHER_TOO_YOUNG',
-                    'type' => 'biological_implausibility',
-                    'label' => 'Alter der Mutter',
-                    'severity' => 'error',
-                    'message' => sprintf(
-                        'Mutter "%s" war bei Geburt (%s) nur %d Jahre alt (Mutter geb. %s)',
-                        $mother->fullName(),
-                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
-                        $motherAge,
-                        self::formatDate($mother, 'BIRT') ?: $motherYear
-                    ),
-                    'details' => [
-                        'mother_name' => $mother->fullName(),
-                        'mother_birth' => $motherYear,
-                        'child_birth' => $childYear,
-                        'calculated_age' => $motherAge,
-                    ],
-                ];
-            }
-
-            if ($motherAge > $maxAge) {
-                return [
-                    'code' => 'MOTHER_TOO_OLD',
-                    'type' => 'biological_implausibility',
-                    'label' => 'Alter der Mutter',
-                    'severity' => 'warning',
-                    'message' => sprintf(
-                        'Mutter "%s" war bei Geburt (%s) %d Jahre alt (Mutter geb. %s)',
-                        $mother->fullName(),
-                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
-                        $motherAge,
-                        self::formatDate($mother, 'BIRT') ?: $motherYear
-                    ),
-                    'details' => [
-                        'mother_name' => $mother->fullName(),
-                        'mother_birth' => $motherYear,
-                        'child_birth' => $childYear,
-                        'calculated_age' => $motherAge,
-                    ],
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check father's age at birth
-     *
-     * @param Individual $child
-     * @param Individual $father
-     * @param object|null $module
-     * @param string $overrideBirth
-     * @return array|null
-     */
-    private static function checkFatherAgeAtBirth(?Individual $child, Individual $father, ?object $module = null, string $overrideBirth = ''): ?array
-    {
-        $childYear = $child ? self::getEffectiveYear($child, 'BIRT', $overrideBirth) : self::parseYearOnly($overrideBirth);
-        $fatherYear = self::getEffectiveYear($father, 'BIRT');
-
-        if ($childYear && $fatherYear) {
-            $fatherAge = $childYear - $fatherYear;
-            
-            // Get threshold from module or use defaults
-            $minAge = $module ? (int)$module->getPreference('min_father_age', '14') : 14;
-            $maxAge = $module ? (int)$module->getPreference('max_father_age', '80') : 80;
-
-            if ($fatherAge < $minAge) {
-                return [
-                    'code' => 'FATHER_TOO_YOUNG',
-                    'type' => 'biological_implausibility',
-                    'label' => 'Alter des Vaters',
-                    'severity' => 'error',
-                    'message' => sprintf(
-                        'Vater "%s" war bei Geburt (%s) nur %d Jahre alt (Vater geb. %s)',
-                        $father->fullName(),
-                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
-                        $fatherAge,
-                        self::formatDate($father, 'BIRT') ?: $fatherYear
-                    ),
-                    'details' => [
-                        'father_name' => $father->fullName(),
-                        'father_birth' => $fatherYear,
-                        'child_birth' => $childYear,
-                        'calculated_age' => $fatherAge,
-                    ],
-                ];
-            }
-
-            if ($fatherAge > $maxAge) {
-                return [
-                    'code' => 'FATHER_TOO_OLD',
-                    'type' => 'biological_implausibility',
-                    'severity' => 'warning',
-                    'message' => sprintf(
-                        'Vater "%s" war bei Geburt (%s) %d Jahre alt (Vater geb. %s)',
-                        $father->fullName(),
-                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
-                        $fatherAge,
-                        self::formatDate($father, 'BIRT') ?: $fatherYear
-                    ),
-                    'details' => [
-                        'father_name' => $father->fullName(),
-                        'father_birth' => $fatherYear,
-                        'child_birth' => $childYear,
-                        'calculated_age' => $fatherAge,
-                    ],
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if child was born after mother's death
-     *
-     * @param Individual $child
-     * @param Individual $mother
-     * @param string $overrideBirth
-     * @return array|null
-     */
-    private static function checkBirthAfterMotherDeath(?Individual $child, Individual $mother, string $overrideBirth = ''): ?array
-    {
-        $childYear = $child ? self::getEffectiveYear($child, 'BIRT', $overrideBirth) : self::parseYearOnly($overrideBirth);
-        $deathYear = self::getEffectiveYear($mother, 'DEAT');
-        $burialYear = self::getEffectiveYear($mother, 'BURI');
-        
-        $motherEndYear = $deathYear ?? $burialYear;
-
-        if ($childYear && $motherEndYear && $childYear > $motherEndYear) {
-            // Allow up to 1 year difference (posthumous birth possible within ~9 months)
-            if ($childYear - $motherEndYear > 1) {
-                return [
-                    'code' => 'BIRTH_AFTER_MOTHER_DEATH',
-                    'type' => 'biological_impossibility',
-                    'label' => 'Unmögliche Geburt',
-                    'severity' => 'error',
-                    'message' => sprintf(
-                        'Kind geboren (%s) %d Jahr(e) nach Tod/Bestattung (%s) der Mutter "%s"',
-                        self::formatDate($child, 'BIRT', $overrideBirth) ?: $childYear,
-                        $childYear - $motherEndYear,
-                        $deathYear ? self::formatDate($mother, 'DEAT') : self::formatDate($mother, 'BURI'),
-                        $mother->fullName()
-                    ),
-                    'details' => [
-                        'mother_name' => $mother->fullName(),
-                        'mother_end' => $motherEndYear,
-                        'child_birth' => $childYear,
-                    ],
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if child was born long after father's death (> 9 months)
-     */
-    private static function checkBirthLongAfterFatherDeath(?Individual $child, Individual $father, string $overrideBirth = ''): ?array
-    {
-        $childJD = self::getEffectiveJD($child, 'BIRT', $overrideBirth);
-        $fatherDeathJD = self::getEffectiveJD($father, 'DEAT');
-        $fatherBurialJD = self::getEffectiveJD($father, 'BURI');
-        
-        $fatherEndJD = $fatherDeathJD ?? $fatherBurialJD;
-
-        if ($childJD && $fatherEndJD) {
-            $diffDays = $childJD - $fatherEndJD;
-            
-            // Posthumous birth possible up to ~280 days (9 months)
-            if ($diffDays > 280) {
-                return [
-                    'code' => 'BIRTH_AFTER_FATHER_DEATH',
-                    'type' => 'biological_impossibility',
-                    'label' => 'Unmögliche Geburt',
-                    'severity' => 'error',
-                    'message' => sprintf(
-                        'Kind geboren %d Tage nach Tod/Bestattung des Vaters "%s" (Limit: 280 Tage)',
-                        $diffDays,
-                        $father->fullName()
-                    ),
-                    'details' => [
-                        'father_name' => $father->fullName(),
-                        'father_end_jd' => $fatherEndJD,
-                        'child_birth_jd' => $childJD,
-                        'diff_days' => $diffDays,
-                    ],
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if baptism is before birth
-     */
-    private static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = ''): ?array
-    {
-        $birthJD = self::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        
-        // Check for Baptism/Christening
-        $bapFact = $person ? $person->facts(['CHR', 'BAPM'])->first() : null;
-        $bapJD = $bapFact && $bapFact->date()->isOK() ? $bapFact->date()->minimumJulianDay() : null;
-
-        if ($birthJD && $bapJD && $bapJD < $birthJD) {
-            return [
-                'code' => 'BAPTISM_BEFORE_BIRTH',
-                'type' => 'chronological_inconsistency',
-                'label' => 'Reihenfolge prüfen',
-                'severity' => 'error',
-                'message' => 'Taufe liegt vor der Geburt.',
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if burial is before death
-     */
-    private static function checkBurialBeforeDeath(?Individual $person, string $overrideDeath = '', string $overrideBurial = ''): ?array
-    {
-        $deathJD = self::getEffectiveJD($person, 'DEAT', $overrideDeath);
-        $burialJD = self::getEffectiveJD($person, 'BURI', $overrideBurial);
-
-        if ($deathJD && $burialJD && $burialJD < $deathJD) {
-            return [
-                'code' => 'BURIAL_BEFORE_DEATH',
-                'type' => 'chronological_inconsistency',
-                'label' => 'Reihenfolge prüfen',
-                'severity' => 'error',
-                'message' => 'Bestattung liegt vor dem Tod.',
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * Check spacing between siblings
-     *
-     * @param Individual $child1
-     * @param Individual $child2
-     * @return array|null
-     */
-    private static function checkSiblingSpacing(Individual $child1, Individual $child2): ?array
-    {
-        $birth1 = $child1->getBirthDate();
-        $birth2 = $child2->getBirthDate();
-
-        if (!$birth1->isOK() || !$birth2->isOK()) {
-            return null;
-        }
-
-        $year1 = $birth1->minimumDate()->year();
-        $year2 = $birth2->minimumDate()->year();
-
-        if ($year1 && $year2) {
-            $yearDiff = abs($year1 - $year2);
-
-            // If born in same year or consecutive years, check months
-            if ($yearDiff < 1) {
-                // For simplicity, we'll just warn if born in same year (could be twins, or issue)
-                // A more sophisticated check would compare exact dates
-                // We'll only report if we can determine it's less than 9 months
-                
-                // For now, skip same-year births (could be twins)
-                return null;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if person born after their own death
-     *
-     * @param Individual|null $person
-     * @param string $overrideBirth
-     * @param string $overrideDeath
-     * @param string $overrideBurial
-     * @return array|null
-     */
-    private static function checkBirthAfterDeath(?Individual $person, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = ''): ?array
-    {
-        $birthJD = self::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        $deathJD = self::getEffectiveJD($person, 'DEAT', $overrideDeath);
-        $burialJD = self::getEffectiveJD($person, 'BURI', $overrideBurial);
-
-        // Prefer death, fallback to burial
-        $endJD = $deathJD ?? $burialJD;
-        $label = $deathJD ? 'Todesdatum' : 'Bestattungsdatum';
-
-        if ($birthJD && $endJD && $birthJD > $endJD) {
-            $birthYear = self::getYearFromJD($birthJD);
-            $endYear = self::getYearFromJD($endJD);
-            
-            return [
-                'code' => 'BIRTH_AFTER_DEATH',
-                'type' => 'temporal_impossibility',
-                'label' => 'Datumskonflikt',
-                'severity' => 'error',
-                'message' => sprintf(
-                    'Geburtsdatum (%s) liegt nach %s (%s)',
-                    self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
-                    $label === 'Todesdatum' ? 'dem Todesdatum' : 'der Bestattung',
-                    $label === 'Todesdatum' ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
-                ),
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * Check lifespan plausibility
-     *
-     * @param Individual $person
-     * @param object|null $module
-     * @param string $overrideBirth
-     * @param string $overrideDeath
-     * @return array|null
-     */
-    private static function checkLifespanPlausibility(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = ''): ?array
-    {
-        $birthYear = $person ? self::getEffectiveYear($person, 'BIRT', $overrideBirth) : self::parseYearOnly($overrideBirth);
-        $deathYear = $person ? self::getEffectiveYear($person, 'DEAT', $overrideDeath) : self::parseYearOnly($overrideDeath);
-        $burialYear = $person ? self::getEffectiveYear($person, 'BURI', $overrideBurial) : self::parseYearOnly($overrideBurial);
-
-        $endYear = $deathYear ?? $burialYear;
-
-        if ($birthYear && $endYear) {
-            $lifespan = $endYear - $birthYear;
-            
-            // Get threshold from module or use default
-            $maxLifespan = $module ? (int)$module->getPreference('max_lifespan', '120') : 120;
-
-            if ($lifespan > $maxLifespan) {
-                return [
-                    'code' => 'LIFESPAN_TOO_HIGH',
-                    'type' => 'temporal_implausibility',
-                    'label' => 'Alter prüfen',
-                    'severity' => 'warning',
-                    'message' => sprintf(
-                        'Person%s lebte %d Jahre (Geb. %s - Tod %s)',
-                        $person ? ' "' . $person->fullName() . '"' : '',
-                        $lifespan,
-                        self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
-                        self::formatDate($person, 'DEAT', $overrideDeath) ?: (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
-                    ),
-                    'details' => [
-                        'birth_date' => $birthYear,
-                        'death_date' => $deathYear,
-                        'lifespan' => $lifespan,
-                    ],
-                ];
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -771,8 +382,8 @@ class ValidationService
                 'code' => 'MARRIAGE_BEFORE_BIRTH',
                 'type' => 'temporal_impossibility',
                 'severity' => 'error',
-                'message' => sprintf(
-                    'Heirat (%s) vor Geburt (%s) von "%s"',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Marriage (%s) before birth (%s) of "%s"',
                     $marriage->display(),
                     self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
                     $person->fullName()
@@ -806,8 +417,8 @@ class ValidationService
                 'code' => 'MARRIAGE_AFTER_DEATH',
                 'type' => 'temporal_impossibility',
                 'severity' => 'error',
-                'message' => sprintf(
-                    'Heirat (%s) nach Tod (%s) von "%s"',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Marriage (%s) after death (%s) of "%s"',
                     $marriage->display(),
                     self::formatDate($person, 'DEAT', $overrideDeath) ?: $deathYear,
                     $person->fullName()
@@ -840,8 +451,8 @@ class ValidationService
                     'code' => 'GENDER_MISMATCH_HUSBAND',
                     'type' => 'gender_inconsistency',
                     'severity' => 'error',
-                    'message' => sprintf(
-                        'Person "%s" ist als Ehemann eingetragen, aber weiblich',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Person "%s" is registered as husband, but is female',
                         $person->fullName()
                     ),
                     'details' => [
@@ -859,8 +470,8 @@ class ValidationService
                     'code' => 'GENDER_MISMATCH_WIFE',
                     'type' => 'gender_inconsistency',
                     'severity' => 'error',
-                    'message' => sprintf(
-                        'Person "%s" ist als Ehefrau eingetragen, aber männlich',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Person "%s" is registered as wife, but is male',
                         $person->fullName()
                     ),
                     'details' => [
@@ -906,9 +517,9 @@ class ValidationService
                     $issues[] = [
                         'code' => 'MARRIAGE_BEFORE_PARTNER_BIRTH',
                         'type' => 'marr_before_birth',
-                        'label' => 'Heirat prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                         'severity' => 'error',
-                        'message' => sprintf('Heirat (%d) liegt vor der Geburt von %s (%d)', $mYear, $indiv->fullName(), $pBirth),
+                        'message' => \Fisharebest\Webtrees\I18N::translate('Marriage (%d) before partner\'s birth (%s)', $mYear, self::formatDate($indiv, 'BIRT') ?: $pBirth),
                     ];
                 } else {
                     $age = $mYear - $pBirth;
@@ -916,17 +527,17 @@ class ValidationService
                         $issues[] = [
                             'code' => 'MARRIAGE_PARTNER_TOO_YOUNG',
                             'type' => 'marr_unusually_early',
-                            'label' => 'Heirat prüfen',
+                            'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                             'severity' => 'warning',
-                            'message' => sprintf('%s "%s" war bei Heirat erst %d Jahre alt', $p['role'], $indiv->fullName(), $age),
+                            'message' => \Fisharebest\Webtrees\I18N::translate('Partner "%s" was only %d years old at marriage', $indiv->fullName(), $age),
                         ];
                     } elseif ($age > $maxMarrAge) {
                         $issues[] = [
                             'code' => 'MARRIAGE_PARTNER_TOO_OLD',
                             'type' => 'marr_unusually_late',
-                            'label' => 'Heirat prüfen',
+                            'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                             'severity' => 'warning',
-                            'message' => sprintf('%s "%s" war bei Heirat bereits %d Jahre alt', $p['role'], $indiv->fullName(), $age),
+                            'message' => \Fisharebest\Webtrees\I18N::translate('Partner "%s" was already %d years old at marriage', $indiv->fullName(), $age),
                         ];
                     }
                 }
@@ -935,9 +546,9 @@ class ValidationService
                 $issues[] = [
                     'code' => 'MARRIAGE_AFTER_PARTNER_DEATH',
                     'type' => 'marr_after_death',
-                    'label' => 'Heirat prüfen',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                     'severity' => 'error',
-                    'message' => sprintf('Heirat (%d) liegt nach dem Tod von %s (%d)', $mYear, $indiv->fullName(), $pDeath),
+                    'message' => \Fisharebest\Webtrees\I18N::translate('Marriage (%d) after partner\'s death (%d)', $mYear, $pDeath),
                 ];
             }
         }
@@ -948,9 +559,9 @@ class ValidationService
                 $issues[] = [
                     'code' => 'MARRIAGE_BEFORE_BIRTH',
                     'type' => 'marr_before_birth',
-                    'label' => 'Heirat prüfen',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                     'severity' => 'error',
-                    'message' => sprintf('Heirat (%d) liegt vor der eigenen Geburt (%d)', $mYear, $subjBirth),
+                    'message' => \Fisharebest\Webtrees\I18N::translate('Marriage (%d) before own birth (%d)', $mYear, $subjBirth),
                 ];
             } else {
                 $age = $mYear - $subjBirth;
@@ -958,17 +569,17 @@ class ValidationService
                     $issues[] = [
                         'code' => 'MARRIAGE_TOO_YOUNG',
                         'type' => 'marr_unusually_early',
-                        'label' => 'Heirat prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                         'severity' => 'warning',
-                        'message' => sprintf('Person war bei Heirat erst %d Jahre alt', $age),
+                        'message' => \Fisharebest\Webtrees\I18N::translate('Person was only %d years old at marriage', $age),
                     ];
                 } elseif ($age > $maxMarrAge) {
                     $issues[] = [
                         'code' => 'MARRIAGE_TOO_OLD',
                         'type' => 'marr_unusually_late',
-                        'label' => 'Heirat prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                         'severity' => 'warning',
-                        'message' => sprintf('Person war bei Heirat bereits %d Jahre alt', $age),
+                        'message' => \Fisharebest\Webtrees\I18N::translate('Person was already %d years old at marriage', $age),
                     ];
                 }
             }
@@ -977,9 +588,9 @@ class ValidationService
             $issues[] = [
                 'code' => 'MARRIAGE_AFTER_DEATH',
                 'type' => 'marr_after_death',
-                'label' => 'Heirat prüfen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
                 'severity' => 'error',
-                'message' => sprintf('Heirat (%d) liegt nach dem eigenen Tod (%d)', $mYear, $subjDeath),
+                'message' => \Fisharebest\Webtrees\I18N::translate('Marriage (%d) after own death (%d)', $mYear, $subjDeath),
             ];
         }
 
@@ -988,18 +599,18 @@ class ValidationService
             $issues[] = [
                 'code' => 'GENDER_MISMATCH_HUSBAND',
                 'type' => 'gender_inconsistency',
-                'label' => 'Geschlecht prüfen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check gender'),
                 'severity' => 'error',
-                'message' => sprintf('Ehemann "%s" ist als weiblich markiert', $husb->fullName()),
+                'message' => \Fisharebest\Webtrees\I18N::translate('Husband "%s" is marked as female', $husb->fullName()),
             ];
         }
         if ($wife && $wife->sex() === 'M') {
             $issues[] = [
                 'code' => 'GENDER_MISMATCH_WIFE',
                 'type' => 'gender_inconsistency',
-                'label' => 'Geschlecht prüfen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check gender'),
                 'severity' => 'error',
-                'message' => sprintf('Ehefrau "%s" ist als männlich markiert', $wife->fullName()),
+                'message' => \Fisharebest\Webtrees\I18N::translate('Wife "%s" is marked as male', $wife->fullName()),
             ];
         }
 
@@ -1028,10 +639,10 @@ class ValidationService
             $issues[] = [
                 'code' => 'TOO_MANY_MARRIAGES',
                 'type' => 'marriage_unusually_many',
-                'label' => 'Anzahl Ehen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Marriage count'),
                 'severity' => 'info',
-                'message' => sprintf(
-                    'Person "%s" hat %d Ehen (ungewöhnlich viele)',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Person "%s" has %d marriages (unusually many)',
                     $person->fullName(),
                     $marriageCount
                 ),
@@ -1078,10 +689,10 @@ class ValidationService
                     $issues[] = [
                         'code' => 'MARRIAGE_POSSIBLY_OVERLAPPING',
                         'type' => 'marriage_possibly_overlapping',
-                        'label' => 'Zeitliche Überschneidung',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
                         'severity' => 'warning',
-                        'message' => sprintf(
-                            'Heirat (%d) möglicherweise während bestehender Ehe mit "%s" (Todesdatum unbekannt)',
+                        'message' => \Fisharebest\Webtrees\I18N::translate(
+                            'Marriage (%d) possibly during existing marriage with "%s" (Death date unknown)',
                             $currentMarriageYear,
                             $prevSpouse->fullName()
                         ),
@@ -1096,10 +707,10 @@ class ValidationService
                         $issues[] = [
                             'code' => 'MARRIAGE_OVERLAPPING',
                             'type' => 'marriage_overlapping',
-                            'label' => 'Zeitliche Überschneidung',
+                            'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
                             'severity' => 'error',
-                            'message' => sprintf(
-                                'Heirat (%d) vor Tod (%d) des vorherigen Ehepartners "%s"',
+                            'message' => \Fisharebest\Webtrees\I18N::translate(
+                                'Marriage (%d) before death (%d) of previous spouse "%s"',
                                 $currentMarriageYear,
                                 $prevSpouseDeathYear,
                                 $prevSpouse->fullName()
@@ -1140,10 +751,10 @@ class ValidationService
             $issues[] = [
                 'code' => 'MISSING_BIRTH_DATE',
                 'type' => 'missing_birth_date',
-                'label' => 'Daten vervollständigen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Complete data'),
                 'severity' => 'info',
-                'message' => sprintf(
-                    'Person "%s" hat Kinder, aber kein Geburtsdatum',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Person "%s" has children but no birth date',
                     $person->fullName()
                 ),
             ];
@@ -1154,10 +765,10 @@ class ValidationService
             $issues[] = [
                 'code' => 'DEATH_WITHOUT_BIRTH',
                 'type' => 'death_without_birth',
-                'label' => 'Daten vervollständigen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Complete data'),
                 'severity' => 'warning',
-                'message' => sprintf(
-                    'Person "%s" hat Todesdatum aber kein Geburtsdatum',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Person "%s" has a death date but no birth date',
                     $person->fullName()
                 ),
             ];
@@ -1309,7 +920,7 @@ class ValidationService
      * @param array $parents
      * @return array
      */
-    private static function checkNameConsistency(?Individual $person, string $overrideGiven = '', string $overrideSurname = '', array $parents = []): array
+    private static function checkNameConsistency(?Individual $person, string $overrideGiven = '', string $overrideSurname = '', array $parents = [], ?object $module = null): array
     {
         $issues = [];
         $allNames = $person ? $person->getAllNames() : [];
@@ -1385,10 +996,50 @@ class ValidationService
             $issues[] = [
                 'code' => 'NAME_ENCODING_ISSUE',
                 'type' => 'name_encoding_issue',
-                'label' => 'Zeichensatz prüfen',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check name consistency'),
                 'severity' => 'warning',
-                'message' => sprintf('Name "%s" enthält ungültige Zeichen (Encoding-Problem?)', $fullName),
+                'message' => \Fisharebest\Webtrees\I18N::translate('Name "%s" contains invalid characters (Encoding issue?)', $fullName),
             ];
+        }
+
+        // Check for prefixes in surname (German/Dutch/etc.) which should be separate
+        if (!empty($surnamePrimary)) {
+            $surnLower = mb_strtolower($surnamePrimary, 'UTF-8');
+            $detectedPrefix = null;
+
+            // Check complex prefixes first (longest match wins)
+            $complexPrefixes = ['van den ', 'van der ', 'von dem ', 'von der ', 'van de ', 'in den ', 'in der ', 'aus der ', 'auf der ', 'von zu ', 'von und zu '];
+            foreach ($complexPrefixes as $cp) {
+                if (str_starts_with($surnLower, $cp)) {
+                    $detectedPrefix = trim($cp);
+                    break;
+                }
+            }
+
+            if (!$detectedPrefix) {
+                // Check single prefixes if no complex one found
+                $prefixes = ['von ', 'vom ', 'zu ', 'zur ', 'van ', 'de ', 'den ', 'der ', 'het ', '\'t ', 'ten ', 'ter ', 'da ', 'do ', 'dos ', 'das '];
+                foreach ($prefixes as $p) {
+                    if (str_starts_with($surnLower, $p)) {
+                        $detectedPrefix = trim($p);
+                        break;
+                    }
+                }
+            }
+
+            if ($detectedPrefix) {
+                $issues[] = [
+                    'code' => 'SURNAME_INCLUDES_PREFIX',
+                    'type' => 'surname_includes_prefix',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Check name consistency'),
+                    'severity' => 'info',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.',
+                        $surnamePrimary,
+                        ucfirst($detectedPrefix)
+                    ),
+                ];
+            }
         }
 
         // Parent-Child Surname consistency
@@ -1408,6 +1059,23 @@ class ValidationService
                     $fSurnNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($fSurn)), 'UTF-8'));
                     if ($childSurnNorm === $fSurnNorm || str_contains($fSurnNorm, $childSurnNorm) || str_contains($childSurnNorm, $fSurnNorm)) {
                         $fatherMatch = true;
+                    } elseif ($module && $module->getPreference('enable_scandinavian_patronymics', '0') === '1') {
+                        // Check for Scandinavian patronymics
+                        if (self::isScandinavianPatronymicMatch($father, $surnamePrimary)) {
+                            $fatherMatch = true;
+                        }
+                    } elseif ($module && $module->getPreference('enable_slavic_surnames', '0') === '1' && $person) {
+                        if (self::isSlavicSurnameMatch($father, $surnamePrimary, $person)) {
+                            $fatherMatch = true;
+                        }
+                    } elseif ($module && $module->getPreference('enable_greek_surnames', '0') === '1' && $person) {
+                        if (self::isGreekSurnameMatch($father, $surnamePrimary, $person)) {
+                            $fatherMatch = true;
+                        }
+                    } elseif ($module && $module->getPreference('enable_dutch_tussenvoegsels', '0') === '1') {
+                        if (self::isDutchSurnameMatch(self::getIndividualSurname($father), $surnamePrimary)) {
+                            $fatherMatch = true;
+                        }
                     }
                 }
 
@@ -1415,6 +1083,23 @@ class ValidationService
                     $mSurn = self::getIndividualSurname($mother);
                     $mSurnNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($mSurn)), 'UTF-8'));
                     if ($childSurnNorm === $mSurnNorm || str_contains($mSurnNorm, $childSurnNorm) || str_contains($childSurnNorm, $mSurnNorm)) {
+                        $motherMatch = true;
+                    } elseif ($module && $module->getPreference('enable_scandinavian_patronymics', '0') === '1') {
+                        // Check for Scandinavian patronymics (sometimes mother's name is used)
+                        if (self::isScandinavianPatronymicMatch($mother, $surnamePrimary)) {
+                            $motherMatch = true;
+                        }
+                    } elseif ($module && $module->getPreference('enable_slavic_surnames', '0') === '1' && $person) {
+                        if (self::isSlavicSurnameMatch($mother, $surnamePrimary, $person)) {
+                            $motherMatch = true;
+                        }
+                    }
+                }
+
+                // Check for Spanish Double Surnames
+                if ($father && $mother && $module && $module->getPreference('enable_spanish_surnames', '0') === '1') {
+                    if (self::isSpanishSurnameMatch($father, $mother, $surnamePrimary)) {
+                        $fatherMatch = true; // Count as match if it follows double surname rule
                         $motherMatch = true;
                     }
                 }
@@ -1425,17 +1110,17 @@ class ValidationService
                     $issues[] = [
                         'code' => 'SURNAME_MISMATCH_MOTHER',
                         'type' => 'surname_mismatch_mother',
-                        'label' => 'Nachname prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Check name consistency'),
                         'severity' => 'info',
-                        'message' => sprintf('Nachname "%s" entspricht der Mutter, weicht aber vom Vater ab.', $surnamePrimary),
+                        'message' => \Fisharebest\Webtrees\I18N::translate('Surname "%s" matches %s but differs from %s.', $surnamePrimary, \Fisharebest\Webtrees\I18N::translate('the mother'), \Fisharebest\Webtrees\I18N::translate('the father')),
                     ];
                 } else {
                     $issues[] = [
                         'code' => 'SURNAME_MISMATCH_FATHER',
                         'type' => 'surname_mismatch_father',
-                        'label' => 'Nachname prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Check name consistency'),
                         'severity' => 'warning',
-                        'message' => sprintf('Nachname "%s" weicht vom Vater ab.', $surnamePrimary),
+                        'message' => \Fisharebest\Webtrees\I18N::translate('Surname "%s" differs from %s.', $surnamePrimary, \Fisharebest\Webtrees\I18N::translate('the father')),
                     ];
                 }
             }
@@ -1452,7 +1137,7 @@ class ValidationService
      * @param string $override
      * @return int|null
      */
-    private static function getEffectiveYear(?Individual $person, string $type, string $override = ''): ?int
+    public static function getEffectiveYear(?Individual $person, string $type, string $override = ''): ?int
     {
         if (!empty(trim($override))) {
             return self::parseYearOnly($override);
@@ -1488,7 +1173,7 @@ class ValidationService
      * @param string $date
      * @return int|null
      */
-    private static function parseYearOnly(string $date): ?int
+    public static function parseYearOnly(string $date): ?int
     {
         if (empty(trim($date))) {
             return null;
@@ -1597,10 +1282,10 @@ class ValidationService
                 $issues[] = [
                     'code' => 'DUPLICATE_SIBLING',
                     'type' => 'duplicate_check',
-                    'label' => 'Mögliches Duplikat',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Possible duplicate'),
                     'severity' => 'warning',
-                    'message' => sprintf(
-                        'Geschwister "%s" hat einen identischen/ähnlichen Vornamen (%s).',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Sibling "%s" has an identical/similar given name (%s).',
                         $sib->fullName(),
                         $sibDisplayDate
                     ),
@@ -1617,10 +1302,10 @@ class ValidationService
                 $issues[] = [
                     'code' => 'SIBLING_TOO_CLOSE',
                     'type' => 'sibling_spacing',
-                    'label' => 'Geschwister prüfen',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Check sibling'),
                     'severity' => 'warning',
-                    'message' => sprintf(
-                        'Abstand zu Geschwister "%s" (%s: %s) ist mit %s Monaten ungewöhnlich kurz.',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Distance to sibling "%s" (%s: %s) is unusually short at %s months.',
                         $sib->fullName(),
                         $sibLabel,
                         $sibDisplayDate,
@@ -1636,7 +1321,7 @@ class ValidationService
     /**
      * Get effective Julian Day for an event
      */
-    private static function getEffectiveJD(?Individual $person, string $type, string $override = ''): ?int
+    public static function getEffectiveJD(?Individual $person, string $type, string $override = ''): ?int
     {
         if (!empty(trim($override))) {
             $normalized = DateParser::normalizeToGedcom($override);
@@ -1664,7 +1349,7 @@ class ValidationService
     /**
      * Convert Julian Day to Gregorian Year
      */
-    private static function getYearFromJD(int $jd): int
+    public static function getYearFromJD(int $jd): int
     {
         $gregorian_calendar = new GregorianCalendar();
         [$year] = $gregorian_calendar->jdToYmd($jd);
@@ -1674,7 +1359,7 @@ class ValidationService
     /**
      * Get surname from individual
      */
-    private static function getIndividualSurname(Individual $person): string
+    public static function getIndividualSurname(Individual $person): string
     {
         $names = $person->getAllNames();
         foreach ($names as $name) {
@@ -1748,11 +1433,11 @@ class ValidationService
                 $issues[] = [
                     'code' => 'MISSING_SOURCE_' . $tag,
                     'type' => 'missing_source',
-                    'label' => 'Quelle fehlt',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Missing source'),
                     'severity' => 'warning',
-                    'message' => sprintf(
-                        '%s hat keine Quellenangabe.',
-                        $label
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        '%s has no source citation.',
+                        \Fisharebest\Webtrees\I18N::translate($label)
                     )
                 ];
             }
@@ -1781,30 +1466,180 @@ class ValidationService
                  if ($marr->linkedRecords('SOUR')->count() > 0) $hasMarrSource = true;
             }
 
-            // 5. Final Proven Check (gedcom string and attribute)
-            if (!$hasMarrSource && method_exists($marr, 'attribute')) {
-                if ($marr->attribute('SOUR')) $hasMarrSource = true;
-            }
             if (!$hasMarrSource && method_exists($marr, 'gedcom')) {
                  if (strpos($marr->gedcom(), 'SOUR') !== false) $hasMarrSource = true;
             }
 
             if (($hasDate || $hasPlace) && !$hasMarrSource) {
-                // Determine class safely
                 $issues[] = [
                     'code' => 'MISSING_SOURCE_MARR',
                     'type' => 'missing_source',
-                    'label' => 'Quelle fehlt',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Missing source'),
                     'severity' => 'warning',
-                    'message' => sprintf(
-                        'Heirat (%s) hat keine Quellenangabe.',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Marriage (%s) has no source citation.',
                         $family->xref()
                     )
-                    // Removing debug info
                 ];
             }
         }
 
         return $issues;
+    }
+
+    /**
+     * Check if child surname matches parent's given name as a Scandinavian patronymic
+     *
+     * @param Individual $parent
+     * @param string $childSurname
+     * @return bool
+     */
+    public static function isScandinavianPatronymicMatch(\Fisharebest\Webtrees\Individual $parent, string $childSurname): bool
+    {
+        $pGiven = mb_strtolower(trim(strip_tags(method_exists($parent, 'givenName') ? $parent->givenName() : $parent->fullName())), 'UTF-8');
+        $cSurn = mb_strtolower(trim(strip_tags($childSurname)), 'UTF-8');
+
+        if (empty($pGiven) || empty($cSurn)) return false;
+
+        // Scandinavian patronymic suffixes
+        // Danish/Norwegian: -sen, -datter
+        // Swedish: -son, -dotter
+        // Icelandic: -son, -dóttir
+        $suffixes = ['sen', 'søn', 'datter', 'sdatter', 'son', 'dotter', 'dóttir'];
+
+        foreach ($suffixes as $suffix) {
+            // Match: ParentGivenName + suffix (e.g. Jørgen + sen = Jørgensen)
+            if ($cSurn === $pGiven . $suffix) return true;
+            
+            // Match with genitive 's' (e.g. Niels + sen = Nielsen, Peter + son = Petersson)
+            if (str_ends_with($pGiven, 's')) {
+                if ($cSurn === substr($pGiven, 0, -1) . $suffix) return true;
+                if ($cSurn === $pGiven . substr($suffix, 1)) return true;
+            } else {
+                if ($cSurn === $pGiven . 's' . $suffix) return true;
+            }
+            
+            // Handle some variations like -esen vs -sen
+            if ($cSurn === $pGiven . 'e' . $suffix) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if child surname matches parent's surname considering Slavic gendered endings
+     */
+    public static function isSlavicSurnameMatch(\Fisharebest\Webtrees\Individual $parent, string $childSurname, \Fisharebest\Webtrees\Individual $child): bool
+    {
+        $pSurn = mb_strtolower(self::getIndividualSurname($parent), 'UTF-8');
+        $cSurn = mb_strtolower(trim(strip_tags($childSurname)), 'UTF-8');
+        $isFemale = ($child->sex() === 'F');
+
+        if (empty($pSurn) || empty($cSurn)) return false;
+
+        // If they match exactly, it's already a match
+        if ($pSurn === $cSurn) return true;
+
+        if ($isFemale) {
+            // Polish/Slavic -ski -> -ska
+            if (str_ends_with($pSurn, 'ski') && str_ends_with($cSurn, 'ska')) {
+                return substr($pSurn, 0, -3) === substr($cSurn, 0, -3);
+            }
+            // Polish -cki -> -cka, -dzki -> -dzka
+            if (str_ends_with($pSurn, 'cki') && str_ends_with($cSurn, 'cka')) {
+                return substr($pSurn, 0, -3) === substr($cSurn, 0, -3);
+            }
+            if (str_ends_with($pSurn, 'dzki') && str_ends_with($cSurn, 'dzka')) {
+                return substr($pSurn, 0, -4) === substr($cSurn, 0, -4);
+            }
+
+            // Russian/Slavic -ov -> -ova, -ev -> -eva, -in -> -ina
+            $suffixes = ['ov' => 'ova', 'ev' => 'eva', 'in' => 'ina', 'yn' => 'yna'];
+            foreach ($suffixes as $m => $f) {
+                if (str_ends_with($pSurn, $m) && str_ends_with($cSurn, $f)) {
+                    return substr($pSurn, 0, -strlen($m)) === substr($cSurn, 0, -strlen($f));
+                }
+            }
+
+            // Russian -sky -> -skaya
+            if (str_ends_with($pSurn, 'sky') && str_ends_with($cSurn, 'skaya')) {
+                return substr($pSurn, 0, -3) === substr($cSurn, 0, -5);
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if child surname follows Spanish/Portuguese double surname convention
+     */
+    public static function isSpanishSurnameMatch(\Fisharebest\Webtrees\Individual $father, \Fisharebest\Webtrees\Individual $mother, string $childSurname): bool
+    {
+        $fSurn = mb_strtolower(self::getIndividualSurname($father), 'UTF-8');
+        $mSurn = mb_strtolower(self::getIndividualSurname($mother), 'UTF-8');
+        $cSurn = mb_strtolower(trim(strip_tags($childSurname)), 'UTF-8');
+
+        if (empty($fSurn) || empty($mSurn) || empty($cSurn)) return false;
+
+        // Get first part of each parent's surname
+        $fParts = preg_split('/[\s-]+/', $fSurn);
+        $mParts = preg_split('/[\s-]+/', $mSurn);
+        $f1 = $fParts[0];
+        $m1 = $mParts[0];
+
+        // Traditional: [Father1] [Mother1]
+        if (str_contains($cSurn, $f1) && str_contains($cSurn, $m1)) return true;
+
+        return false;
+    }
+
+    /**
+     * Check if surnames match ignoring Dutch tussenvoegsels
+     */
+    public static function isDutchSurnameMatch(string $parentSurname, string $childSurname): bool
+    {
+        $prefixes = ['van', 'de', 'der', 'den', 'van den', 'van der', 'vander', 'vanden', 'da', 'do', 'dos', 'das'];
+        
+        $pSurn = mb_strtolower(trim(strip_tags($parentSurname)), 'UTF-8');
+        $cSurn = mb_strtolower(trim(strip_tags($childSurname)), 'UTF-8');
+
+        foreach ($prefixes as $prefix) {
+            $pSurn = preg_replace('/^' . preg_quote($prefix, '/') . '\s+/i', '', $pSurn);
+            $cSurn = preg_replace('/^' . preg_quote($prefix, '/') . '\s+/i', '', $cSurn);
+        }
+
+        return trim($pSurn) === trim($cSurn);
+    }
+
+    /**
+     * Check if child surname matches parent's surname considering Greek gendered endings
+     */
+    public static function isGreekSurnameMatch(\Fisharebest\Webtrees\Individual $parent, string $childSurname, \Fisharebest\Webtrees\Individual $child): bool
+    {
+        $pSurn = mb_strtolower(self::getIndividualSurname($parent), 'UTF-8');
+        $cSurn = mb_strtolower(trim(strip_tags($childSurname)), 'UTF-8');
+        $isFemale = ($child->sex() === 'F');
+
+        if (empty($pSurn) || empty($cSurn)) return false;
+
+        if ($isFemale) {
+            // Greek male -is / -as / -os -> female -ou (possessive)
+            // Example: Papaioannis -> Papaioannou, Papas -> Papou? Actually Papas -> Papa?
+            // Common: -opoulos -> -opoulou
+            if (str_ends_with($pSurn, 'opoulos') && str_ends_with($cSurn, 'opoulou')) {
+                return substr($pSurn, 0, -2) === substr($cSurn, 0, -2);
+            }
+            if (str_ends_with($pSurn, 'is') && str_ends_with($cSurn, 'ou')) {
+                return substr($pSurn, 0, -2) === substr($cSurn, 0, -2);
+            }
+            if (str_ends_with($pSurn, 'as') && str_ends_with($cSurn, 'a')) {
+                return substr($pSurn, 0, -2) === substr($cSurn, 0, -1);
+            }
+            if (str_ends_with($pSurn, 'os') && str_ends_with($cSurn, 'ou')) {
+                return substr($pSurn, 0, -2) === substr($cSurn, 0, -2);
+            }
+        }
+
+        return false;
     }
 }

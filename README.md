@@ -29,9 +29,12 @@ Dieses Plugin bietet leistungsstarke Werkzeuge zur Identifizierung von Dubletten
 - **CSV-Export**: Laden Sie die Fehlerliste als Excel-kompatible CSV-Datei herunter.
 - **Fortschrittsanzeige**: Robuste Verarbeitung auch bei großen Bäumen (Chunking).
 
+
 ### 🛠️ Workflow-Tools
 - **Familien-Zusammenführung**: Einfaches Verlinken von Eltern zu existierenden Familien.
 - **Ignore-Liste**: Markieren Sie "False Positives" als ignoriert, damit sie nicht mehr auftauchen.
+- **Forschungsaufgaben (Todo)**: Erstellen Sie mit einem Klick webtrees-Forschungsaufgaben (_TODO) direkt aus dem Fehler-Protokoll.
+- **Vollständige Internationalisierung**: Unterstützung für 16 Sprachen (inkl. Isländisch), inklusive aller interaktiven Elemente und Fehlermeldungen.
 - **Automatische Updates**: Benachrichtigung bei neuen Versionen direkt im Dashboard.
 
 ## Installation
@@ -104,6 +107,8 @@ This plugin provides powerful tools to identify duplicates, logical errors, and 
 ### 🛠️ Workflow Tools
 - **Family Merging**: Easily link parents to existing families.
 - **Ignore List**: Mark "False Positives" as ignored so they don't reappear.
+- **Research Tasks (Todo)**: Create webtrees research tasks (_TODO) with a single click directly from the validation log.
+- **Full Internationalization**: Support for 16 languages (incl. Icelandic), including all interactive elements and error messages.
 - **Automatic Updates**: Notifications about new versions directly in the dashboard.
 
 ## Installation

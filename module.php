@@ -55,7 +55,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function title(): string
     {
-        return 'Datencheck';
+        return \Fisharebest\Webtrees\I18N::translate('Data Check');
     }
 
     public function boot(): void
@@ -75,7 +75,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '0.9.1';
+        return '1.1.2';
+    }
+
+    public function getVersion(): string
+    {
+        return $this->customModuleVersion();
     }
 
     public function customModuleLatestVersionUrl(): string
@@ -87,7 +92,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function customModuleLatestVersion(): string
     {
         // URL to the raw file containing the version number
-        // TODO: Replace USERNAME/REPO with your actual GitHub repository
         $url = 'https://raw.githubusercontent.com/Vulfharban/webtrees-datencheck-plugin/main/latest-version.txt';
         $cacheFile = sys_get_temp_dir() . '/datencheck_version_cache.txt';
 
@@ -128,7 +132,20 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customTranslations(string $language): array
     {
-        return [];
+        // Try full locale first (e.g. de-DE)
+        $file = __DIR__ . '/resources/lang/' . $language . '.php';
+        if (file_exists($file)) {
+            return (array) include $file;
+        }
+
+        // Try language only (e.g. de)
+        $lang = explode('-', $language)[0];
+        $file = __DIR__ . '/resources/lang/' . $lang . '.php';
+        if (file_exists($file)) {
+            return (array) include $file;
+        }
+
+        return (array) include __DIR__ . '/resources/lang/en.php';
     }
 
     public function setMenuOrder(int $order): void
@@ -222,7 +239,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         $individual_url = route(IndividualPage::class, [
             'tree' => $tree->name(),
-            'xref' => 'XREF_PLACEHOLDER'
+            'xref' => 'I1'
         ]);
 
         return view($this->name() . '::modules/datencheck/interaction', [
@@ -267,7 +284,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         ]);
         
         $menu->addSubmenu(new Menu(
-            '<i class="fas fa-stethoscope fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">Übersicht & Analyse</span>', 
+            '<i class="fas fa-stethoscope fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">' . \Fisharebest\Webtrees\I18N::translate('Overview & Analysis') . '</span>', 
             $url_dashboard, 
             'menu-datencheck-dashboard',
             ['class' => 'dropdown-item']
@@ -282,7 +299,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             ]);
             
             $menu->addSubmenu(new Menu(
-                '<i class="fas fa-eye-slash fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">Ignorierte Einträge</span>', 
+                '<i class="fas fa-eye-slash fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">' . \Fisharebest\Webtrees\I18N::translate('Ignored Entries') . '</span>', 
                 $url_ignored, 
                 'menu-datencheck-ignored',
                 ['class' => 'dropdown-item']
@@ -456,27 +473,53 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $title = $this->title();
         $fuzzy_diff_high_age = $this->getPreference('fuzzy_diff_high_age', '6');
         $fuzzy_diff_default = $this->getPreference('fuzzy_diff_default', '2');
+        $enable_scandinavian_patronymics = $this->getPreference('enable_scandinavian_patronymics', '0');
         $module = $this;
         
         // Generate CSRF token for the form
         $csrf = csrf_field();
         
         // Generate route URLs (cannot be generated in view with require)
-        $control_panel_url = route(\Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel::class);
-        $modules_all_url = route(\Fisharebest\Webtrees\Http\RequestHandlers\ModulesAllPage::class);
-        
-        // Generate translations (I18N not available in require'd view)
-        $i18n_control_panel = \Fisharebest\Webtrees\I18N::translate('Control panel');
-        $i18n_modules = \Fisharebest\Webtrees\I18N::translate('Modules');
-        $i18n_save = \Fisharebest\Webtrees\I18N::translate('save');
-        $i18n_cancel = \Fisharebest\Webtrees\I18N::translate('cancel');
-        
         // Detect tree from request to pass to view
-        try {
-            $tree = Validator::attributes($request)->tree() ?? Validator::queryParams($request)->tree();
-        } catch (\Throwable $e) {
+        $tree = Validator::attributes($request)->tree();
+        if (!$tree) {
+            $tree_name_param = Validator::queryParams($request)->string('tree');
+            if ($tree_name_param) {
+                $tree = Tree::findByName($tree_name_param);
+            }
+        }
+        
+        // Fallback to Registry (session-based active tree)
+        if (!$tree) {
+            try {
+                $tree = Registry::tree();
+            } catch (\Throwable $e) {
+                $tree = null;
+            }
+        }
+
+        // Verify access - if not a moderator for this tree, we can't show it as default
+        if ($tree && !Auth::isModerator($tree)) {
             $tree = null;
         }
+
+        // Generate route URLs
+        $control_panel_url = $tree 
+            ? route(\Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel::class, ['tree' => $tree->name()])
+            : route(\Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel::class);
+            
+        $modules_all_url = route(\Fisharebest\Webtrees\Http\RequestHandlers\ModulesAllPage::class);
+        
+        // Tree-specific breadcrumbs if we have a context
+        $breadcrumb_links = [];
+        if ($tree) {
+            $breadcrumb_links[route(IndividualPage::class, ['tree' => $tree->name()])] = $tree->title();
+            $breadcrumb_links[$control_panel_url] = \Fisharebest\Webtrees\I18N::translate('Control panel');
+        } else {
+            $breadcrumb_links[$control_panel_url] = \Fisharebest\Webtrees\I18N::translate('Control panel');
+        }
+        $breadcrumb_links[$modules_all_url] = \Fisharebest\Webtrees\I18N::translate('Modules');
+        $breadcrumb_links[''] = $title;
 
         // Prepare tree list for dropdown (DB-Based fallback to be safe)
         $trees_list = [];
@@ -501,24 +544,15 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         // Fallback to first tree if none selected (for analysis default)
         if (!$tree && !empty($trees_list)) {
-            // Get first key
             $first_name = array_key_first($trees_list);
-            // Try to load full tree object
-            try {
-                // We need a real Tree object for other functions?
-                // Actually, for analysis we only passed $tree_name to view.
-                // But view might need $tree object.
-                // If we can't load the object, we just pass name.
-                // But `getAdminAction` doesn't use $tree object except for $tree->name().
-            } catch (\Throwable $e) {}
-            
-            // Set name for view
             $tree_name = $first_name;
+            $tree = Tree::findByName($tree_name);
         } else {
-             $tree_name = $tree ? $tree->name() : '';
+            $tree_name = $tree ? $tree->name() : '';
         }
         
         $tree_title = $tree ? $tree->title() : $tree_name;
+        $tree_url = $tree ? route(\Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => $tree->name()]) : '#';
 
         // Render view content
         ob_start();
@@ -527,7 +561,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         
         // Wrap in webtrees layout using standard response/view helper
         return response(view('layouts/administration', [
-            'title' => $title . ' – Einstellungen',
+            'title' => $title . ' – ' . \Fisharebest\Webtrees\I18N::translate('Settings'),
             'content' => $content,
         ]));
     }
@@ -548,6 +582,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setPreference('enable_missing_data_checks', isset($params['enable_missing_data_checks']) ? '1' : '0');
         $this->setPreference('enable_geographic_checks', isset($params['enable_geographic_checks']) ? '1' : '0');
         $this->setPreference('enable_name_consistency_checks', isset($params['enable_name_consistency_checks']) ? '1' : '0');
+        $this->setPreference('enable_scandinavian_patronymics', isset($params['enable_scandinavian_patronymics']) ? '1' : '0');
+        $this->setPreference('enable_slavic_surnames', isset($params['enable_slavic_surnames']) ? '1' : '0');
+        $this->setPreference('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
+        $this->setPreference('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
+        $this->setPreference('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
         $this->setPreference('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
         
         // Save threshold preferences
@@ -560,11 +599,23 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setPreference('min_marriage_age_warning', $params['min_marriage_age_warning'] ?? '15');
         $this->setPreference('min_sibling_spacing_warning', $params['min_sibling_spacing_warning'] ?? '9');
         
-        \Fisharebest\Webtrees\FlashMessages::addMessage('Einstellungen wurden erfolgreich gespeichert.', 'success');
+        \Fisharebest\Webtrees\FlashMessages::addMessage(\Fisharebest\Webtrees\I18N::translate('Settings saved successfully.'), 'success');
+        
+        $tree_name = $params['tree_context'] ?? '';
+        
+        if ($tree_name) {
+            $url = route('module', [
+                'module' => $this->name(),
+                'action' => 'Admin',
+                'tree'   => $tree_name
+            ]);
+        } else {
+            $url = $this->getConfigLink();
+        }
         
         return response('')
             ->withStatus(302)
-            ->withHeader('Location', $this->getConfigLink());
+            ->withHeader('Location', $url);
     }
 
     /**
@@ -603,7 +654,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $xref = $params['xref'] ?? '';
 
         if (empty($xref)) {
-            return response(json_encode(['error' => 'Missing xref parameter']))
+            return response(json_encode(['error' => \Fisharebest\Webtrees\I18N::translate('Missing xref parameter')]))
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(400);
         }
@@ -629,7 +680,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $note  = $params['note'] ?? '';
 
             if (empty($xref) || empty($title)) {
-                return response(json_encode(['success' => false, 'message' => 'Missing parameters']))
+                return response(json_encode(['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Missing parameters')]))
                     ->withHeader('Content-Type', 'application/json');
             }
 
@@ -728,7 +779,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $lang = $lang ?? 'en';
 
         $content = view($this->name() . '::modules/datencheck/admin_ignored', [
-            'title'         => 'Ignorierte Fehler',
+            'title'         => \Fisharebest\Webtrees\I18N::translate('Ignored Errors'),
             'tree'          => $tree,
             'ignoredErrors' => $ignoredErrors,
             'module_name'   => $this->name(),
@@ -737,7 +788,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         return response(view('layouts/default', [
             'request' => $request,
-            'title'   => 'Ignorierte Fehler',
+            'title'   => \Fisharebest\Webtrees\I18N::translate('Ignored Errors'),
             'tree'    => $tree,
             'content' => $content,
         ]));

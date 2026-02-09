@@ -17,26 +17,27 @@
  */
 ?>
 
-<?= view('components/breadcrumbs', ['links' => [$control_panel_url => $i18n_control_panel, $modules_all_url => $i18n_modules, $title]]) ?>
+<?= view('components/breadcrumbs', ['links' => $breadcrumb_links]) ?>
 
 <h1><?= htmlspecialchars($title) ?></h1>
 
 <form method="post" class="form-horizontal">
     <?= $csrf ?>
+    <input type="hidden" name="tree_context" value="<?= htmlspecialchars($tree_name) ?>">
     
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs mb-4" id="datencheckTabs" role="tablist">
         <li class="nav-item">
-            <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">Allgemein</a>
+            <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true"><?= \Fisharebest\Webtrees\I18N::translate('General') ?></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="plausibility-tab" data-bs-toggle="tab" href="#plausibility" role="tab" aria-controls="plausibility" aria-selected="false">Plausibilität</a>
+            <a class="nav-link" id="plausibility-tab" data-bs-toggle="tab" href="#plausibility" role="tab" aria-controls="plausibility" aria-selected="false"><?= \Fisharebest\Webtrees\I18N::translate('Plausibility') ?></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="features-tab" data-bs-toggle="tab" href="#features" role="tab" aria-controls="features" aria-selected="false">Funktionen</a>
+            <a class="nav-link" id="features-tab" data-bs-toggle="tab" href="#features" role="tab" aria-controls="features" aria-selected="false"><?= \Fisharebest\Webtrees\I18N::translate('Features') ?></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" id="analysis-tab" data-bs-toggle="tab" href="#analysis" role="tab" aria-controls="analysis" aria-selected="false">Analyse</a>
+            <a class="nav-link" id="analysis-tab" data-bs-toggle="tab" href="#analysis" role="tab" aria-controls="analysis" aria-selected="false"><?= \Fisharebest\Webtrees\I18N::translate('Analysis') ?></a>
         </li>
     </ul>
 
@@ -47,7 +48,7 @@
             <div class="rowMK mb-3"> 
                 <div class="form-group row">
                     <label class="col-sm-3 col-form-label" for="fuzzy_diff_high_age">
-                        Fuzzy-Schwellenwert bei hohem Alter (&gt;80 Jahre)
+                        <?= \Fisharebest\Webtrees\I18N::translate('Fuzzy threshold for high age (>80 years)') ?>
                     </label>
                     <div class="col-sm-9">
                         <input 
@@ -61,14 +62,14 @@
                             required
                         >
                         <small class="form-text text-muted">
-                            Maximale Jahresabweichung bei Geburtsdaten, wenn Person über 80 Jahre alt wurde (höhere Unsicherheit bei alten Aufzeichnungen).
+                            <?= \Fisharebest\Webtrees\I18N::translate('Max year deviation for birth dates if person lived >80 years (higher uncertainty in old records).') ?>
                         </small>
                     </div>
                 </div>
                 
                 <div class="form-group row mt-3">
                     <label class="col-sm-3 col-form-label" for="fuzzy_diff_default">
-                        Fuzzy-Schwellenwert (Standard)
+                        <?= \Fisharebest\Webtrees\I18N::translate('Fuzzy threshold (default)') ?>
                     </label>
                     <div class="col-sm-9">
                         <input 
@@ -82,18 +83,18 @@
                             required
                         >
                         <small class="form-text text-muted">
-                            Maximale Jahresabweichung bei Geburtsdaten in den meisten Fällen (Tauf-, Heiratsurkunden).
+                            <?= \Fisharebest\Webtrees\I18N::translate('Max year deviation for birth dates in most cases (baptismal, marriage records).') ?>
                         </small>
                     </div>
                 </div>
             </div>
             
             <div class="alert alert-info mt-4">
-                <h4><i class="fa fa-info-circle"></i> Hilfe: Allgemein</h4>
-                <p>Diese Einstellungen steuern die Empfindlichkeit der automatischen Dubletten-Erkennung.</p>
+                <h4><i class="fa fa-info-circle"></i> <?= \Fisharebest\Webtrees\I18N::translate('Help: General') ?></h4>
+                <p><?= \Fisharebest\Webtrees\I18N::translate('These settings control the sensitivity of the automatic duplicate detection.') ?></p>
                 <ul>
-                    <li><strong>Fuzzy-Matching:</strong> Nutzt Algorithmen (z.B. Levenshtein-Distanz), um Tippfehler in Namen zu tolerieren.</li>
-                    <li><strong>Warn-Schwellen:</strong> Ein höherer Wert bedeutet mehr Toleranz bei Datumsabweichungen.</li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Fuzzy matching:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('Use algorithms (e.g. Levenshtein distance) to tolerate typos in names.') ?></li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Warning thresholds:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('A higher value means more tolerance for date deviations.') ?></li>
                 </ul>
             </div>
         </div>
@@ -101,11 +102,11 @@
         <!-- Tab 2: Plausibility Settings -->
         <div class="tab-pane fade" id="plausibility" role="tabpanel" aria-labelledby="plausibility-tab">
             <!-- Content omitted, existing structure maintained -->
-            <h3>Validierungseinstellungen</h3>
+            <h3><?= \Fisharebest\Webtrees\I18N::translate('Validation settings') ?></h3>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="max_marriages_warning">
-                    Max. Ehen-Warnung
+                    <?= \Fisharebest\Webtrees\I18N::translate('Max. Marriages Warning') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -119,17 +120,17 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Anzahl Ehen ab der eine Warnung angezeigt wird (Standard: 5).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Number of marriages from which a warning is displayed (default: 5).') ?>
                     </small>
                 </div>
             </div>
             
             <hr class="my-4">
-            <h3>Biologische & Zeitliche Plausibilitäts-Schwellwerte</h3>
+            <h3><?= \Fisharebest\Webtrees\I18N::translate('Biological & Temporal Plausibility Thresholds') ?></h3>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="min_mother_age">
-                    Min. Mutter-Alter bei Geburt
+                    <?= \Fisharebest\Webtrees\I18N::translate('Min. Mother Age at Birth') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -143,14 +144,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Fehler wenn Mutter jünger war (Standard: 14 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Error if mother was younger (default: 14 years).') ?>
                     </small>
                 </div>
             </div>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="max_mother_age">
-                    Max. Mutter-Alter bei Geburt
+                    <?= \Fisharebest\Webtrees\I18N::translate('Max. Mother Age at Birth') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -164,14 +165,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung wenn Mutter älter war (Standard: 50 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning if mother was older (default: 50 years).') ?>
                     </small>
                 </div>
             </div>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="min_father_age">
-                    Min. Vater-Alter bei Geburt
+                    <?= \Fisharebest\Webtrees\I18N::translate('Min. Father Age at Birth') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -185,14 +186,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Fehler wenn Vater jünger war (Standard: 14 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Error if father was younger (default: 14 years).') ?>
                     </small>
                 </div>
             </div>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="max_father_age">
-                    Max. Vater-Alter bei Geburt
+                    <?= \Fisharebest\Webtrees\I18N::translate('Max. Father Age at Birth') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -206,14 +207,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung wenn Vater älter war (Standard: 80 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning if father was older (default: 80 years).') ?>
                     </small>
                 </div>
             </div>
             
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="max_lifespan">
-                    Max. Lebensdauer
+                    <?= \Fisharebest\Webtrees\I18N::translate('Max. Lifespan') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -227,14 +228,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung bei ungewöhnlich langer Lebensdauer (Standard: 120 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning at unusually long lifespan (default: 120 years).') ?>
                     </small>
                 </div>
             </div>
 
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="max_marriage_age_warning">
-                    Max. Heiratsalter
+                    <?= \Fisharebest\Webtrees\I18N::translate('Max. Marriage Age') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -248,14 +249,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung bei ungewöhnlich spätem Heiratsalter (Standard: 100 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning at unusually late marriage age (default: 100 years).') ?>
                     </small>
                 </div>
             </div>
 
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="min_marriage_age_warning">
-                    Min. Heiratsalter
+                    <?= \Fisharebest\Webtrees\I18N::translate('Min. Marriage Age') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -269,14 +270,14 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung bei ungewöhnlich frühem Heiratsalter (Standard: 15 Jahre).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning at unusually early marriage age (default: 15 years).') ?>
                     </small>
                 </div>
             </div>
 
             <div class="form-group row mb-3">
                 <label class="col-sm-3 col-form-label" for="min_sibling_spacing_warning">
-                    Min. Geschwisterabstand
+                    <?= \Fisharebest\Webtrees\I18N::translate('Sibling Spacing') ?>
                 </label>
                 <div class="col-sm-9">
                     <input 
@@ -290,17 +291,17 @@
                         required
                     >
                     <small class="form-text text-muted">
-                        Warnung bei zu kurzem Abstand zwischen Geschwistern (in Monaten, Standard: 9).
+                        <?= \Fisharebest\Webtrees\I18N::translate('Warning if births are too close together (in months, default: 9).') ?>
                     </small>
                 </div>
             </div>
             
             <div class="alert alert-info mt-4">
-                <h4><i class="fa fa-info-circle"></i> Hilfe: Plausibilität</h4>
-                <p>Hier definieren Sie die Grenzen für biologische und zeitliche Prüfungen.</p>
+                <h4><i class="fa fa-info-circle"></i> <?= \Fisharebest\Webtrees\I18N::translate('Help: Plausibility') ?></h4>
+                <p><?= \Fisharebest\Webtrees\I18N::translate('Define boundaries for biological and temporal checks.') ?></p>
                 <ul>
-                    <li><strong>Eltern-Alter:</strong> Warnt bei biologisch unwahrscheinlichem Alter bei der Geburt des Kindes.</li>
-                    <li><strong>Geschwister-Abstand:</strong> Warnt, wenn Geburten zu dicht beieinander liegen (< 9 Monate).</li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Parents Age:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('Warns of biologically unlikely age at the birth of the child.') ?></li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Sibling Spacing:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('Warns if births are too close together (< 9 months).') ?></li>
                 </ul>
             </div>
         </div>
@@ -309,7 +310,7 @@
         <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
             <div class="row mb-3">
                 <div class="col-sm-3">
-                    <strong>Optionale Checks</strong>
+                    <strong><?= \Fisharebest\Webtrees\I18N::translate('Optional Checks') ?></strong>
                 </div>
                 <div class="col-sm-9">
                     <div class="form-check">
@@ -322,8 +323,8 @@
                             <?= $module->getPreference('enable_missing_data_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_missing_data_checks">
-                            <strong>Fehlende Daten prüfen</strong><br>
-                            <small class="text-muted">Warnt bei: Kind ohne Geburtsdatum, Tod ohne Geburt, Familie ohne Kinder</small>
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Check missing data') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Warns for: Child without birth date, death without birth, family without children') ?></small>
                         </label>
                     </div>
                     
@@ -337,8 +338,8 @@
                             <?= $module->getPreference('enable_geographic_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_geographic_checks">
-                            <strong>Geografische Plausibilität prüfen</strong><br>
-                            <small class="text-muted">Warnt bei: Große Distanz zwischen Geburts-/Todesort, ungültige Ortsangaben</small>
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Check geographic plausibility') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Warns for: Large distance between birth/death locations, invalid locations') ?></small>
                         </label>
                     </div>
                     
@@ -352,8 +353,83 @@
                             <?= $module->getPreference('enable_name_consistency_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_name_consistency_checks">
-                            <strong>Namens-Konsistenz prüfen</strong><br>
-                            <small class="text-muted">Warnt bei: Leere Namen, nur Vor- oder Nachname, Sonderzeichen-Probleme</small>
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Check name consistency') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Warns for: Empty names, only given or surname, special character issues') ?></small>
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_scandinavian_patronymics" 
+                            name="enable_scandinavian_patronymics" 
+                            value="1"
+                            <?= $module->getPreference('enable_scandinavian_patronymics', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_scandinavian_patronymics">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Scandinavian naming conventions') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates patronymics (e.g. -sen/-son/-datter) when comparing with father/mother.') ?></small>
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_slavic_surnames" 
+                            name="enable_slavic_surnames" 
+                            value="1"
+                            <?= $module->getPreference('enable_slavic_surnames', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_slavic_surnames">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Slavic naming conventions') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates gendered surnames (e.g. -ski/-ska, -ov/-ova).') ?></small>
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_spanish_surnames" 
+                            name="enable_spanish_surnames" 
+                            value="1"
+                            <?= $module->getPreference('enable_spanish_surnames', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_spanish_surnames">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Spanish double surnames') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates combinations of father and mother surnames.') ?></small>
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_dutch_tussenvoegsels" 
+                            name="enable_dutch_tussenvoegsels" 
+                            value="1"
+                            <?= $module->getPreference('enable_dutch_tussenvoegsels', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_dutch_tussenvoegsels">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Dutch tussenvoegsels') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Ignores prefixes like "van", "de", "van der" during comparison.') ?></small>
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_greek_surnames" 
+                            name="enable_greek_surnames" 
+                            value="1"
+                            <?= $module->getPreference('enable_greek_surnames', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_greek_surnames">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Greek naming conventions') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates gendered suffixes (e.g. -is/-ou).') ?></small>
                         </label>
                     </div>
                     
@@ -367,19 +443,19 @@
                             <?= $module->getPreference('enable_source_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_source_checks">
-                            <strong>Quellen-Pflicht prüfen</strong><br>
-                            <small class="text-muted">Warnt bei: Fakten ohne Quellenangabe</small>
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Check source requirement') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Warns for: Facts without source citations') ?></small>
                         </label>
                     </div>
                 </div>
             </div>
             
             <div class="alert alert-info mt-4">
-                <h4><i class="fa fa-info-circle"></i> Hilfe: Funktionen</h4>
-                <p>Aktivieren Sie spezialisierte Validierungen für Ihren Stammbaum.</p>
+                <h4><i class="fa fa-info-circle"></i> <?= \Fisharebest\Webtrees\I18N::translate('Help: Features') ?></h4>
+                <p><?= \Fisharebest\Webtrees\I18N::translate('Enable specialized validations for your family tree.') ?></p>
                 <ul>
-                    <li><strong>Geografie:</strong> Prüft auf unrealistische Reisegeschwindigkeiten (>500km in < 2 Tagen).</li>
-                    <li><strong>Quellen:</strong> Markiert wichtige Ereignisse (Geburt, Tod, Ehe) ohne Quellenangabe.</li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Geography:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('Warns about unrealistically fast travel (>500km in < 2 days).') ?></li>
+                    <li><strong><?= \Fisharebest\Webtrees\I18N::translate('Sources:') ?></strong> <?= \Fisharebest\Webtrees\I18N::translate('Highlights important events (birth, death, marriage) without source citation.') ?></li>
                 </ul>
             </div>
         </div>
@@ -387,14 +463,14 @@
         <!-- Tab 4: Analysis/Bulk Check -->
         <div class="tab-pane fade" id="analysis" role="tabpanel" aria-labelledby="analysis-tab">
             <div class="alert alert-light border">
-                <h4><i class="fa fa-stethoscope"></i> Qualitäts-Analyse</h4>
-                <p>Diese Funktion prüft <strong>alle Personen</strong> im Stammbaum auf die oben aktivierten Probleme.</p>
+                <h4><i class="fa fa-stethoscope"></i> <?= \Fisharebest\Webtrees\I18N::translate('Quality Analysis') ?></h4>
+                <p><?= \Fisharebest\Webtrees\I18N::translate('This function checks <strong>all persons</strong> in the tree for the problems enabled above.') ?></p>
                 <hr>
                 
                 <?php if (count($trees_list) > 1): ?>
                 <div class="form-group row mb-4">
                      <label class="col-sm-3 col-form-label" for="analysis_tree_select">
-                        Stammbaum auswählen:
+                        <?= \Fisharebest\Webtrees\I18N::translate('Select tree:') ?>
                     </label>
                     <div class="col-sm-6">
                         <select class="form-control form-select" id="analysis_tree_select">
@@ -407,16 +483,21 @@
                     </div>
                 </div>
                 <?php else: ?>
-                    <p>Aktiver Stammbaum: <strong><?= htmlspecialchars($tree_title) ?></strong></p>
+                    <p><?= \Fisharebest\Webtrees\I18N::translate('Active tree:') ?> <strong><?= htmlspecialchars($tree_title) ?></strong></p>
                     <input type="hidden" id="analysis_tree_select" value="<?= htmlspecialchars($tree_name) ?>">
-                <?php endif; ?>
+<?php endif; ?>
 
                 <div class="d-flex align-items-center">
                     <button type="button" class="btn btn-success btn-lg me-3" id="btn-start-analysis">
-                        <i class="fa fa-play"></i> Analyse starten
+                        <i class="fa fa-play"></i> <?= \Fisharebest\Webtrees\I18N::translate('Start Analysis') ?>
                     </button>
+                    <?php if ($tree): ?>
+                    <a href="<?= $tree_url ?>" class="btn btn-outline-secondary btn-lg me-3">
+                         <i class="fa fa-home"></i> <?= \Fisharebest\Webtrees\I18N::translate('Back to tree') ?>
+                    </a>
+                    <?php endif; ?>
                     <div class="flex-grow-1 ms-3" style="display:none;" id="progress-container">
-                        <label>Verarbeite Personen: <span id="progress-text">0 / 0</span></label>
+                        <label><?= \Fisharebest\Webtrees\I18N::translate('Processing individuals:') ?> <span id="progress-text">0 / 0</span></label>
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" id="analysis-progress" style="width: 0%">0%</div>
                         </div>
@@ -427,37 +508,37 @@
             <!-- Filter Controls -->
             <div class="card mt-4 mb-3 shadow-sm" id="analysis-controls" style="display:none;">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <strong><i class="fa fa-filter"></i> Ergebnisse filtern</strong>
+                    <strong><i class="fa fa-filter"></i> <?= \Fisharebest\Webtrees\I18N::translate('Filter Results') ?></strong>
                     <button class="btn btn-sm btn-outline-primary" id="btn-export-csv">
-                        <i class="fa fa-download"></i> Export CSV
+                        <i class="fa fa-download"></i> <?= \Fisharebest\Webtrees\I18N::translate('Export CSV') ?>
                     </button>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="filter-severity" class="form-label">Schweregrad</label>
+                            <label for="filter-severity" class="form-label"><?= \Fisharebest\Webtrees\I18N::translate('Severity') ?></label>
                             <select class="form-select form-control" id="filter-severity">
-                                <option value="all">Alle Probleme anzeigen</option>
-                                <option value="error">Nur Fehler (Rot)</option>
-                                <option value="warning">Warnungen (Gelb)</option>
-                                <option value="info">Hinweise (Blau)</option>
+                                <option value="all"><?= \Fisharebest\Webtrees\I18N::translate('Show all problems') ?></option>
+                                <option value="error"><?= \Fisharebest\Webtrees\I18N::translate('Errors only (Red)') ?></option>
+                                <option value="warning"><?= \Fisharebest\Webtrees\I18N::translate('Warnings (Yellow)') ?></option>
+                                <option value="info"><?= \Fisharebest\Webtrees\I18N::translate('Info (Blue)') ?></option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label for="filter-category" class="form-label">Kategorie / Fehlertyp</label>
+                            <label for="filter-category" class="form-label"><?= \Fisharebest\Webtrees\I18N::translate('Category / Error Type') ?></label>
                             <select class="form-select form-control" id="filter-category">
-                                <option value="all">Alle Kategorien</option>
-                                <option value="missing_source">Fehlende Quellen</option>
-                                <option value="geography">Geografische Probleme</option>
-                                <option value="temporal_impossibility">Zeitliche Unmöglichkeit</option>
-                                <option value="duplicate_check">Mögliche Dubletten</option>
-                                <option value="sibling_spacing">Geschwister-Abstand</option>
+                                <option value="all"><?= \Fisharebest\Webtrees\I18N::translate('All Categories') ?></option>
+                                <option value="missing_source"><?= \Fisharebest\Webtrees\I18N::translate('Missing Sources') ?></option>
+                                <option value="geography"><?= \Fisharebest\Webtrees\I18N::translate('Geographic Issues') ?></option>
+                                <option value="temporal_impossibility"><?= \Fisharebest\Webtrees\I18N::translate('Temporal Impossibility') ?></option>
+                                <option value="duplicate_check"><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicates') ?></option>
+                                <option value="sibling_spacing"><?= \Fisharebest\Webtrees\I18N::translate('Sibling Spacing') ?></option>
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end justify-content-end">
                             <div class="text-end">
                                 <span class="fs-4 fw-bold" id="visible-count">0</span>
-                                <span class="text-muted">von <span id="total-results-count">0</span> gezeigt</span>
+                                <span class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('of') ?> <span id="total-results-count">0</span> <?= \Fisharebest\Webtrees\I18N::translate('shown') ?></span>
                             </div>
                         </div>
                     </div>
@@ -465,14 +546,14 @@
             </div>
 
             <div id="analysis-results" style="display:none;" class="mt-4">
-                <h5>Gefundene Probleme <span class="badge bg-danger" id="issue-count">0</span></h5>
+                <h5><?= \Fisharebest\Webtrees\I18N::translate('Issues Found') ?> <span class="badge bg-danger" id="issue-count">0</span></h5>
                 <div class="table-responsive">
                     <table class="table table-striped table-hover mt-3" id="results-table">
                         <thead>
                         <tr>
-                            <th scope="col">Person</th>
-                            <th scope="col">Code / Typ</th>
-                            <th scope="col">Beschreibung</th>
+                            <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Person') ?></th>
+                            <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Code / Type') ?></th>
+                            <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Description') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -480,17 +561,18 @@
                     </tbody>
                 </table>
             </div>
+</div>
         </div>
     </div>
     
     <div class="row mb-3 mt-4">
         <div class="offset-sm-3 col-sm-9">
             <button type="submit" class="btn btn-primary">
-                <?= $i18n_save ?>
+                <?= \Fisharebest\Webtrees\I18N::translate('save') ?>
             </button>
             
             <a href="<?= $control_panel_url ?>" class="btn btn-secondary">
-                <?= $i18n_cancel ?>
+                <?= \Fisharebest\Webtrees\I18N::translate('cancel') ?>
             </a>
         </div>
     </div>
@@ -512,6 +594,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsTableBody = document.querySelector('#results-table tbody');
     const issueCountBadge = document.getElementById('issue-count');
 
+    // Translated strings for JS
+    const i18n = {
+        analyzing: '<?= \Fisharebest\Webtrees\I18N::translate('Analyzing...') ?>',
+        initializing: '<?= \Fisharebest\Webtrees\I18N::translate('Initializing...') ?>',
+        done: '<?= \Fisharebest\Webtrees\I18N::translate('Done!') ?>',
+        noIssuesFound: '<?= \Fisharebest\Webtrees\I18N::translate('No issues found!') ?>',
+        cleanTree: '<?= \Fisharebest\Webtrees\I18N::translate('Your tree is clean.') ?>',
+        analysisError: '<?= \Fisharebest\Webtrees\I18N::translate('Analysis error:') ?>',
+        errorRestart: '<?= \Fisharebest\Webtrees\I18N::translate('Error! Restart?') ?>'
+    };
+
     let totalIssues = 0;
     
     // API Route Base
@@ -523,9 +616,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return select ? select.value : '<?= $tree_name ?>';
     }
     
-    // Base URL for linking to individuals
-    // Need to dynamically replace tree name in URL if user switches tree
-    const personUrlBase = '<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage::class, ['tree' => 'TREE_PLACEHOLDER', 'xref' => 'XREF_PLACEHOLDER'])) ?>';
+    // We use a safe dummy XREF 'I1' (standard GEDCOM ID format)
+    // 'X0' caused issues with some regex validations in webtrees routing
+    // We decode the URL because webtrees' router might encode special characters if they were present
+    const personUrlBase = decodeURIComponent('<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage::class, ['tree' => 'TREE0', 'xref' => 'I1'])) ?>');
+    
+    // Base URL for tree home (Tree Welcome Page)
+    const treeHomeUrlBase = '<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => 'TREE0'])) ?>';
+
+    // Update "Back to tree" button when dropdown changes
+    const treeSelect = document.getElementById('analysis_tree_select');
+    const backBtn = document.querySelector('.btn-outline-secondary');
+    
+    if (treeSelect && backBtn) {
+        treeSelect.addEventListener('change', () => {
+             const selectedTree = treeSelect.value;
+             // Use the specific tree home base URL
+             let newUrl = treeHomeUrlBase.replace('TREE0', selectedTree);
+             backBtn.href = newUrl;
+        });
+    }
 
     // Filter Logic
     function applyFilters() {
@@ -565,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', async () => {
         // Reset UI
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Analysiere...';
+        btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> ${i18n.analyzing}`;
         progressContainer.style.display = 'block';
         resultsContainer.style.display = 'none';
         filterControls.style.display = 'none'; // Hide filters during run
@@ -576,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.classList.remove('bg-primary');
         progressBar.classList.add('bg-success');
         
-        progressText.innerText = 'Initialisiere...';
+        progressText.innerText = i18n.initializing;
         totalIssues = 0;
         issueCountBadge.innerText = '0';
         visibleCountEl.innerText = '0';
@@ -643,7 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Translate severity for display if needed, but badge color works well
                     
                     // Build Person URL dynamically
-                    let pUrl = personUrlBase.replace('TREE_PLACEHOLDER', treeName).replace('XREF_PLACEHOLDER', issue.xref);
+                    // Replace the tree placeholder and the dummy XREF 'I1'
+                    let pUrl = personUrlBase.replace('TREE0', treeName).replace('I1', issue.xref);
                     
                     row.innerHTML = `
                         <td><a href="${pUrl}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
@@ -670,22 +781,22 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Done
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa fa-check"></i> Fertig!';
+                btn.innerHTML = `<i class="fa fa-check"></i> ${i18n.done}`;
                 progressBar.classList.remove('progress-bar-animated');
                 progressBar.classList.remove('bg-success');
                 progressBar.classList.add('bg-primary');
                 
                 if (totalIssues === 0) {
                      resultsContainer.style.display = 'block';
-                     resultsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> Keine Probleme gefunden!</h4><p>Ihr Stammbaum ist sauber.</p></td></tr>';
+                     resultsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> ${i18n.noIssuesFound}</h4><p>${i18n.cleanTree}</p></td></tr>`;
                      filterControls.style.display = 'none'; // No need to filter nothing
                 }
             }
         } catch (error) {
             console.error(error);
-            alert('Fehler bei der Analyse: ' + error.message);
+            alert(`${i18n.analysisError} ` + error.message);
             btn.disabled = false;
-            btn.innerText = 'Fehler! Neustart?';
+            btn.innerText = i18n.errorRestart;
             progressBar.classList.add('bg-danger');
         }
     }

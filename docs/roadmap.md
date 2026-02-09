@@ -67,12 +67,13 @@
 - [x] **GitHub-Integration:** Updates via Release-Tag und `latest-version.txt`.
 - [x] **Version 0.9.2 Release** (Feature Complete)
 
-## 📋 Phase 10: V1.0.0 Refinement (PLANNED)
-- [ ] **Geografische Validierung:** 
-  - Caching für Geodaten (Vermeidung externer API-Limits).
-  - Distanz-Warnungen (z.B. Geburt -> Tod > 500km in < 1 Tag).
-- [ ] **Orts-Korrektur:** Vorschlag basierend auf ähnlichen Ortsnamen.
-- [ ] **Performance:** Testen und Optimieren für extrem große Bäume (Chunking-Anpassung).
+## ✅ Phase 10: V1.1.0 Regional Support & UX (COMPLETE - 2026-02-09)
+- [x] **Skandinavische Namensregeln:** Patronymische Logik für Schweden/Island erweitert.
+- [x] **Multi-Language Update:** Vollständiger Support für 15 Sprachen (ES, IT, PT, etc.).
+- [x] **UX Context Persistence:** Beibehaltung der Baum-Auswahl beim Navigieren und Speichern.
+- [x] **Tree-Aware Breadcrumbs:** Verbesserte Navigation zurück zum aktiven Baum.
+- [x] **Back-to-Tree Navigation:** Direkter Link vom Dashboard zum Stammbaum.
+- [x] **Bugfixes:** Behebung von Variablen- und Sichtbarkeitsproblemen im Backend.
 
 ---
 
@@ -83,3 +84,5 @@
 - **v0.8.0:** Ignore-Feature, Admin-Liste, DB-Schema-Management
 - **v0.9.0:** Bulk-Analyse, Batch-Processing, Reporting-Dashboard
 - **v0.9.2:** CSV-Export, GitHub-Update-Check, Formatiertes Datum
+- **v1.0.0:** Major Release mit verfeinerter Architektur und Stabilität
+- **v1.1.0:** Skandinavische Namenskonventionen, 15 Sprachen, UX Context Persistence

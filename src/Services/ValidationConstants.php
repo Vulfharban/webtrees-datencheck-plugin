@@ -80,10 +80,7 @@ class ValidationConstants
 
     public static function getLabel(string $code, string $lang = 'en'): string
     {
-        if (str_starts_with($lang, 'de')) {
-            return self::$labels_de[$code] ?? $code;
-        }
-        
-        return self::$labels_en[$code] ?? $code;
+        $label = self::$labels_en[$code] ?? $code;
+        return \Fisharebest\Webtrees\I18N::translate($label);
     }
 }

@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 0.9.0 - **Beta** (Bulk Analysis Implemented)
+**Status:** Version 1.1.0 - **Stable** (Regional Support & UX)
 
 ## Kernfunktionen
 
@@ -22,6 +22,7 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
     - [x] Live-Check: Suche nach existierender Familie (HUSB + WIFE) bei Elterneingabe
     - [x] **Automatischer Vorschlag:** Button "Diese Familie nutzen" zur schnellen Zuweisung
     - [x] **Geschwister-Matching:** Warnung vor Dubletten innerhalb derselben Familie
+    - [x] **Skandinavische Patronymika:** Unterstützung regionaler Namensregeln (-son, -dóttir, etc.) in ganz Skandinavien/Island.
 
 ### 3. Workflow-Integration & Datenqualität ✅ DONE
 - **Ignore-Funktion (False-Positives):**
@@ -58,7 +59,8 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 ## Phase 5: Erweiterte Features (WIP)
 - [x] **Orts-Plausibilität:** Prüfung auf geografisch unwahrscheinliche Ortswechsel (implementiert, aber Optimierung nötig)
 - [x] **Quellen-Pflicht:** Optionale Prüfung auf SOUR-Tags (implementiert & robust)
-- [ ] **Reporting-Export:** CSV/PDF Export der Analyse-Ergebnisse.
+- [x] **Reporting-Export:** CSV-Export der Analyse-Ergebnisse.
+- [x] **UX & Kontext:** Erhalt der Baum-Auswahl und verbesserte Breadcrumb-Navigation.
 - [ ] **Orts-Normalisierung:** Unterstützung bei der Vereinheitlichung von Ortsnamen
 - [ ] **Performance-Optimierung:** Caching für Geodaten bei Bulk-Analyse.
 

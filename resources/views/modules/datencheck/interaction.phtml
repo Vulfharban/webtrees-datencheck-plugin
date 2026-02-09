@@ -130,16 +130,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                     const currentXref = (context.isAdd || !hasFormXref) ? "NEW" : getXref();
                     
-                    let html = "<strong>Mögliche Dubletten gefunden:</strong><ul class='list-unstyled'>";
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('Possible duplicates found:') ?></strong><ul class='list-unstyled'>";
                     data.data.forEach(item => {
                         let label = item.name2 + " (" + item.id2 + ")";
                         if (item.phonetic_match) {
-                            label += " <small class='text-muted'>(phonetisch)</small>";
+                            label += " <small class='text-muted'>(<?= \Fisharebest\Webtrees\I18N::translate('phonetically') ?>)</small>";
                         }
                         html += "<li class='mb-1'>" + label + 
                                 " <button type='button' class='btn btn-sm btn-outline-primary ms-2' " +
                                 "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowComparison(\"" + (currentXref || "NEW") + "\", \"" + item.id2 + "\")'>" +
-                                "Vergleichen</button></li>";
+                                "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button></li>";
                     });
                     html += "</ul>";
                     warningArea.innerHTML = html;
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 if (data.data && data.data.length > 0) {
-                    let html = "<strong>Diese Person existiert bereits als Kind in dieser Familie:</strong><ul>";
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('This person already exists as a child in this family:') ?></strong><ul>";
                     data.data.forEach(item => {
                         html += "<li>" + item.name2 + " (" + item.id2 + ")</li>";
                     });
@@ -206,8 +206,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 if (data.data && data.data.length > 0) {
-                    let html = "<strong>Diese Eltern haben bereits eine Familie:</strong> " + data.data.join(", ");
-                    html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="window.datencheckJoinFamily(' + JSON.stringify(data.data[0]) + ')">Diese Familie nutzen</button>';
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('These parents already have a family:') ?></strong> " + data.data.join(", ");
+                    html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="window.datencheckJoinFamily(\'' + data.data[0] + '\')"><?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>';
                     famWarning.innerHTML = html;
                     famWarning.style.display = "block";
                 } else {
@@ -217,7 +217,52 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     window.datencheckJoinFamily = (famId) => {
-        alert("Diese Person wird der bestehenden Familie " + famId + " zugeordnet.");
+        // Remove @ symbols if present
+        const cleanId = famId.replace(/@/g, '');
+        
+        // 1. Try common webtrees input fields for family ID
+        // On "Add Child" or "Add Spouse" pages, these are common names/IDs
+        const selectors = [
+            'input[name="f"]',
+            'input[name="fam"]',
+            'input[name="family_id"]',
+            '#f',
+            '#fam'
+        ];
+        
+        let found = false;
+        for (const selector of selectors) {
+            const el = document.querySelector(selector);
+            if (el && (el.type === 'text' || el.type === 'hidden')) {
+                el.value = cleanId;
+                // Trigger change event for any listeners
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            // Give feedback
+            const btn = event?.target;
+            if (btn && btn.tagName === 'BUTTON') {
+                const oldText = btn.innerHTML;
+                btn.innerHTML = "✅ <?= \Fisharebest\Webtrees\I18N::translate('Linked') ?>";
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.innerHTML = oldText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+            // Optionally close the warning
+            const warning = document.getElementById("datencheck-fam-warning");
+            if (warning) warning.style.display = "none";
+            
+            // Success alert (less intrusive than a blocking alert if possible)
+            console.log("Datencheck: Family ID " + cleanId + " applied to form.");
+        } else {
+            alert("<?= \Fisharebest\Webtrees\I18N::translate('Could not find family input field. Please enter ID {ID} manually.') ?>".replace('{ID}', cleanId));
+        }
     };
 
     // Comparison Modal Functions
@@ -232,34 +277,34 @@ document.addEventListener("DOMContentLoaded", function() {
             modal.innerHTML = "<div class='modal-dialog modal-xl'>" +
                 "<div class='modal-content'>" +
                     "<div class='modal-header'>" +
-                        "<h5 class='modal-title'>Personen-Vergleich</h5>" +
+                        "<h5 class='modal-title'><?= \Fisharebest\Webtrees\I18N::translate('Person Comparison') ?></h5>" +
                         "<button type='button' class='btn-close' data-bs-dismiss='modal'></button>" +
                     "</div>" +
                     "<div class='modal-body'>" +
                         "<div class='row'>" +
                             "<div class='col-md-6'>" +
-                                "<h6 class='text-primary'>Aktuelle Eingabe</h6>" +
+                                "<h6 class='text-primary'><?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?></h6>" +
                                 "<div id='comparison-current' class='border rounded p-3'>" +
                                     "<div class='text-center text-muted py-4'>" +
                                         "<div class='spinner-border spinner-border-sm' role='status'></div>" +
-                                        "Lade Daten..." +
+                                        "<?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
                                     "</div>" +
                                 "</div>" +
                             "</div>" +
                             "<div class='col-md-6'>" +
-                                "<h6 class='text-warning'>Mögliche Dublette</h6>" +
+                                "<h6 class='text-warning'><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?></h6>" +
                                 "<div id='comparison-duplicate' class='border rounded p-3'>" +
                                     "<div class='text-center text-muted py-4'>" +
                                         "<div class='spinner-border spinner-border-sm' role='status'></div>" +
-                                        "Lade Daten..." +
+                                        "<?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
                                     "</div>" +
                                 "</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
                     "<div class='modal-footer'>" +
-                        "<a href='#' id='comparison-open-btn' target='_blank' class='btn btn-outline-primary me-auto'>In neuem Fenster öffnen ↗️</a>" +
-                        "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Schließen</button>" +
+                        "<a href='#' id='comparison-open-btn' target='_blank' class='btn btn-outline-primary me-auto'><?= \Fisharebest\Webtrees\I18N::translate('Open in new window ↗️') ?></a>" +
+                        "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'><?= \Fisharebest\Webtrees\I18N::translate('Close') ?></button>" +
                     "</div>" +
                 "</div>" +
             "</div>";
@@ -269,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Setup open button
         const openBtn = document.getElementById("comparison-open-btn");
         if (openBtn) {
-            openBtn.href = "<?= $individual_url ?>".replace("XREF_PLACEHOLDER", duplicateXref);
+            openBtn.href = "<?= $individual_url ?>".replace("I1", duplicateXref);
         }
 
         const fetchDuplicate = fetch("<?= $details_url ?>?xref=" + encodeURIComponent(duplicateXref)).then(r => r.json());
@@ -288,8 +333,8 @@ document.addEventListener("DOMContentLoaded", function() {
             populateComparison(currentData, duplicateData);
         }).catch(err => {
             console.error("Datencheck: Comparison fetch failed", err);
-            document.getElementById("comparison-current").innerHTML = "<div class='alert alert-danger'>Fehler beim Laden</div>";
-            document.getElementById("comparison-duplicate").innerHTML = "<div class='alert alert-danger'>Fehler beim Laden</div>";
+            document.getElementById("comparison-current").innerHTML = "<div class='alert alert-danger'><?= \Fisharebest\Webtrees\I18N::translate('Error loading') ?></div>";
+            document.getElementById("comparison-duplicate").innerHTML = "<div class='alert alert-danger'><?= \Fisharebest\Webtrees\I18N::translate('Error loading') ?></div>";
         });
 
         // Show modal
@@ -327,30 +372,30 @@ document.addEventListener("DOMContentLoaded", function() {
         let html = "<div class='person-details'>";
         
         // Name
-        html += "<div class='mb-3' data-field='name'><strong>Name:</strong><br>" + (data.name || "<em class='text-muted'>Nicht angegeben</em>") + "</div>";
+        html += "<div class='mb-3' data-field='name'><strong><?= \Fisharebest\Webtrees\I18N::translate('Name:') ?></strong><br>" + (data.name || "<em class='text-muted'><?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?></em>") + "</div>";
         
         // Birth
-        html += "<div class='mb-3' data-field='birth'><strong>Geburt:</strong><br>";
+        html += "<div class='mb-3' data-field='birth'><strong><?= \Fisharebest\Webtrees\I18N::translate('Birth:') ?></strong><br>";
         if (data.birth.date || data.birth.place) {
             if (data.birth.date) html += data.birth.date + "<br>";
             if (data.birth.place) html += "<small class='text-muted'>" + data.birth.place + "</small>";
         } else {
-            html += "<em class='text-muted'>Nicht angegeben</em>";
+            html += "<em class='text-muted'><?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?></em>";
         }
         html += "</div>";
         
         // Death
-        html += "<div class='mb-3' data-field='death'><strong>Tod:</strong><br>";
+        html += "<div class='mb-3' data-field='death'><strong><?= \Fisharebest\Webtrees\I18N::translate('Death:') ?></strong><br>";
         if (data.death.date || data.death.place) {
             if (data.death.date) html += data.death.date + "<br>";
             if (data.death.place) html += "<small class='text-muted'>" + data.death.place + "</small>";
         } else {
-            html += "<em class='text-muted'>Nicht angegeben</em>";
+            html += "<em class='text-muted'><?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?></em>";
         }
         html += "</div>";
         
         // Parents
-        html += "<div class='mb-3' data-field='parents'><strong>Eltern:</strong><br>";
+        html += "<div class='mb-3' data-field='parents'><strong><?= \Fisharebest\Webtrees\I18N::translate('Parents:') ?></strong><br>";
         if (data.parents && data.parents.length > 0) {
             html += "<ul class='list-unstyled mb-0'>";
             data.parents.forEach(parent => {
@@ -358,19 +403,19 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             html += "</ul>";
         } else {
-            html += "<em class='text-muted'>Nicht angegeben</em>";
+            html += "<em class='text-muted'><?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?></em>";
         }
         html += "</div>";
         
         // Families (Spouses & Children)
-        html += "<div class='mb-3' data-field='families'><strong>Familien:</strong><br>";
+        html += "<div class='mb-3' data-field='families'><strong><?= \Fisharebest\Webtrees\I18N::translate('Families:') ?></strong><br>";
         if (data.families && data.families.length > 0) {
             data.families.forEach(fam => {
                 html += "<div class='mb-2'>";
-                if (fam.husband && fam.husband.xref !== data.xref) html += "Ehemann: " + fam.husband.name + "<br>";
-                if (fam.wife && fam.wife.xref !== data.xref) html += "Ehefrau: " + fam.wife.name + "<br>";
+                if (fam.husband && fam.husband.xref !== data.xref) html += "<?= \Fisharebest\Webtrees\I18N::translate('Husband:') ?> " + fam.husband.name + "<br>";
+                if (fam.wife && fam.wife.xref !== data.xref) html += "<?= \Fisharebest\Webtrees\I18N::translate('Wife:') ?> " + fam.wife.name + "<br>";
                 if (fam.children && fam.children.length > 0) {
-                    html += "Kinder: <ul class='list-unstyled mb-0'>";
+                    html += "<?= \Fisharebest\Webtrees\I18N::translate('Children:') ?> <ul class='list-unstyled mb-0'>";
                     fam.children.forEach(child => {
                         html += "<li>" + child.name + "</li>";
                     });
@@ -379,7 +424,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 html += "</div>";
             });
         } else {
-            html += "<em class='text-muted'>Keine Familien</em>";
+            html += "<em class='text-muted'><?= \Fisharebest\Webtrees\I18N::translate('No families') ?></em>";
         }
         html += "</div>";
         
@@ -399,8 +444,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const duplicateText = duplicateField.textContent.trim();
             
             // Normalize for comparison (remove "Nicht angegeben" differences)
-            const currentNorm = currentText.replace(/Nicht angegeben/g, "").trim();
-            const duplicateNorm = duplicateText.replace(/Nicht angegeben/g, "").trim();
+            const currentNorm = currentText.replace(/<?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?>/g, "").trim();
+            const duplicateNorm = duplicateText.replace(/<?= \Fisharebest\Webtrees\I18N::translate('Not specified') ?>/g, "").trim();
             
             if (currentNorm && duplicateNorm && currentNorm !== duplicateNorm) {
                 // Different values - highlight in yellow
@@ -633,7 +678,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!container) {
                     container = document.createElement("div");
                     container.id = "datencheck-validation-container";
-                    container.innerHTML = '<div id="datencheck-validation-header"><span>⚖️ Datencheck</span><span class="close-btn" onclick="this.parentElement.parentElement.style.display=\'none\'">&times;</span></div><div id="datencheck-validation-body"></div>';
+                    container.innerHTML = '<div id="datencheck-validation-header"><span><?= \Fisharebest\Webtrees\I18N::translate('⚖️ Datencheck') ?></span><span class="close-btn" onclick="this.parentElement.parentElement.style.display=\'none\'">&times;</span></div><div id="datencheck-validation-body"></div>';
                     document.body.appendChild(container);
                     makeDraggable(container, document.getElementById("datencheck-validation-header"));
                 }
@@ -655,7 +700,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (context.xref && /^[XIF]\d+$/.test(context.xref)) {
                             
                             // Define variables for dataset
-                            const title = "Datencheck: " + issue.label;
+                            const title = "<?= \Fisharebest\Webtrees\I18N::translate('⚖️ Datencheck') ?>: " + issue.label;
                             const note  = issue.message;
 
                             // Create button safely using DOM API to avoid all escaping hell
@@ -670,7 +715,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             btn.dataset.title = title;
                             // Replace newlines just in case, though dataset handles it better
                             btn.dataset.note = note.replace(/(\r\n|\n|\r)/g, " ");
-                            btn.innerHTML = "📌 Aufgabe";
+                            btn.innerHTML = "📌 <?= \Fisharebest\Webtrees\I18N::translate('Task') ?>";
                             btn.onclick = function() { window.datencheckSaveTask(this); };
                             btnWrapper.appendChild(btn);
 
@@ -681,7 +726,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 ignoreBtn.style.marginLeft = "5px";
                                 ignoreBtn.dataset.xref = context.xref;
                                 ignoreBtn.dataset.code = issue.code;
-                                ignoreBtn.innerHTML = "🚫 Ignorieren";
+                                ignoreBtn.innerHTML = "🚫 <?= \Fisharebest\Webtrees\I18N::translate('Ignore') ?>";
                                 ignoreBtn.onclick = function() { window.datencheckIgnoreError(this); };
                                 btnWrapper.appendChild(ignoreBtn);
                             }
@@ -728,20 +773,20 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    btn.innerHTML = "✅ Gespeichert";
+                    btn.innerHTML = "✅ <?= \Fisharebest\Webtrees\I18N::translate('Saved') ?>";
                     btn.classList.remove('btn-outline-secondary');
                     btn.classList.add('btn-success');
                     // Optional: remove button after delay
                     setTimeout(() => btn.remove(), 2000);
                 } else {
-                    btn.innerHTML = "❌ Fehler";
+                    btn.innerHTML = "❌ <?= \Fisharebest\Webtrees\I18N::translate('Error') ?>";
                     console.error(data.message);
                     btn.disabled = false;
                 }
             })
             .catch(err => {
                 console.error(err);
-                btn.innerHTML = "❌ Fehler";
+                btn.innerHTML = "❌ <?= \Fisharebest\Webtrees\I18N::translate('Error') ?>";
                 btn.disabled = false;
             });
     };
@@ -750,7 +795,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const xref = btn.dataset.xref;
         const code = btn.dataset.code;
 
-        if (!confirm('Möchtest du diesen Fehler für diese Person dauerhaft ignorieren?')) {
+        if (!confirm('<?= \Fisharebest\Webtrees\I18N::translate('Do you want to ignore this error for this person permanently?') ?>')) {
             return;
         }
 
@@ -774,14 +819,14 @@ document.addEventListener("DOMContentLoaded", function() {
                         setTimeout(() => errorBox.remove(), 500);
                     }
                 } else {
-                    btn.innerHTML = "❌ Fehler";
+                    btn.innerHTML = "❌ <?= \Fisharebest\Webtrees\I18N::translate('Error') ?>";
                     btn.disabled = false;
-                    alert(data.message || 'Fehler beim Ignorieren');
+                    alert(data.message || '<?= \Fisharebest\Webtrees\I18N::translate('Error while ignoring') ?>');
                 }
             })
             .catch(err => {
                 console.error(err);
-                btn.innerHTML = "❌ Fehler";
+                btn.innerHTML = "❌ <?= \Fisharebest\Webtrees\I18N::translate('Error') ?>";
                 btn.disabled = false;
             });
     };

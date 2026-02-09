@@ -25,11 +25,11 @@ class TaskService
         $individual = Registry::individualFactory()->make($xref, $tree);
 
         if (!$individual instanceof Individual) {
-            return ['success' => false, 'message' => 'Person not found'];
+            return ['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Person not found')];
         }
 
         if (!$individual->canEdit()) {
-            return ['success' => false, 'message' => 'Permission denied'];
+            return ['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Permission denied')];
         }
 
         // basic cleanup
@@ -69,7 +69,7 @@ class TaskService
         try {
             // updateFact with empty ID adds a new fact
             $individual->updateFact('', $gedcom, true);
-            return ['success' => true, 'message' => 'Task created'];
+            return ['success' => true, 'message' => \Fisharebest\Webtrees\I18N::translate('Task created')];
         } catch (\Throwable $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }

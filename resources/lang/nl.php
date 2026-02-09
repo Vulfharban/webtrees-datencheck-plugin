@@ -1,0 +1,82 @@
+<?php
+
+return [
+    'Data Check' => 'Gegevenscontrole',
+    'Checks for data inconsistencies.' => 'Controleert op inconsistenties in gegevens.',
+    'Settings' => 'Instellingen',
+    'Ignored Errors' => 'Genegeerde fouten',
+    'Overview & Analysis' => 'Overzicht & Analyse',
+    'Ignored Entries' => 'Genegeerde items',
+    
+    // Admin UI
+    'General' => 'Algemeen',
+    'Plausibility' => 'Plausibiliteit',
+    'Features' => 'Functies',
+    'Analysis' => 'Analyse',
+    'Consider Scandinavian naming conventions' => 'Houd rekening met Scandinavische naamlevingsconventies',
+    'Tolerates patronymics (e.g. -sen/-son/-datter) when comparing with father/mother.' => 'Tlereert patroniemen (bijv. -sen/-son/-datter) bij vergelijking met vader/moeder.',
+
+    // Naming Conventions
+    'Consider Slavic naming conventions' => 'Houd rekening met Slavische naamgevingsconventies',
+    'Tolerates gendered surnames (e.g. -ski/-ska, -ov/-ova).' => 'Tolereert geslachtsgebonden achternamen (bijv. -ski/-ska, -ov/-ova).',
+    'Consider Spanish double surnames' => 'Houd rekening met Spaanse dubbele achternamen',
+    'Tolerates combinations of father and mother surnames.' => 'Tolereert combinaties van vaders- en moedersachternamen.',
+    'Consider Dutch tussenvoegsels' => 'Houd rekening met Nederlandse tussenvoegsels',
+    'Ignores prefixes like "van", "de", "van der" during comparison.' => 'Negeert voorvoegsels zoals "van", "de", "van der" tijdens vergelijking.',
+    'Consider Greek naming conventions' => 'Houd rekening met Griekse naamgevingsconventies',
+    'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Tolereert geslachtsgebonden achtervoegsels (bijv. -is/-ou).',
+
+    'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'De achternaam "%s" lijkt een voorvoegsel "%s" te bevatten. In webtrees moet dit in het veld "Voorvoegsel" worden ingevoerd.',
+    
+    // JS Strings
+    'Processing individuals:' => 'Individuen verwerken:',
+    'Initializing...' => 'Initialiseren...',
+    'Analyzing...' => 'Analyseren...',
+    'Done!' => 'Klaar!',
+    'No issues found!' => 'Geen problemen gevonden!',
+    'Your tree is clean.' => 'Uw boom is schoon.',
+    'Possible duplicates found:' => 'Mogelijke duplicaten gevonden:',
+    'phonetically' => 'fonetisch',
+    'Compare' => 'Vergelijken',
+    'This person already exists as a child in this family:' => 'Deze persoon bestaat al als kind in dit gezin:',
+    'These parents already have a family:' => 'Deze ouders hebben al een gezin:',
+    'Use this family' => 'Gebruik dit gezin',
+    'Linked' => 'Gekoppeld',
+    'Could not find family input field. Please enter ID {ID} manually.' => 'Kon gezinsinvoerveld niet vinden. Voer ID {ID} handmatig in.',
+    'Person Comparison' => 'Persoonsvergelijking',
+    'Loading data...' => 'Gegevens laden...',
+    'Close' => 'Sluiten',
+    '⚖️ Datencheck' => '⚖️ Controle',
+    'Task' => 'Taak',
+    'Ignore' => 'Negeren',
+    'Saved' => 'Opgeslagen',
+    'Error' => 'Fout',
+    'Do you want to ignore this error for this person permanently?' => 'Wilt u deze fout voor deze persoon permanent negeren?',
+    
+    // Validation Labels
+    'Death date' => 'Overlijdensdatum',
+    'Burial date' => 'Begrafenisdatum',
+    'Date conflict' => 'Datumconflict',
+    'the death date' => 'de overlijdensdatum',
+    'the burial' => 'de begrafenis',
+    'Check age' => 'Controleer leeftijd',
+    'Check sequence' => 'Controleer volgorde',
+    'Possible duplicate' => 'Mogelijk duplicaat',
+    'Check sibling' => 'Controleer broers/zussen',
+    'Check name consistency' => 'Controleer naamconsistentie',
+    'Check name' => 'Controleer naam',
+    'Missing source' => 'Ontbrekende bron',
+    'the mother' => 'de moeder',
+    'the father' => 'de vader',
+    
+    'Complete data' => 'Gegevens aanvullen',
+    'Marriage count' => 'Aantal huwelijken',
+    'Check gender' => 'Controleer geslacht',
+    'Check marriage' => 'Controleer huwelijk',
+    'Travel speed' => 'Reissnelheid',
+    
+    'Missing parameters' => 'Ontbrekende parameters',
+    'Task created' => 'Taak aangemaakt',
+    'Person not found' => 'Persoon niet gevonden',
+    'Permission denied' => 'Toegang geweigerd',
+];

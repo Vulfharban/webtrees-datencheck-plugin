@@ -1,23 +1,23 @@
 
 
 <div class="container-fluid wt-page-content">
-    <h2><i class="fa fa-eye-slash"></i> Ignorierte Fehler</h2>
+    <h2><i class="fa fa-eye-slash"></i> <?= \Fisharebest\Webtrees\I18N::translate('Ignored Errors') ?></h2>
 
-    <p>Hier sind alle Fehler aufgelistet, die dauerhaft ausgeblendet wurden.</p>
+    <p><?= \Fisharebest\Webtrees\I18N::translate('List of all errors that have been permanently hidden.') ?></p>
 
     <?php if (empty($ignoredErrors)): ?>
         <div class="alert alert-info">
-            Keine ignorierten Fehler gefunden.
+            <?= \Fisharebest\Webtrees\I18N::translate('No ignored errors found.') ?>
         </div>
-    <?php else: ?>
+<?php else: ?>
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>Datum</th>
-                    <th>Person</th>
-                    <th>Fehler-Code</th>
-                    <th>Ignoriert von</th>
-                    <th>Aktion</th>
+                    <th><?= \Fisharebest\Webtrees\I18N::translate('Date') ?></th>
+                    <th><?= \Fisharebest\Webtrees\I18N::translate('Person') ?></th>
+                    <th><?= \Fisharebest\Webtrees\I18N::translate('Code / Type') ?></th>
+                    <th><?= \Fisharebest\Webtrees\I18N::translate('Ignored by') ?></th>
+                    <th><?= \Fisharebest\Webtrees\I18N::translate('Action') ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -35,12 +35,12 @@
                         </td>
                         <td><?= e($error->user_name) ?></td>
                         <td>
-                            <form method="post" action="<?= e(route('module', ['module' => $module_name, 'action' => 'AdminIgnored', 'tree' => $tree->name()])) ?>" onsubmit="return confirm('Soll dieser Fehler wirklich wieder angezeigt werden?');">
+                            <form method="post" action="<?= e(route('module', ['module' => $module_name, 'action' => 'AdminIgnored', 'tree' => $tree->name()])) ?>" onsubmit="return confirm('<?= \Fisharebest\Webtrees\I18N::translate('Should this error really be displayed again?') ?>');">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="xref" value="<?= e($error->xref) ?>">
                                 <input type="hidden" name="code" value="<?= e($error->error_code) ?>">
                                 <button type="submit" class="btn btn-sm btn-danger">
-                                    <i class="fa fa-trash"></i> Löschen
+                                    <i class="fa fa-trash"></i> <?= \Fisharebest\Webtrees\I18N::translate('Delete') ?>
                                 </button>
                             </form>
                         </td>
@@ -52,7 +52,7 @@
     
     <div style="margin-top: 20px;">
         <a href="<?= e(route(Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => $tree->name()])) ?>" class="btn btn-secondary">
-            <i class="fa fa-arrow-left"></i> Zurück zum Stammbaum
+            <i class="fa fa-arrow-left"></i> <?= \Fisharebest\Webtrees\I18N::translate('Back to tree') ?>
         </a>
     </div>
 </div>

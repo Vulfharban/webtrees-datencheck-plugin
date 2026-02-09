@@ -80,7 +80,7 @@ class InteractionService
             ->first();
 
         if (!$gedcomRow) {
-            return ['error' => 'Person not found'];
+            return ['error' => \Fisharebest\Webtrees\I18N::translate('Person not found')];
         }
 
         $gedcom = $gedcomRow->i_gedcom;

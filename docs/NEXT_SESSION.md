@@ -1,40 +1,23 @@
-# Webtrees Datencheck Plugin - Next Steps
-- **Version:** 0.9.2 (Export & Formatting)
-- **Status:** Feature Complete. Polished.
+# Webtrees Datencheck Plugin - Final Status
+- **Version:** 1.1.2 (Stable Release)
+- **Status:** Feature Complete.
 
-## Current Status (2026-02-08)
-- **✅ Version 0.9.2 - ABGESCHLOSSEN**
-- **✅ Features:**
-    - **CSV-Export:** Bulk-Analyse Ergebnisse können als CSV heruntergeladen werden (Excel-kompatibel).
-    - **Datums-Formatierung:** Fehlermeldungen zeigen nun lesbare Datumsangaben (z.B. "01.05.1980") statt nur Jahreszahlen.
-    - **GitHub-Integration:** Automatischer Update-Check via `latest-version.txt`.
-    - **Repository:** Code ist nun auf GitHub verfügbar.
+## Final Status (2026-02-09)
+- **✅ Version 1.1.2 - VERÖFFENTLICHT**
+- **✅ Highlights:**
+    - **Bugfixes:** Navigation "Zurück zum Stammbaum" und URL-Platzhalter korrigiert.
+    - **Internationalisierung (I18N):** Support für 25+ Sprachen inkl. Varianten (EN-GB/US/AU, FR-CA).
+    - **Skandinavische Namensregeln:** Erweiterte Patronym-Unterstützung (Island, Schweden, Dänemark, Norwegen).
+    - **Stabilität:** Robuste URL-Generierung und Fehlerbehandlung.
 
-## Completed Tasks (Phase 0.9.x)
+## Offene Punkte für die Zukunft (Backlog)
+Folgende Themen wurden identifiziert, sind aber für den aktuellen Release optional:
+1. **Orts-Normalisierung:**
+   - Unterstützung bei der Vereinheitlichung von Ortsnamen (z.B. "München, Bayern" vs. "Munich").
+   - Levenshtein-Distanz für Ortsnamen-Checks.
+2. **Performance-Optimierung:**
+   - Caching für Geodaten bei wiederholten Bulk-Analysen.
+   - Optimierung der Datenbankabfragen bei sehr großen Stammbäumen (>100.000 Personen).
 
-- [x] **Repository Setup**: Initiales Git-Repo erstellt, auf GitHub veröffentlicht.
-- [x] **Update Check**: `module.php` prüft nun `latest-version.txt` auf GitHub.
-- [x] **Export-Funktion**: CSV-Export Button im Analyse-Dashboard implementiert.
-- [x] **UI-Polishing**: `formatDate`-Helper für bessere Lesbarkeit von Fehlermeldungen.
-- [x] **Bugfixes**: CLI-Artefakte entfernt, `.gitignore` erstellt.
-
-## Nächste Session: Optimierung & Erweiterung
-
-## Offene Probleme / Bugs
-- (Keine kritischen Bugs bekannt)
-
-## Ziele für die nächste Session (v1.0.0?)
-1.  **Multi-Language Support (I18N):**
-    - Alle hardcodierten Strings durch Übersetzungsfunktionen ersetzen.
-    - Sprachdateien anlegen für: Deutsch, Englisch, Niederländisch (NL), Französisch (FR).
-    - Sicherstellen, dass die UI automatisch die richtige Sprache wählt.
-2.  **Geografische Validierung (Advanced):**
-    - Echte Distanzberechnung (km) zwischen Ereignissen (Tod/Geburt).
-    - Caching für Geodaten (um externe API-Calls zu minimieren, falls wir solche einführen).
-2.  **Performance:**
-    - Testen mit sehr großen Bäumen (100k+) -> Ggf. Chunk-Größe dynamisch anpassen.
-3.  **Refactoring:**
-    - Ggf. `ValidationService` weiter aufsplitten (z.B. `BiologicalCheck`, `TemporalCheck`), da die Datei recht groß wird.
-4.  **Orts-Vorschläge:**
-    - Ähnliche Ortsnamen finden und korrigieren (Levenshtein auf Orte).
-
+## Wartung
+Das Projekt ist nun in einem stabilen Wartungsmodus. Zukünftige Updates werden sich auf Bugfixes und Kompatibilität mit neuen webtrees-Versionen konzentrieren.

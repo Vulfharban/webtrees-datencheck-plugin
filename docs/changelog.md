@@ -2,6 +2,36 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.1.2] - 2026-02-09
+### Hinzugefügt
+- **Internationale Namenskonventionen**: Unterstützung für slawische (`-ski/-ska`), spanische (Doppelnamen), niederländische (Tussenvoegsels) und griechische (`-is/-ou`) Namensregeln.
+- **Prüfung auf Namensvorsätze**: Erkennt, wenn Vorsätze (z.B. "von", "van", "de") fälschlicherweise im Nachnamenfeld statt im Präfixfeld eingetragen wurden.
+- **Neue Sprachen**: Ukrainisch, Slowakisch, Ungarisch, Kroatisch, Rumänisch, Bulgarisch sowie Unterscheidungen für Englisch (GB/US/AU) und Französisch (CA).
+- **Isländische Sprachunterstützung**: Vollständige Lokalisierung für Isländisch (`is.php`) hinzugefügt.
+- **Optimierte Namensprüfung**: Verbesserte Behandlung von isländischen Patronymen (`-son` / `-dóttir`).
+### Behoben
+- **Navigation**: Korrektur des "Zurück zum Stammbaum"-Links (führt nun zur Startseite des Baums).
+- **URL-Encoding**: Behebung eines Fehlers mit ungültigen Platzhaltern in generierten Links (`%7Bxref%7D`).
+
+## [1.1.1] - 2026-02-09
+
+### Geändert
+- **Refactoring Übersetzungen**: Umstellung auf einheitliche englische Keys als Basis für alle Übersetzungen zur Vermeidung von Rückfällen auf Deutsch.
+
+### Behoben
+- **Übersetzungsfehler**: Korrektur von hartkodierten Textelementen im Interaktions-Modal und in API-Antworten.
+- **Biologische Validierung**: Fix für Argument-Typen in der Altersprüfung der Mutter.
+
+## [1.1.0] - 2026-02-09
+
+### Geändert
+- **Platzhalter-Vereinheitlichung**: Umstellung von `%s` auf `{ID}` in allen Sprachdateien für JS-Kompatibilität.
+
+### Behoben
+- **Modul-Variablen Fehler**: Fix für "Undefined variable $module" im Analyse-Backend.
+- **Sichtbarkeit**: Hilfsmethoden im `ValidationService` für den Zugriff durch spezialisierte Validatoren auf `public` gesetzt.
+- **Französische/Holländische Lokalisierung**: Veraltete deutsche Reste entfernt und durch korrekte Übersetzungen ersetzt.
+
 ## [0.9.2] - 2026-02-08
 ### Hinzugefügt
 - **CSV-Export**: Schaltfläche im Analyse-Dashboard zum Herunterladen aller Ergebnisse als CSV-Datei (Excel-optimiert).
