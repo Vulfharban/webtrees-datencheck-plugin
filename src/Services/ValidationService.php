@@ -379,6 +379,11 @@ class ValidationService
 
         if ($birthYear && $marriage->isOK()) {
             $marriageYear = $marriage->minimumDate()->year();
+            
+            if ($marriageYear >= $birthYear) {
+                return null;
+            }
+
             return [
                 'code' => 'MARRIAGE_BEFORE_BIRTH',
                 'type' => 'temporal_impossibility',
@@ -414,6 +419,11 @@ class ValidationService
 
         if ($deathYear && $marriage->isOK()) {
             $marriageYear = $marriage->minimumDate()->year();
+            
+            if ($marriageYear <= $deathYear) {
+                return null;
+            }
+
             return [
                 'code' => 'MARRIAGE_AFTER_DEATH',
                 'type' => 'temporal_impossibility',
