@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.1.3] - 2026-02-10
+### Hinzugefügt
+- **Benutzerabhängige Konfiguration**: Administratoren können nun ihre eigenen Grenzwerte und aktiven Prüfungen individuell für ihr Benutzerkonto speichern (DC-Präfix zur Einhaltung von DB-Limits).
+- **Erweiterte Tauf-Validierung**: Neue Prüfung für Taufen, die ungewöhnlich spät (>30 Tage) nach der Geburt stattfinden.
+- **Dokumentations-Update**: Umfassende Überarbeitung der README (DE/EN) und Aktualisierung der Roadmap.
+### Geändert
+- **Abschluss PHP-Migration**: Vollständige Entfernung des `datencheck_cli` Ordners; alle Algorithmen (Phonetik, Levenshtein, Geschwister-Check) laufen nun ausschließlich nativ in PHP.
+- **Optimierung**: Verkürzung der Einstellungsschlüssel zur Vermeidung von SQL-Fehlern bei langen Bezeichnern.
+### Behoben
+- **Alterscheck-Fehler**: Behebung eines Problems, bei dem Personen ohne Eltern fälschlicherweise sich selbst als zu jungen Vater/Mutter erkannten.
+- **SQL-Stabilität**: Behebung des "Data too long" Fehlers beim Speichern von Benutzer-Präferenzen.
+
 ## [1.1.2] - 2026-02-09
 ### Hinzugefügt
 - **Internationale Namenskonventionen**: Unterstützung für slawische (`-ski/-ska`), spanische (Doppelnamen), niederländische (Tussenvoegsels) und griechische (`-is/-ou`) Namensregeln.
