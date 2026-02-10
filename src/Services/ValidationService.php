@@ -58,10 +58,25 @@ class ValidationService
 
         // Temporal plausibility checks
         if ($person) {
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial));
+            $issue = Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial);
+            if ($issue) {
+                $issues[] = $issue;
+            }
+
+            $issue = Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial);
+            if ($issue) {
+                $issues[] = $issue;
+            }
+
+            $issue = Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap);
+            if ($issue) {
+                $issues[] = $issue;
+            }
+
+            $issue = Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
+            if ($issue) {
+                $issues[] = $issue;
+            }
         }
 
         // Marriage plausibility checks
