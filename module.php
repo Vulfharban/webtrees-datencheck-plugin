@@ -50,6 +50,36 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 {
     use ModuleConfigTrait;
 
+    /**
+     * Get a setting, preferring user-specific settings if available.
+     * Falls back to global module preferences.
+     */
+    public function getSetting(string $key, $default = null): string
+    {
+        $user = Auth::user();
+        if ($user) {
+            $user_val = $user->getPreference('DC_' . $key);
+            if ($user_val !== null && $user_val !== '') {
+                return (string) $user_val;
+            }
+        }
+        
+        return (string) $this->getPreference($key, (string)$default);
+    }
+
+    /**
+     * Set a setting, preferring user-specific settings if available.
+     */
+    public function setSetting(string $key, string $value): void
+    {
+        $user = Auth::user();
+        if ($user) {
+            $user->setPreference('DC_' . $key, $value);
+        } else {
+            $this->setPreference($key, $value);
+        }
+    }
+
     private int $menu_order = 0;
     private int $footer_order = 0;
 
@@ -75,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.1.2';
+        return '1.1.3';
     }
 
     public function getVersion(): string
@@ -424,8 +454,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $relType = $params['rel_type'] ?? 'child';
             $given = $params['given_name'] ?? '';
             $surname = $params['surname'] ?? '';
+            $bap = $params['baptism_date'] ?? '';
 
-            $result = ValidationService::validatePerson($person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree, $marrFormatted, $relType, $given, $surname);
+            $result = ValidationService::validatePerson($person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree, $marrFormatted, $relType, $given, $surname, $bap);
 
             return response(json_encode($result))
                 ->withHeader('Content-Type', 'application/json');
@@ -449,8 +480,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $surname = $params['surname'] ?? '';
             $birth = $params['birth_date'] ?? '';
 
-            $fuzzyDiffHighAge = (int)$this->getPreference('fuzzy_diff_high_age', '6');
-            $fuzzyDiffDefault = (int)$this->getPreference('fuzzy_diff_default', '2');
+            $fuzzyDiffHighAge = (int)$this->getSetting('fuzzy_diff_high_age', '6');
+            $fuzzyDiffDefault = (int)$this->getSetting('fuzzy_diff_default', '2');
 
             $data = InteractionService::runInteractiveCheck($tree, $given, $surname, $birth, $fuzzyDiffHighAge, $fuzzyDiffDefault);
 
@@ -495,9 +526,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         
         // Prepare variables for the view
         $title = $this->title();
-        $fuzzy_diff_high_age = $this->getPreference('fuzzy_diff_high_age', '6');
-        $fuzzy_diff_default = $this->getPreference('fuzzy_diff_default', '2');
-        $enable_scandinavian_patronymics = $this->getPreference('enable_scandinavian_patronymics', '0');
+        $fuzzy_diff_high_age = $this->getSetting('fuzzy_diff_high_age', '6');
+        $fuzzy_diff_default = $this->getSetting('fuzzy_diff_default', '2');
+        $enable_scand_patronym = $this->getSetting('enable_scand_patronym', '0');
         $module = $this;
         
         // Generate CSRF token for the form
@@ -592,30 +623,30 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     {
         $params = $request->getParsedBody();
 
-        $this->setPreference('fuzzy_diff_high_age', $params['fuzzy_diff_high_age'] ?? '6');
-        $this->setPreference('fuzzy_diff_default', $params['fuzzy_diff_default'] ?? '2');
+        $this->setSetting('fuzzy_diff_high_age', $params['fuzzy_diff_high_age'] ?? '6');
+        $this->setSetting('fuzzy_diff_default', $params['fuzzy_diff_default'] ?? '2');
         
         // Save validation settings
-        $this->setPreference('max_marriages_warning', $params['max_marriages_warning'] ?? '5');
-        $this->setPreference('enable_missing_data_checks', isset($params['enable_missing_data_checks']) ? '1' : '0');
-        $this->setPreference('enable_geographic_checks', isset($params['enable_geographic_checks']) ? '1' : '0');
-        $this->setPreference('enable_name_consistency_checks', isset($params['enable_name_consistency_checks']) ? '1' : '0');
-        $this->setPreference('enable_scandinavian_patronymics', isset($params['enable_scandinavian_patronymics']) ? '1' : '0');
-        $this->setPreference('enable_slavic_surnames', isset($params['enable_slavic_surnames']) ? '1' : '0');
-        $this->setPreference('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
-        $this->setPreference('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
-        $this->setPreference('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
-        $this->setPreference('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
+        $this->setSetting('max_marriages_warning', $params['max_marriages_warning'] ?? '5');
+        $this->setSetting('enable_missing_data_checks', isset($params['enable_missing_data_checks']) ? '1' : '0');
+        $this->setSetting('enable_geographic_checks', isset($params['enable_geographic_checks']) ? '1' : '0');
+        $this->setSetting('enable_name_checks', isset($params['enable_name_consistency_checks']) ? '1' : '0');
+        $this->setSetting('enable_scand_patronym', isset($params['enable_scandinavian_patronymics']) ? '1' : '0');
+        $this->setSetting('enable_slavic_surnames', isset($params['enable_slavic_surnames']) ? '1' : '0');
+        $this->setSetting('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
+        $this->setSetting('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
+        $this->setSetting('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
+        $this->setSetting('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
         
         // Save threshold preferences
-        $this->setPreference('min_mother_age', $params['min_mother_age'] ?? '14');
-        $this->setPreference('max_mother_age', $params['max_mother_age'] ?? '50');
-        $this->setPreference('min_father_age', $params['min_father_age'] ?? '14');
-        $this->setPreference('max_father_age', $params['max_father_age'] ?? '80');
-        $this->setPreference('max_lifespan', $params['max_lifespan'] ?? '120');
-        $this->setPreference('max_marriage_age_warning', $params['max_marriage_age_warning'] ?? '100');
-        $this->setPreference('min_marriage_age_warning', $params['min_marriage_age_warning'] ?? '15');
-        $this->setPreference('min_sibling_spacing_warning', $params['min_sibling_spacing_warning'] ?? '9');
+        $this->setSetting('min_mother_age', $params['min_mother_age'] ?? '14');
+        $this->setSetting('max_mother_age', $params['max_mother_age'] ?? '50');
+        $this->setSetting('min_father_age', $params['min_father_age'] ?? '14');
+        $this->setSetting('max_father_age', $params['max_father_age'] ?? '80');
+        $this->setSetting('max_lifespan', $params['max_lifespan'] ?? '120');
+        $this->setSetting('max_marriage_age_warning', $params['max_marriage_age_warning'] ?? '100');
+        $this->setSetting('min_marriage_age_warning', $params['min_marriage_age_warning'] ?? '15');
+        $this->setSetting('min_sibling_spacing_warning', $params['min_sibling_spacing_warning'] ?? '9');
         
         \Fisharebest\Webtrees\FlashMessages::addMessage(\Fisharebest\Webtrees\I18N::translate('Settings saved successfully.'), 'success');
         

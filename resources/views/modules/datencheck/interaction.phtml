@@ -526,12 +526,23 @@ document.addEventListener("DOMContentLoaded", function() {
     const getContext = () => {
         const url = window.location.href;
         const urlParams = new URLSearchParams(window.location.search);
-        const urlAction = urlParams.get('action') || "";
+        const urlAction = (urlParams.get('action') || "").toLowerCase();
         const pageTitle = (document.title || "").toLowerCase();
         
-        // 1. Detect if we are adding a new relative
-        const isAdd = url.includes('add-') || url.includes('add_') || urlParams.get('action')?.includes('add') || 
-                      pageTitle.includes('hinzufügen') || pageTitle.includes('add ');
+        // Resolve form XREF first to help determine context
+        let formXref = document.querySelector('input[name="xref"], [id*="xref"], [id*="indi"], [id*="indi_id"]')?.value || "";
+        formXref = formXref.replace(/[^A-Z0-9]/g, '');
+
+        // 1. Detect if we are adding a NEW relative (and not just data to a person)
+        // If we have a form XREF, we are editing/adding data to an EXISTNG person.
+        // If urlAction is edit or contains fact/event, we are not adding a new person.
+        const isEditAction = urlAction.includes('edit') || urlAction.includes('update') || 
+                             urlAction.includes('fact') || urlAction.includes('event') ||
+                             urlAction.includes('change');
+        
+        const isAdd = (url.includes('add-') || url.includes('add_') || urlAction.includes('add') || 
+                       pageTitle.includes('hinzufügen') || pageTitle.includes('add ')) && 
+                       !isEditAction && !formXref;
         
         // 2. Extract XREF from URL (might be the subject or a parent)
         let urlXref = urlParams.get('xref') || urlParams.get('indiv') || urlParams.get('person') || "";
@@ -547,7 +558,10 @@ document.addEventListener("DOMContentLoaded", function() {
         let marr = "";
         let relType = "child"; // default
 
-        if (isAdd) {
+        const isAddingRelative = urlAction.includes('add_child') || urlAction.includes('add_spouse') || 
+                                 urlAction.includes('add_parent') || urlAction.includes('add_indi');
+        
+        if (isAdd && isAddingRelative) {
             xref = ""; 
             if (urlXref.startsWith('X') || urlXref.startsWith('I')) husb = urlXref;
             if (urlXref.startsWith('F')) fam = urlXref;
@@ -652,16 +666,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 .filter(val => val.length > 0);
         };
 
-        const birth = getBestDate(['BIRT', 'BIRTH'], ['CHR', 'BAPM']);
-        const death = getVal(['DEAT', 'DEATH']);
-        const burial = getVal(['BURI', 'BURIAL']);
+        const birth = getBestDate(['BIRT', 'BIRTH'], ['CHR', 'BAPM', 'BAPTISM']);
+        const baptism = getVal(['CHR', 'BAPM', 'BAPTISM']);
+        const death = getBestDate(['DEAT', 'DEATH'], ['BURI', 'BURIAL', 'CREM']);
+        const burial = getVal(['BURI', 'BURIAL', 'CREM']);
         const givens = getNames(['GIVN', 'GIVEN']);
         const surnames = getNames(['SURN', 'SURNAME']);
-        
         const url = "<?= $validation_url ?>" + 
             "?given_name=" + encodeURIComponent(givens.join('|')) + 
             "&surname=" + encodeURIComponent(surnames.join('|')) + 
             "&birth_date=" + encodeURIComponent(birth) +
+            "&baptism_date=" + encodeURIComponent(baptism) +
             "&death_date=" + encodeURIComponent(death) +
             "&burial_date=" + encodeURIComponent(burial) +
             "&xref=" + encodeURIComponent(context.xref) +

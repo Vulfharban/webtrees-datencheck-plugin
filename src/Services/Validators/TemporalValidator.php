@@ -53,7 +53,7 @@ class TemporalValidator extends AbstractValidator
 
         if ($birthYear && $endYear) {
             $lifespan = $endYear - $birthYear;
-            $maxLifespan = $module ? (int)$module->getPreference('max_lifespan', '120') : 120;
+            $maxLifespan = (int)ValidationService::getModuleSetting($module, 'max_lifespan', '120');
 
             if ($lifespan > $maxLifespan) {
                 return [
@@ -78,11 +78,10 @@ class TemporalValidator extends AbstractValidator
     /**
      * Check if baptism is before birth
      */
-    public static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = ''): ?array
+    public static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = '', string $overrideBap = ''): ?array
     {
         $birthJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        $bapFact = $person ? $person->facts(['CHR', 'BAPM'])->first() : null;
-        $bapJD = $bapFact && $bapFact->date()->isOK() ? $bapFact->date()->minimumJulianDay() : null;
+        $bapJD = ValidationService::getEffectiveJD($person, 'CHR', $overrideBap);
 
         if ($birthJD && $bapJD && $bapJD < $birthJD) {
             return [
@@ -92,6 +91,21 @@ class TemporalValidator extends AbstractValidator
                 'severity' => 'error',
                 'message' => self::translate('Baptism is before birth.'),
             ];
+        }
+
+        // Proximity check: Baptism should be close to birth (e.g. within 30 days for infant baptism)
+        // Only if it's Christening (CHR) or if we want to be strict
+        if ($birthJD && $bapJD && $bapJD > $birthJD) {
+            $diff = $bapJD - $birthJD;
+            if ($diff > 30 && $diff < 3650) { // More than 30 days but less than 10 years (likely not adult baptism yet)
+                return [
+                    'code' => 'BAPTISM_DELAYED',
+                    'type' => 'chronological_inconsistency',
+                    'label' => self::translate('Check sequence'),
+                    'severity' => 'warning',
+                    'message' => self::translate('Baptism is unusually long after birth (%d days).', $diff),
+                ];
+            }
         }
 
         return null;

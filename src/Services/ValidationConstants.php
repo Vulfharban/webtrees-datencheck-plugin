@@ -39,6 +39,7 @@ class ValidationConstants
         'SURNAME_MISMATCH_FATHER'       => 'Nachname weicht von Vater ab',
         'DUPLICATE_SIBLING'             => 'Doppeltes Kind (Geschwister)',
         'SIBLING_TOO_CLOSE'             => 'Abstand zu Geschwister zu klein',
+        'BAPTISM_DELAYED'               => 'Taufe ungewöhnlich spät',
     ];
 
     private static array $labels_en = [
@@ -76,6 +77,7 @@ class ValidationConstants
         'SURNAME_MISMATCH_FATHER'       => 'Surname mismatch with father',
         'DUPLICATE_SIBLING'             => 'Duplicate child (sibling)',
         'SIBLING_TOO_CLOSE'             => 'Sibling spacing too small',
+        'BAPTISM_DELAYED'               => 'Baptism unusually late',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string

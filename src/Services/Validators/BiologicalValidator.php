@@ -19,8 +19,8 @@ class BiologicalValidator extends AbstractValidator
         if ($childYear && $motherYear) {
             $motherAge = $childYear - $motherYear;
             
-            $minAge = $module ? (int)$module->getPreference('min_mother_age', '14') : 14;
-            $maxAge = $module ? (int)$module->getPreference('max_mother_age', '50') : 50;
+            $minAge = (int)ValidationService::getModuleSetting($module, 'min_mother_age', '14');
+            $maxAge = (int)ValidationService::getModuleSetting($module, 'max_mother_age', '50');
 
             if ($motherAge < $minAge) {
                 return [
@@ -69,8 +69,8 @@ class BiologicalValidator extends AbstractValidator
         if ($childYear && $fatherYear) {
             $fatherAge = $childYear - $fatherYear;
             
-            $minAge = $module ? (int)$module->getPreference('min_father_age', '14') : 14;
-            $maxAge = $module ? (int)$module->getPreference('max_father_age', '80') : 80;
+            $minAge = (int)ValidationService::getModuleSetting($module, 'min_father_age', '14');
+            $maxAge = (int)ValidationService::getModuleSetting($module, 'max_father_age', '80');
 
             if ($fatherAge < $minAge) {
                 return [

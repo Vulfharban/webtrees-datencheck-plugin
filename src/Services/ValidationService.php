@@ -16,7 +16,24 @@ use Wolfrum\Datencheck\Services\Validators;
  */
 class ValidationService
 {
-    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $overrideMarr = '', string $relType = 'child', string $overrideGiven = '', string $overrideSurname = ''): array
+    /**
+     * Helper to get a setting from a module object, preferring its 'getSetting'
+     * method if it exists (for user-dependent config), or falling back to 'getPreference'.
+     */
+    public static function getModuleSetting(?object $module, string $key, string $default = ''): string
+    {
+        if (!$module) {
+            return $default;
+        }
+        
+        if (method_exists($module, 'getSetting')) {
+            return $module->getSetting($key, $default);
+        }
+        
+        return $module->getPreference($key, $default);
+    }
+
+    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child', string $overrideGiven = '', string $overrideSurname = '', string $overrideBap = ''): array
     {
         $issues = [];
         $debug = [];
@@ -40,10 +57,15 @@ class ValidationService
         }
 
         // Temporal plausibility checks
-        $issues = array_merge($issues, self::checkTemporalPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial));
+        if ($person) {
+            $issues = array_merge($issues, Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial));
+            $issues = array_merge($issues, Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial));
+            $issues = array_merge($issues, Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap));
+            $issues = array_merge($issues, Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial));
+        }
 
         // Marriage plausibility checks
-        $issues = array_merge($issues, self::checkMarriagePlausibilityInteractive($person, $module, $overrideBirth, $overrideDeath, $overrideHusb, $overrideWife, $overrideFam, $tree, $overrideMarr, $relType));
+        $issues = array_merge($issues, self::checkMarriagePlausibilityInteractive($person, $module, $overrideBirth, $overrideDeath, $overrideHusb, $overrideWife, $overrideFam, $tree, $marrOverride, $relType));
         if ($person) {
             $issues = array_merge($issues, self::checkMarriagePlausibility($person, $module));
             $issues = array_merge($issues, self::checkGenderConsistency($person));
@@ -51,19 +73,19 @@ class ValidationService
 
         // Optional checks (only if enabled in module settings)
         if ($module) {
-            if ($module->getPreference('enable_missing_data_checks', '0') === '1') {
+            if (self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1') {
                 $issues = array_merge($issues, self::checkMissingData($person));
             }
 
-            if ($module->getPreference('enable_geographic_checks', '0') === '1') {
+            if (self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1') {
                 $issues = array_merge($issues, self::checkGeographicPlausibility($person));
             }
 
-            if ($module->getPreference('enable_name_consistency_checks', '0') === '1') {
+            if (self::getModuleSetting($module, 'enable_name_checks', '0') === '1') {
                 $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
             }
 
-            if ($module->getPreference('enable_source_checks', '0') === '1') {
+            if (self::getModuleSetting($module, 'enable_source_checks', '0') === '1') {
                 $issues = array_merge($issues, self::checkSourceQuality($person));
             }
         }
@@ -153,7 +175,17 @@ class ValidationService
         // From DB
         if ($person) {
             foreach ($person->childFamilies() as $family) {
-                $parents[] = ['mother' => $family->wife(), 'father' => $family->husband()];
+                $father = $family->husband();
+                $mother = $family->wife();
+                
+                // Safety: Skip if person is their own parent (normalize XREFs for reliable comparison)
+                $pXref = trim($person->xref(), '@');
+                if ($father && trim($father->xref(), '@') === $pXref) $father = null;
+                if ($mother && trim($mother->xref(), '@') === $pXref) $mother = null;
+                
+                if ($father || $mother) {
+                    $parents[] = ['mother' => $mother, 'father' => $father];
+                }
             }
         }
 
@@ -246,7 +278,16 @@ class ValidationService
             }
             
             if ($husb || $wife) {
-                $parents[] = ['mother' => $wife, 'father' => $husb];
+                // Safety: Skip overrides if they point to the person themselves
+                if ($person) {
+                    $pXref = trim($person->xref(), '@');
+                    if ($husb && trim($husb->xref(), '@') === $pXref) $husb = null;
+                    if ($wife && trim($wife->xref(), '@') === $pXref) $wife = null;
+                }
+                
+                if ($husb || $wife) {
+                    $parents[] = ['mother' => $wife, 'father' => $husb];
+                }
             }
         }
 
@@ -515,8 +556,9 @@ class ValidationService
         
         $subjBirth = self::parseYearOnly($birth);
         $subjDeath = self::parseYearOnly($death);
-        $maxMarrAge = $module ? (int)$module->getPreference('max_marriage_age_warning', '100') : 100;
-        $minMarrAge = $module ? (int)$module->getPreference('min_marriage_age_warning', '15') : 15;
+        
+        $maxMarrAge = (int)self::getModuleSetting($module, 'max_marriage_age_warning', '100');
+        $minMarrAge = (int)self::getModuleSetting($module, 'min_marriage_age_warning', '15');
 
         foreach ($partners as $p) {
             $indiv = $p['indiv'];
@@ -643,7 +685,7 @@ class ValidationService
         $families = $person->spouseFamilies();
 
         // Check for too many marriages
-        $maxMarriages = $module ? (int)$module->getPreference('max_marriages_warning', '5') : 5;
+        $maxMarriages = (int)self::getModuleSetting($module, 'max_marriages_warning', '5');
         $marriageCount = $families->count();
 
         if ($marriageCount > $maxMarriages) {
@@ -1070,20 +1112,20 @@ class ValidationService
                     $fSurnNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($fSurn)), 'UTF-8'));
                     if ($childSurnNorm === $fSurnNorm || str_contains($fSurnNorm, $childSurnNorm) || str_contains($childSurnNorm, $fSurnNorm)) {
                         $fatherMatch = true;
-                    } elseif ($module && $module->getPreference('enable_scandinavian_patronymics', '0') === '1') {
+                    } elseif (self::getModuleSetting($module, 'enable_scand_patronym', '0') === '1') {
                         // Check for Scandinavian patronymics
                         if (self::isScandinavianPatronymicMatch($father, $surnamePrimary)) {
                             $fatherMatch = true;
                         }
-                    } elseif ($module && $module->getPreference('enable_slavic_surnames', '0') === '1' && $person) {
+                    } elseif (self::getModuleSetting($module, 'enable_slavic_surnames', '0') === '1' && $person) {
                         if (self::isSlavicSurnameMatch($father, $surnamePrimary, $person)) {
                             $fatherMatch = true;
                         }
-                    } elseif ($module && $module->getPreference('enable_greek_surnames', '0') === '1' && $person) {
+                    } elseif (self::getModuleSetting($module, 'enable_greek_surnames', '0') === '1' && $person) {
                         if (self::isGreekSurnameMatch($father, $surnamePrimary, $person)) {
                             $fatherMatch = true;
                         }
-                    } elseif ($module && $module->getPreference('enable_dutch_tussenvoegsels', '0') === '1') {
+                    } elseif (self::getModuleSetting($module, 'enable_dutch_tussenvoegsels', '0') === '1') {
                         if (self::isDutchSurnameMatch(self::getIndividualSurname($father), $surnamePrimary)) {
                             $fatherMatch = true;
                         }
@@ -1095,12 +1137,12 @@ class ValidationService
                     $mSurnNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($mSurn)), 'UTF-8'));
                     if ($childSurnNorm === $mSurnNorm || str_contains($mSurnNorm, $childSurnNorm) || str_contains($childSurnNorm, $mSurnNorm)) {
                         $motherMatch = true;
-                    } elseif ($module && $module->getPreference('enable_scandinavian_patronymics', '0') === '1') {
+                    } elseif (self::getModuleSetting($module, 'enable_scand_patronym', '0') === '1') {
                         // Check for Scandinavian patronymics (sometimes mother's name is used)
                         if (self::isScandinavianPatronymicMatch($mother, $surnamePrimary)) {
                             $motherMatch = true;
                         }
-                    } elseif ($module && $module->getPreference('enable_slavic_surnames', '0') === '1' && $person) {
+                    } elseif (self::getModuleSetting($module, 'enable_slavic_surnames', '0') === '1' && $person) {
                         if (self::isSlavicSurnameMatch($mother, $surnamePrimary, $person)) {
                             $motherMatch = true;
                         }
@@ -1348,8 +1390,16 @@ class ValidationService
         switch($type) {
             case 'BIRT': $date = $person->getBirthDate(); break;
             case 'DEAT': $date = $person->getDeathDate(); break;
+            case 'CHR': 
+                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
             case 'BURI':
                 $fact = $person->facts(['BURI'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'MARR':
+                $fact = $person->facts(['MARR'])->first();
                 $date = $fact ? $fact->date() : null;
                 break;
         }

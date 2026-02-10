@@ -1,7 +1,7 @@
 {
     "name": "wolfrum/datencheck",
     "type": "webtrees-module",
-    "description": "A webtrees plugin to check for data consistency using a Rust backend.",
+    "description": "A webtrees plugin to check for data consistency and logical errors.",
     "authors": [
         {
             "name": "Christian Wolfrum",

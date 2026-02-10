@@ -114,7 +114,7 @@
                         class="form-control" 
                         id="max_marriages_warning" 
                         name="max_marriages_warning" 
-                        value="<?= htmlspecialchars($module->getPreference('max_marriages_warning', '5')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('max_marriages_warning', '5')) ?>"
                         min="1"
                         max="20"
                         required
@@ -138,7 +138,7 @@
                         class="form-control" 
                         id="min_mother_age" 
                         name="min_mother_age" 
-                        value="<?= htmlspecialchars($module->getPreference('min_mother_age', '14')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('min_mother_age', '14')) ?>"
                         min="10"
                         max="20"
                         required
@@ -159,7 +159,7 @@
                         class="form-control" 
                         id="max_mother_age" 
                         name="max_mother_age" 
-                        value="<?= htmlspecialchars($module->getPreference('max_mother_age', '50')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('max_mother_age', '50')) ?>"
                         min="40"
                         max="70"
                         required
@@ -180,7 +180,7 @@
                         class="form-control" 
                         id="min_father_age" 
                         name="min_father_age" 
-                        value="<?= htmlspecialchars($module->getPreference('min_father_age', '14')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('min_father_age', '14')) ?>"
                         min="10"
                         max="20"
                         required
@@ -201,7 +201,7 @@
                         class="form-control" 
                         id="max_father_age" 
                         name="max_father_age" 
-                        value="<?= htmlspecialchars($module->getPreference('max_father_age', '80')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('max_father_age', '80')) ?>"
                         min="60"
                         max="100"
                         required
@@ -222,7 +222,7 @@
                         class="form-control" 
                         id="max_lifespan" 
                         name="max_lifespan" 
-                        value="<?= htmlspecialchars($module->getPreference('max_lifespan', '120')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('max_lifespan', '120')) ?>"
                         min="100"
                         max="150"
                         required
@@ -243,7 +243,7 @@
                         class="form-control" 
                         id="max_marriage_age_warning" 
                         name="max_marriage_age_warning" 
-                        value="<?= htmlspecialchars($module->getPreference('max_marriage_age_warning', '100')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('max_marriage_age_warning', '100')) ?>"
                         min="60"
                         max="120"
                         required
@@ -264,7 +264,7 @@
                         class="form-control" 
                         id="min_marriage_age_warning" 
                         name="min_marriage_age_warning" 
-                        value="<?= htmlspecialchars($module->getPreference('min_marriage_age_warning', '15')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('min_marriage_age_warning', '15')) ?>"
                         min="10"
                         max="30"
                         required
@@ -285,7 +285,7 @@
                         class="form-control" 
                         id="min_sibling_spacing_warning" 
                         name="min_sibling_spacing_warning" 
-                        value="<?= htmlspecialchars($module->getPreference('min_sibling_spacing_warning', '9')) ?>"
+                        value="<?= htmlspecialchars($module->getSetting('min_sibling_spacing_warning', '9')) ?>"
                         min="1"
                         max="24"
                         required
@@ -320,7 +320,7 @@
                             id="enable_missing_data_checks" 
                             name="enable_missing_data_checks" 
                             value="1"
-                            <?= $module->getPreference('enable_missing_data_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_missing_data_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_missing_data_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check missing data') ?></strong><br>
@@ -335,7 +335,7 @@
                             id="enable_geographic_checks" 
                             name="enable_geographic_checks" 
                             value="1"
-                            <?= $module->getPreference('enable_geographic_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_geographic_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_geographic_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check geographic plausibility') ?></strong><br>
@@ -350,7 +350,7 @@
                             id="enable_name_consistency_checks" 
                             name="enable_name_consistency_checks" 
                             value="1"
-                            <?= $module->getPreference('enable_name_consistency_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_name_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_name_consistency_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check name consistency') ?></strong><br>
@@ -365,7 +365,7 @@
                             id="enable_scandinavian_patronymics" 
                             name="enable_scandinavian_patronymics" 
                             value="1"
-                            <?= $module->getPreference('enable_scandinavian_patronymics', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_scand_patronym', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_scandinavian_patronymics">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Scandinavian naming conventions') ?></strong><br>
@@ -380,7 +380,7 @@
                             id="enable_slavic_surnames" 
                             name="enable_slavic_surnames" 
                             value="1"
-                            <?= $module->getPreference('enable_slavic_surnames', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_slavic_surnames', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_slavic_surnames">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Slavic naming conventions') ?></strong><br>
@@ -395,7 +395,7 @@
                             id="enable_spanish_surnames" 
                             name="enable_spanish_surnames" 
                             value="1"
-                            <?= $module->getPreference('enable_spanish_surnames', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_spanish_surnames', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_spanish_surnames">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Spanish double surnames') ?></strong><br>
@@ -410,7 +410,7 @@
                             id="enable_dutch_tussenvoegsels" 
                             name="enable_dutch_tussenvoegsels" 
                             value="1"
-                            <?= $module->getPreference('enable_dutch_tussenvoegsels', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_dutch_tussenvoegsels', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_dutch_tussenvoegsels">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Dutch tussenvoegsels') ?></strong><br>
@@ -425,7 +425,7 @@
                             id="enable_greek_surnames" 
                             name="enable_greek_surnames" 
                             value="1"
-                            <?= $module->getPreference('enable_greek_surnames', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_greek_surnames', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_greek_surnames">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Greek naming conventions') ?></strong><br>
@@ -440,7 +440,7 @@
                             id="enable_source_checks" 
                             name="enable_source_checks" 
                             value="1"
-                            <?= $module->getPreference('enable_source_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_source_checks', '0') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_source_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check source requirement') ?></strong><br>
@@ -570,8 +570,11 @@
             <button type="submit" class="btn btn-primary">
                 <?= \Fisharebest\Webtrees\I18N::translate('save') ?>
             </button>
+            <span class="text-muted ms-3 small">
+                <i class="fa fa-user-circle"></i> <?= \Fisharebest\Webtrees\I18N::translate('These settings are saved for your user account.') ?>
+            </span>
             
-            <a href="<?= $control_panel_url ?>" class="btn btn-secondary">
+            <a href="<?= $control_panel_url ?>" class="btn btn-secondary ms-2">
                 <?= \Fisharebest\Webtrees\I18N::translate('cancel') ?>
             </a>
         </div>

@@ -1,75 +1,62 @@
 # webtrees Datencheck Plugin
 
-Ein webtrees-Modul zur erweiterten Überprüfung und Validierung von genealogischen Daten.
-
-Dieses Plugin bietet leistungsstarke Werkzeuge zur Identifizierung von Dubletten, logischen Fehlern und fehlenden Daten in Ihrem Stammbaum, die über die Standardfunktionen von webtrees hinausgehen.
+Ein leistungsstarkes webtrees-Modul zur erweiterten Überprüfung, Validierung und Bereinigung genealogischer Daten. Dieses Plugin wurde entwickelt, um über die Standard-Plausibilitätsprüfungen hinaus sicherzustellen, dass Ihr Stammbaum höchsten Qualitätsstandards entspricht.
 
 ![Screenshot](https://raw.githubusercontent.com/Vulfharban/webtrees-datencheck-plugin/main/resources/images/datencheck_icon.png)
 
-## Funktionen
+## 🌟 Hauptmerkmale
 
-### 🔍 Tiefgehende Dubletten-Erkennung
-- **Echtzeit-Warnungen** beim Erstellen von Personen.
-- **Phonetischer Abgleich** (Kölner Phonetik & Levenshtein-Distanz) findet ähnlich klingende Namen.
-- **Familien-Kontext**: Prüft nicht nur den Namen, sondern auch Eltern und Geschwisterkonstellationen.
-- **Side-by-Side Vergleich**: Detailliertes Modal zum Vergleich von Dubletten-Kandidaten.
+### 🔍 Intelligente Dubletten-Erkennung
+Vermeiden Sie doppelt angelegte Personen bereits im Entstehungsprozess.
+*   **Echtzeit-Validierung:** Schon während der Dateneingabe (Name, Geburtsdatum) sucht das System im Hintergrund nach potenziellen Treffern.
+*   **Phonetik & Fuzzy-Match:** Nutzt die **Kölner Phonetik** für deutsche Namen und die **Levenshtein-Distanz** für Tippfehler-Toleranz. So werden auch "Meier" und "Maier" oder "Christoph" und "Kristof" erkannt.
+*   **Kontext-Analyse:** Das System vergleicht nicht nur Namen, sondern auch Eltern und Geschwister, um die Genauigkeit bei häufig vorkommenden Namen zu erhöhen.
+*   **Interaktiver Vergleich:** Ein detailliertes "Side-by-Side"-Modal erlaubt den direkten Vergleich zwischen dem neuen Datensatz und bestehenden Personen, bevor eine Dublette entsteht.
 
-### ✅ Erweiterte Validierung (Plausibilitäts-Checks)
-- **Biologische Plausibilität**:
-  - Warnung bei Eltern, die bei der Geburt ungewöhnlich jung (<14) oder alt (>50/80) waren.
-  - Erkennung von Geburten nach dem Tod der Eltern (unter Berücksichtigung posthumer Geburten).
-- **Zeitliche Logik**:
-  - Heirat vor Geburt oder nach Tod.
-  - Bestattung vor Tod oder Taufe vor Geburt.
-- **Namens-Konsistenz**: Prüft auf fehlende Nachnamen oder Unstimmigkeiten zum Vater.
-- **Quellen-Prüfung**: Markiert wichtige Ereignisse (Geburt, Tod, Ehe) ohne Quellenangabe.
+### ✅ Erweiterte Plausibilitätsprüfungen
+Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeiten.
+*   **Biologische Grenzen:**
+    *   **Alters-Schwellenwerte:** Warnungen bei Eltern, die bei der Geburt ungewöhnlich jung (<14) oder alt (>50 bei Müttern, >80 bei Vätern) waren (konfigurierbar).
+    *   **Posthume Geburten:** Erkennt Geburten nach dem Tod des Vaters (bis zu 9 Monate danach zulässig) oder der Mutter (unmöglich).
+*   **Zeitliche Logik:**
+    *   **Lebensereignisse:** Prüft die korrekte Reihenfolge: Geburt → Taufe → Heirat → Tod → Bestattung.
+    *   **Tauf-Check:** Neue Warnung, wenn eine Taufe ungewöhnlich spät (z.B. nach mehr als 30 Tagen, konfigurierbar) nach der Geburt stattfindet – wichtig für die Identifizierung von Erwachsentaufen oder späten Quellen.
+    *   **Lebensspanne:** Anpassbare Warnung bei extremem Alter (z.B. >120 Jahre).
+*   **Namens- & Formalkonsistenz:**
+    *   Prüft auf fehlende Nachnamen oder Unstimmigkeiten zwischen Kindern und Vätern.
+    *   **Internationale Regeln:** Unterstützung für skandinavische Patronymika (-sen/-datter), slawische Endungen (-ski/-ska), spanische Doppelnamen und niederländische Tussenvoegsels.
 
-### 📊 Bulk-Analyse & Reporting
-- **Gesamt-Check**: Prüfen Sie Ihren gesamten Stammbaum auf einmal.
-- **CSV-Export**: Laden Sie die Fehlerliste als Excel-kompatible CSV-Datei herunter.
-- **Fortschrittsanzeige**: Robuste Verarbeitung auch bei großen Bäumen (Chunking).
+### 📊 Analyse-Dashboard & Reporting
+Behalten Sie den Überblick über die Datenqualität Ihres gesamten Stammbaums.
+*   **Bulk-Analyse:** Scannt den kompletten Baum in effizienten Chunks (auch für sehr große Bäume geeignet).
+*   **Fehler-Management:** Markieren Sie "False Positives" als ignoriert, damit diese nicht erneut gemeldet werden.
+*   **Export:** Laden Sie alle gefundenen Probleme als CSV-Datei für die externe Bearbeitung herunter.
+*   **Forschungs-Integration:** Erstellen Sie mit einem Klick webtrees-Forschungsaufgaben (`_TODO`) direkt aus einem Fehlerbericht.
 
+## ⚙️ Konfiguration
 
-### 🛠️ Workflow-Tools
-- **Familien-Zusammenführung**: Einfaches Verlinken von Eltern zu existierenden Familien.
-- **Ignore-Liste**: Markieren Sie "False Positives" als ignoriert, damit sie nicht mehr auftauchen.
-- **Forschungsaufgaben (Todo)**: Erstellen Sie mit einem Klick webtrees-Forschungsaufgaben (_TODO) direkt aus dem Fehler-Protokoll.
-- **Vollständige Internationalisierung**: Unterstützung für 16 Sprachen (inkl. Isländisch), inklusive aller interaktiven Elemente und Fehlermeldungen.
-- **Automatische Updates**: Benachrichtigung bei neuen Versionen direkt im Dashboard.
+Das Modul ist hochgradig anpassbar. Unter **Veraltung > Datencheck > Einstellungen** können Sie festlegen:
+*   **Benutzer-spezifische Einstellungen:** Jeder Administrator/Moderator kann seine eigenen Toleranzgrenzen und aktiven Prüfungen speichern, ohne andere Benutzer zu beeinflussen.
+*   **Toleranzgrenzen:** Justieren Sie die Fuzzy-Logik für Namen und Datumsabweichungen.
+*   **Feature-Toggles:** Aktivieren oder Deaktivieren Sie spezifische Prüfmodule (z.B. Geografie-Check, Quellen-Check).
 
-## Installation
+## 🚀 Installation & Voraussetzungen
 
-### Manuell (Empfohlen)
-1. Laden Sie die neueste Version von der [Releases-Seite](https://github.com/Vulfharban/webtrees-datencheck-plugin/releases) herunter.
-2. Entpacken Sie den Ordner in das Verzeichnis `modules_v4/` Ihrer webtrees-Installation.
-3. Der Ordnername sollte `webtrees-datencheck-plugin` (oder ähnlich) lauten.
-4. Gehen Sie im webtrees-Adminbereich zu **Module** und aktivieren Sie "Datencheck".
+### Anforderungen
+*   **webtrees 2.1+**
+*   PHP 7.4 oder höher (voll kompatibel mit PHP 8.x)
+*   Standard-Datenbank-Unterstützung von webtrees (MySQL/MariaDB)
 
-### Via Git
-```bash
-cd modules_v4/
-git clone https://github.com/Vulfharban/webtrees-datencheck-plugin.git datencheck
-```
+### Manuelle Installation
+1.  Laden Sie das neueste Release (`.zip`) von der [GitHub-Releases-Seite](https://github.com/Vulfharban/webtrees-datencheck-plugin/releases) herunter.
+2.  Entpacken Sie den Inhalt in Ihr webtrees-Verzeichnis unter `modules_v4/webtrees-datencheck-plugin`.
+3.  Aktivieren Sie das Modul im webtrees-Adminbereich unter **Module > Modulverwaltung**.
 
-## Konfiguration
+## 🌍 Internationalisierung
+Das Modul ist vollständig übersetzbar und unterstützt aktuell 16+ Sprachen, darunter Deutsch, Englisch, Französisch, Niederländisch, Spanisch und viele mehr.
 
-Das Modul kann unter **Verwaltung > Datencheck > Einstellungen** konfiguriert werden:
-- Passen Sie Toleranzgrenzen für Fuzzy-Suche an.
-- Definieren Sie Altersgrenzen (z.B. Mindestalter für Eltern).
-- Aktivieren/Deaktivieren Sie einzelne Prüfungskategorien (z.B. Geografie, Quellen).
-
-## Voraussetzungen
-
-- **webtrees 2.1+**
-- PHP 7.4 oder höher
-
-## Lizenz
-
-Dieses Projekt ist unter der MIT Lizenz veröffentlicht. Siehe `LICENSE` Datei für Details.
-
-## Feedback & Support
-
-Fehler gefunden oder Ideen für neue Features? Erstellen Sie gerne ein [Issue](https://github.com/Vulfharban/webtrees-datencheck-plugin/issues) auf GitHub.
+## 📄 Lizenz
+Veröffentlicht unter der MIT Lizenz. Siehe `LICENSE` für weitere Informationen.
 
 ---
 
@@ -77,70 +64,58 @@ Fehler gefunden oder Ideen für neue Features? Erstellen Sie gerne ein [Issue](h
 
 ## webtrees Datencheck Plugin
 
-A webtrees module for advanced validation and verification of genealogical data.
+A powerful webtrees module for advanced verification, validation, and cleanup of genealogical data. This plugin is designed to go beyond standard plausibility checks to ensure your family tree meets the highest quality standards.
 
-This plugin provides powerful tools to identify duplicates, logical errors, and missing data in your family tree, extending the standard capabilities of webtrees.
+## 🌟 Key Features
 
-## Features
+### 🔍 Intelligent Duplicate Detection
+Prevent duplicate individuals before they are even created.
+*   **Real-time Validation:** While entering data (name, birth date), the system searches in the background for potential matches.
+*   **Phonetics & Fuzzy Matching:** Utilizes **Cologne Phonetic** for German names and **Levenshtein Distance** for typo tolerance (e.g., catching "Smith" vs. "Smyth").
+*   **Contextual Analysis:** Compares not only names but also parents and sibling constellations to increase accuracy for common names.
+*   **Interactive Comparison:** A detailed "side-by-side" modal allows for direct comparison between the new record and existing individuals before a duplicate is created.
 
-### 🔍 Deep Duplicate Detection
-- **Real-time Warnings** when creating new individuals.
-- **Phonetic Matching** (Cologne Phonetic & Levenshtein Distance) finds similar-sounding names.
-- **Family Context**: Checks not only names but also parents and sibling constellations.
-- **Side-by-Side Comparison**: Detailed modal for comparing duplicate candidates.
+### ✅ Advanced Plausibility Checks
+Comprehensive rules to identify biological and logical inconsistencies.
+*   **Biological Limits:**
+    *   **Age Thresholds:** Warnings for parents who were unusually young (<14) or old (>50 for mothers, >80 for fathers) at the time of birth (fully configurable).
+    *   **Posthumous Births:** Detects births occurring after the father's death (up to 9 months allowed) or the mother's death.
+*   **Temporal Logic:**
+    *   **Life Events:** Verifies the correct chronological order: Birth → Baptism → Marriage → Death → Burial.
+    *   **Baptism Check:** New warning for unusually late baptisms (e.g., more than 30 days after birth, configurable) – helpful for identifying adult baptisms or delayed records.
+    *   **Lifespan:** Customizable warnings for extreme ages (e.g., >120 years).
+*   **Naming & Formal Consistency:**
+    *   Checks for missing surnames or inconsistencies between children and fathers.
+    *   **International Conventions:** Support for Scandinavian patronymics (-sen/-datter), Slavic gendered endings (-ski/-ska), Spanish double surnames, and Dutch "tussenvoegsels".
 
-### ✅ Advanced Validation (Plausibility Checks)
-- **Biological Plausibility**:
-  - Warns about parents who were unusually young (<14) or old (>50/80) at the time of birth.
-  - Detects births occurring after the death of parents (accounting for posthumous births).
-- **Temporal Logic**:
-  - Marriage before birth or after death.
-  - Burial before death or baptism before birth.
-- **Name Consistency**: Checks for missing surnames or inconsistencies with the father's surname.
-- **Source Verification**: Flags key life events (birth, death, marriage) missing source citations.
+### 📊 Analysis Dashboard & Reporting
+Maintain an overview of the data quality of your entire family tree.
+*   **Bulk Analysis:** Scans the entire tree in efficient chunks (suitable for very large trees).
+*   **Issue Management:** Mark "false positives" as ignored so they don't appear in future reports.
+*   **Export:** Download all identified issues as a CSV file for external processing.
+*   **Workflow Integration:** Create webtrees research tasks (`_TODO`) with a single click directly from an error report.
 
-### 📊 Bulk Analysis & Reporting
-- **Full Tree Check**: Scan your entire family tree at once.
-- **CSV Export**: Download the error list as an Excel-compatible CSV file.
-- **Progress Tracking**: Robust processing even for large trees (using chunking).
+## ⚙️ Configuration
 
-### 🛠️ Workflow Tools
-- **Family Merging**: Easily link parents to existing families.
-- **Ignore List**: Mark "False Positives" as ignored so they don't reappear.
-- **Research Tasks (Todo)**: Create webtrees research tasks (_TODO) with a single click directly from the validation log.
-- **Full Internationalization**: Support for 16 languages (incl. Icelandic), including all interactive elements and error messages.
-- **Automatic Updates**: Notifications about new versions directly in the dashboard.
+The module is highly customizable. Under **Control Panel > Datencheck > Settings**, you can define:
+*   **User-Specific Settings:** Each administrator/moderator can save their own tolerance limits and active checks without affecting other users.
+*   **Tolerance Thresholds:** Adjust fuzzy logic for names and date deviations.
+*   **Feature Toggles:** Enable or disable specific check modules (e.g., Geographic check, Source check).
 
-## Installation
+## 🚀 Installation & Requirements
 
-### Manual (Recommended)
-1. Download the latest version from the [Releases Page](https://github.com/Vulfharban/webtrees-datencheck-plugin/releases).
-2. Unzip the folder into the `modules_v4/` directory of your webtrees installation.
-3. The folder name should be `webtrees-datencheck-plugin` (or similar).
-4. Go to **Modules** in the webtrees admin area and enable "Datencheck".
+### Requirements
+*   **webtrees 2.1+**
+*   PHP 7.4 or higher (fully compatible with PHP 8.x)
+*   Standard webtrees database support (MySQL/MariaDB)
 
-### Via Git
-```bash
-cd modules_v4/
-git clone https://github.com/Vulfharban/webtrees-datencheck-plugin.git datencheck
-```
+### Manual Installation
+1.  Download the latest release (`.zip`) from the [GitHub Releases page](https://github.com/Vulfharban/webtrees-datencheck-plugin/releases).
+2.  Extract the content into your webtrees directory under `modules_v4/webtrees-datencheck-plugin`.
+3.  Enable the module in the webtrees admin area under **Modules > Module management**.
 
-## Configuration
+## 🌍 Internationalization
+The module is fully translatable and currently supports 16+ languages, including German, English, French, Dutch, Spanish, and many more.
 
-The module can be configured under **Control Panel > Datencheck > Settings**:
-- Adjust tolerance thresholds for fuzzy search.
-- Define age limits (e.g., minimum age for parents).
-- Enable/Disable specific check categories (e.g., Geography, Sources).
-
-## Requirements
-
-- **webtrees 2.1+**
-- PHP 7.4 or higher
-
-## License
-
-This project is released under the MIT License. See `LICENSE` file for details.
-
-## Feedback & Support
-
-Found a bug or have an idea for a new feature? Feel free to create an [Issue](https://github.com/Vulfharban/webtrees-datencheck-plugin/issues) on GitHub.
+## 📄 License
+Released under the MIT License. See `LICENSE` for more information.

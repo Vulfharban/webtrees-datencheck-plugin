@@ -165,15 +165,16 @@ return [
     'the mother' => 'die Mutter',
     'the father' => 'den Vater',
 
-    'Mother "%s" was only %d years old at birth (%s) (Mother born %s)' => 'Mutter "%s" war bei Geburt (%s) nur %d Jahre alt (Mutter geb. %s)',
+    'Mother "%s" was only %d years old at birth (%s) (Mother born %s)' => 'Mutter "%s" war bei der Geburt (%3$s) nur %2$d Jahre alt (Geburt Mutter: %4$s)',
     'Mother "%s" was %d years old at birth (%s) (Mother born %s)' => 'Mutter "%s" war bei Geburt (%s) %d Jahre alt (Mutter geb. %s)',
-    'Father "%s" was only %d years old at birth (%s) (Father born %s)' => 'Vater "%s" war bei Geburt (%s) nur %d Jahre alt (Vater geb. %s)',
+    'Father "%s" was only %d years old at birth (%s) (Father born %s)' => 'Vater "%s" war bei der Geburt (%3$s) nur %2$d Jahre alt (Geburt Vater: %4$s)',
     'Father "%s" was %d years old at birth (%s) (Father born %s)' => 'Vater "%s" war bei Geburt (%s) %d Jahre alt (Vater geb. %s)',
     'Child born (%s) %d year(s) after death/burial (%s) of mother "%s"' => 'Kind geboren (%s) %d Jahr(e) nach Tod/Bestattung (%s) der Mutter "%s"',
     'Child born %d days after death/burial of father "%s" (Limit: 280 days)' => 'Kind geboren %d Tage nach Tod/Bestattung des Vaters "%s" (Limit: 280 Tage)',
     'Birth date (%s) is after %s (%s)' => 'Geburtsdatum (%s) liegt nach %s (%s)',
     'Person%s lived %d years (Born %s - Died %s)' => 'Person%s lebte %d Jahre (Geb. %s - Gest. %s)',
     'Baptism is before birth.' => 'Taufe liegt vor der Geburt.',
+    'Baptism is unusually long after birth (%d days).' => 'Taufe ist ungewöhnlich lange nach der Geburt (%d Tage).',
     'Burial is before death.' => 'Bestattung liegt vor dem Tod.',
     'Sibling "%s" has an identical/similar given name (%s).' => 'Geschwister "%s" hat einen identischen/ähnlichen Vornamen (%s).',
     'Distance to sibling "%s" (%s: %s) is unusually short at %s months.' => 'Abstand zu Geschwister "%s" (%s: %s) ist mit %s Monaten ungewöhnlich kurz.',
@@ -253,8 +254,10 @@ return [
     'Surname mismatch with father' => 'Nachname weicht von Vater ab',
     'Duplicate child (sibling)' => 'Doppeltes Kind (Geschwister)',
     'Sibling spacing too small' => 'Abstand zu Geschwister zu klein',
+    'Baptism unusually late' => 'Taufe ungewöhnlich spät',
     
     'Settings saved successfully.' => 'Einstellungen erfolgreich gespeichert.',
+    'These settings are saved for your user account.' => 'Diese Einstellungen werden für dein Benutzerkonto gespeichert.',
     
     // Naming Conventions
     'Consider Slavic naming conventions' => 'Slawische Namenskonventionen berücksichtigen',
