@@ -1575,25 +1575,36 @@ class ValidationService
             return '';
         }
 
-        $date = null;
+        $fact = null;
         switch($type) {
-            case 'BIRT': $date = $person->getBirthDate(); break;
-            case 'DEAT': $date = $person->getDeathDate(); break;
+            case 'BIRT': 
+                $fact = $person->facts(['BIRT'])->first();
+                break;
+            case 'DEAT': 
+                $fact = $person->facts(['DEAT'])->first();
+                break;
             case 'CHR': 
                 $fact = $person->facts(['CHR', 'BAPM'])->first();
-                $date = $fact ? $fact->date() : null;
                 break;
             case 'BURI':
                 $fact = $person->facts(['BURI'])->first();
-                $date = $fact ? $fact->date() : null;
                 break;
             case 'MARR':
                 $fact = $person->facts(['MARR'])->first();
-                $date = $fact ? $fact->date() : null;
                 break;
         }
 
-        return ($date && $date->isOK()) ? $date->format('%@') : '';
+        if (!$fact) {
+            return '';
+        }
+
+        // Get the date value from the fact's GEDCOM
+        $gedcom = $fact->gedcom();
+        if (preg_match('/\n2 DATE (.+)/', $gedcom, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return '';
     }
 
     /**
