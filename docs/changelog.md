@@ -2,6 +2,10 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
     
+## [1.2.3] - 2026-02-11
+### Behoben
+- **Date-API Fehler**: Korrektur eines kritischen Fehlers bei der Bulk-Analyse. Die nicht existierende Methode `gedcom()` wurde durch die korrekte webtrees-API-Methode `format('%@')` ersetzt.
+
 ## [1.2.2] - 2026-02-11
 ### Hinzugefügt
 - **Erweiterte Alias-Unterstützung (International)**: Die „Genannt-Namen“ Logik wurde um polnische und lateinische Varianten erweitert (z. B. „vel“, „alias“, „inaczej“, „zwany“). Dies verbessert die Dubletten-Erkennung und Namenskonsistenzprüfung in osteuropäischen Beständen.

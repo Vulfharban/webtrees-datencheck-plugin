@@ -1,4 +1,4 @@
-$version = "v1.2.2"
+$version = "v1.2.3"
 $zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = Get-Location
 $tempDir = Join-Path $env:TEMP "webtrees-datencheck-build"
@@ -28,7 +28,8 @@ foreach ($item in $includes) {
     if (Test-Path $path) {
         Write-Host "Copying $item..."
         Copy-Item -Recurse -Path $path -Destination $targetDir
-    } else {
+    }
+    else {
         Write-Warning "File not found: $item"
     }
 }
