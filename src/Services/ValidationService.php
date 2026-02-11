@@ -1593,7 +1593,7 @@ class ValidationService
                 break;
         }
 
-        return ($date && $date->isOK()) ? $date->gedcom() : '';
+        return ($date && $date->isOK()) ? $date->format('%@') : '';
     }
 
     /**
