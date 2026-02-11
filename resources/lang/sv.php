@@ -214,4 +214,11 @@ return [
     'Task created' => 'Uppgift skapad',
     'Person not found' => 'Personen hittades inte',
     'Permission denied' => 'Åtkomst nekad',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Ta hänsyn till "Genannt-Namen" (alias) namngivningskonventioner',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tolererar westfaliska namn som innehåller "genannt", "gen.", "vulgo" eller "dictus".',
+    'Date format' => 'Datumformat',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Icke-standardiserat månadsnamn hittat i %s: "%s". GEDCOM-standard förväntas (t.ex. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Visa varningar för oprecisa datum',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Om inaktiverat kommer konflikter orsakade av saknad dag/månad (t.ex. "1855" mot "maj 1855") att ignoreras.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'För många problem hittades. Visar endast de första %s. Använd CSV-export för den fullständiga listan.',
 ];

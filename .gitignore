@@ -4,3 +4,10 @@ vendor/
 *.log
 .DS_Store
 Thumbs.db
+
+# Release artifacts
+*.zip
+build_release.ps1
+
+# Documentation (not needed in repo)
+docs/

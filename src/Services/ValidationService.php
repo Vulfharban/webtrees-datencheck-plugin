@@ -16,6 +16,45 @@ use Wolfrum\Datencheck\Services\Validators;
  */
 class ValidationService
 {
+    /** @var array Cache for place resolution to avoid redundant DB hits */
+    private static $placeCache = [];
+
+    /** @var array Cache for distance calculations between coordinates */
+    private static $distanceCache = [];
+
+    /** @var array|null Cache for ignored errors of the entire tree */
+    private static $ignoredErrorsCache = null;
+
+    /**
+     * Pre-warms caches for specific individuals (batch operation).
+     */
+    public static function preWarmCache(Tree $tree, array $xrefs): void
+    {
+        // Load only ignored errors for the people in this batch
+        try {
+            self::$ignoredErrorsCache = DB::table('datencheck_ignored')
+                ->where('tree_id', $tree->id())
+                ->whereIn('xref', $xrefs)
+                ->get()
+                ->groupBy('xref')
+                ->map(function ($items) {
+                    return $items->pluck('error_code')->all();
+                })
+                ->all();
+        } catch (\Throwable $e) {
+            self::$ignoredErrorsCache = [];
+        }
+    }
+
+    /**
+     * Clear caches to free memory.
+     */
+    public static function clearCache(): void
+    {
+        self::$placeCache = [];
+        self::$distanceCache = [];
+        self::$ignoredErrorsCache = null;
+    }
     /**
      * Helper to get a setting from a module object, preferring its 'getSetting'
      * method if it exists (for user-dependent config), or falling back to 'getPreference'.
@@ -33,61 +72,96 @@ class ValidationService
         return $module->getPreference($key, $default);
     }
 
-    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child', string $overrideGiven = '', string $overrideSurname = '', string $overrideBap = ''): array
+    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child', string $overrideGiven = '', string $overrideSurname = '', string $overrideBap = '', array $filters = []): array
     {
         $issues = [];
         $debug = [];
         $tree = $tree ?: ($person ? $person->tree() : \Fisharebest\Webtrees\Registry::treeFactory()->all()->first());
         
+        $useFilters = !empty($filters);
+
         // 0. Get Ignored Errors (if person exists)
         $ignoredCodes = [];
         if ($person) {
-            $ignoredCodes = IgnoredErrorService::getIgnoredCodesForPerson($tree->id(), $person->xref());
+            $xref = $person->xref();
+            if (self::$ignoredErrorsCache !== null && isset(self::$ignoredErrorsCache[$xref])) {
+                $ignoredCodes = self::$ignoredErrorsCache[$xref];
+            } else {
+                $ignoredCodes = IgnoredErrorService::getIgnoredCodesForPerson($tree->id(), $xref);
+            }
         }
 
-        // Biological plausibility checks (only if not a spouse relationship)
-        $detectedParents = [];
-        $resLog = [];
-        if ($relType !== 'spouse') {
-            // Get parents for checking (biological checks returns parents it found)
+        // 1. Biological plausibility checks
+        if ($relType !== 'spouse' && (!$useFilters || in_array('biological', $filters))) {
             $parentsResult = self::checkBiologicalPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial, $overrideHusb, $overrideWife, $overrideFam, $tree, $overrideGiven, $overrideSurname, $debug);
             $issues = array_merge($issues, $parentsResult['issues']);
             $detectedParents = $parentsResult['parents'];
             $resLog = $parentsResult['res_log'];
+        } else {
+            $detectedParents = [];
+            $resLog = [];
         }
 
-        // Temporal plausibility checks
-        if ($person) {
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap));
-            $issues = array_merge($issues, Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial));
+        // 2. Temporal plausibility checks
+        if ($person && (!$useFilters || in_array('temporal', $filters))) {
+            $issue = Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial);
+            if ($issue) $issues[] = $issue;
+
+            $issue = Validators\TemporalValidator::checkLifespanPlausibility($person, $module, $overrideBirth, $overrideDeath, $overrideBurial);
+            if ($issue) $issues[] = $issue;
+
+            $issue = Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap);
+            if ($issue) $issues[] = $issue;
+
+            $issue = Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
+            if ($issue) $issues[] = $issue;
         }
 
-        // Marriage plausibility checks
-        $issues = array_merge($issues, self::checkMarriagePlausibilityInteractive($person, $module, $overrideBirth, $overrideDeath, $overrideHusb, $overrideWife, $overrideFam, $tree, $marrOverride, $relType));
-        if ($person) {
-            $issues = array_merge($issues, self::checkMarriagePlausibility($person, $module));
-            $issues = array_merge($issues, self::checkGenderConsistency($person));
+        // 3. Marriage plausibility checks
+        if (!$useFilters || in_array('marriage', $filters)) {
+            $issues = array_merge($issues, self::checkMarriagePlausibilityInteractive($person, $module, $overrideBirth, $overrideDeath, $overrideHusb, $overrideWife, $overrideFam, $tree, $marrOverride, $relType));
+            if ($person) {
+                $issues = array_merge($issues, self::checkMarriagePlausibility($person, $module));
+                $issues = array_merge($issues, self::checkGenderConsistency($person));
+            }
         }
 
-        // Optional checks (only if enabled in module settings)
+        // 4. Optional / Category-based checks
         if ($module) {
-            if (self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1') {
+            // Missing Data
+            if (in_array('missing_data', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1')) {
                 $issues = array_merge($issues, self::checkMissingData($person));
             }
 
-            if (self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1') {
+            // Geographic
+            if (in_array('geographic', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1')) {
                 $issues = array_merge($issues, self::checkGeographicPlausibility($person));
             }
 
-            if (self::getModuleSetting($module, 'enable_name_checks', '0') === '1') {
+            // Names
+            if (in_array('names', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_name_checks', '0') === '1')) {
                 $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
             }
 
-            if (self::getModuleSetting($module, 'enable_source_checks', '0') === '1') {
+            // Sources
+            if (in_array('sources', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_source_checks', '0') === '1')) {
                 $issues = array_merge($issues, self::checkSourceQuality($person));
             }
+
+            // Date Format (Month Names)
+            if (in_array('date_format', $filters) || !$useFilters) {
+                $issues = array_merge($issues, self::checkInvalidMonths($person));
+            }
+        }
+
+        // FILTER: Remove imprecise warnings if disabled
+        if ($module && self::getModuleSetting($module, 'enable_imprecise_dates', '1') === '0') {
+            $issues = array_filter($issues, function($issue) {
+                if (!isset($issue['code'])) return true;
+                $code = $issue['code'];
+                return strpos($code, 'IMPRECISE_DATE_CONFLICT_') !== 0 && $code !== 'SIBLING_SPACING_IMPRECISE';
+            });
+            $issues = array_values($issues);
         }
 
         // FILTER: Remove ignored issues
@@ -425,16 +499,27 @@ class ValidationService
                 return null;
             }
 
+            $birthYear = self::getYearFromJD($birthJD);
+            $marriageYear = $marriage->minimumDate()->year();
+            
+            $birthPrecise = self::isPreciseDate($person, 'BIRT', $overrideBirth);
+            $marriagePrecise = $marriage->isOK() && $marriage->minimumDate()->day() > 0 && $marriage->minimumDate()->month() > 0;
+
+            $isImpreciseConflict = (!$birthPrecise || !$marriagePrecise) && ($marriageYear >= $birthYear);
+
             return [
-                'code' => 'MARRIAGE_BEFORE_BIRTH',
+                'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_MARRIAGE_BIRTH' : 'MARRIAGE_BEFORE_BIRTH',
                 'type' => 'temporal_impossibility',
-                'severity' => 'error',
-                'message' => \Fisharebest\Webtrees\I18N::translate(
-                    'Marriage (%s) before birth (%s) of "%s"',
-                    $marriage->display(),
-                    self::formatDate($person, 'BIRT', $overrideBirth) ?: ValidationService::getYearFromJD($birthJD),
-                    $person->fullName()
-                ),
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
+                'severity' => $isImpreciseConflict ? 'warning' : 'error',
+                'message' => $isImpreciseConflict
+                    ? \Fisharebest\Webtrees\I18N::translate('Birth/Marriage dates are imprecise. Exact dates missing.')
+                    : \Fisharebest\Webtrees\I18N::translate(
+                        'Marriage (%s) before birth (%s) of "%s"',
+                        $marriage->display(),
+                        self::formatDate($person, 'BIRT', $overrideBirth) ?: ValidationService::getYearFromJD($birthJD),
+                        $person->fullName()
+                    ),
                 'details' => [
                     'birth_jd' => $birthJD,
                     'marriage_jd' => $marriageJD,
@@ -465,16 +550,27 @@ class ValidationService
                 return null;
             }
 
+            $deathYear = self::getYearFromJD($deathJD);
+            $marriageYear = $marriage->minimumDate()->year();
+            
+            $deathPrecise = self::isPreciseDate($person, 'DEAT', $overrideDeath);
+            $marriagePrecise = $marriage->isOK() && $marriage->minimumDate()->day() > 0 && $marriage->minimumDate()->month() > 0;
+
+            $isImpreciseConflict = (!$deathPrecise || !$marriagePrecise) && ($marriageYear <= $deathYear);
+
             return [
-                'code' => 'MARRIAGE_AFTER_DEATH',
+                'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_MARRIAGE_DEATH' : 'MARRIAGE_AFTER_DEATH',
                 'type' => 'temporal_impossibility',
-                'severity' => 'error',
-                'message' => \Fisharebest\Webtrees\I18N::translate(
-                    'Marriage (%s) after death (%s) of "%s"',
-                    $marriage->display(),
-                    self::formatDate($person, 'DEAT', $overrideDeath) ?: ValidationService::getYearFromJD($deathJD),
-                    $person->fullName()
-                ),
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check marriage'),
+                'severity' => $isImpreciseConflict ? 'warning' : 'error',
+                'message' => $isImpreciseConflict
+                    ? \Fisharebest\Webtrees\I18N::translate('Death/Marriage dates are imprecise. Exact dates missing.')
+                    : \Fisharebest\Webtrees\I18N::translate(
+                        'Marriage (%s) after death (%s) of "%s"',
+                        $marriage->display(),
+                        self::formatDate($person, 'DEAT', $overrideDeath) ?: ValidationService::getYearFromJD($deathJD),
+                        $person->fullName()
+                    ),
                 'details' => [
                     'death_jd' => $deathJD,
                     'marriage_jd' => $marriageJD,
@@ -930,18 +1026,24 @@ class ValidationService
         if (!$placeVal) return null;
 
         $placeName = $placeVal->gedcomName();
+        if (isset(self::$placeCache[$placeName])) {
+            return self::$placeCache[$placeName];
+        }
+
         // Lookup coordinates via Webtrees Location factory (PlaceFactory deprecated/removed)
         $placeObj = Registry::locationFactory()->make($placeName, $person->tree());
         
+        $result = null;
         if ($placeObj && $placeObj->latitude() !== null && $placeObj->longitude() !== null) {
-            return [
+            $result = [
                 'name' => $placeName,
                 'lat'  => (float) $placeObj->latitude(),
                 'lon'  => (float) $placeObj->longitude()
             ];
         }
 
-        return null;
+        self::$placeCache[$placeName] = $result;
+        return $result;
     }
 
     /**
@@ -1129,6 +1231,10 @@ class ValidationService
                         if (self::isDutchSurnameMatch(self::getIndividualSurname($father), $surnamePrimary)) {
                             $fatherMatch = true;
                         }
+                    } elseif (self::getModuleSetting($module, 'enable_genannt_names', '0') === '1') {
+                        if (self::isGenanntNameMatch(self::getIndividualSurname($father), $surnamePrimary)) {
+                            $fatherMatch = true;
+                        }
                     }
                 }
 
@@ -1144,6 +1250,10 @@ class ValidationService
                         }
                     } elseif (self::getModuleSetting($module, 'enable_slavic_surnames', '0') === '1' && $person) {
                         if (self::isSlavicSurnameMatch($mother, $surnamePrimary, $person)) {
+                            $motherMatch = true;
+                        }
+                    } elseif (self::getModuleSetting($module, 'enable_genannt_names', '0') === '1') {
+                        if (self::isGenanntNameMatch(self::getIndividualSurname($mother), $surnamePrimary)) {
                             $motherMatch = true;
                         }
                     }
@@ -1352,18 +1462,29 @@ class ValidationService
         
         if ($diffDays > 1 && $diffDays < $thresholdDays) {
                 $months = round($diffDays / 30.44, 1);
+                
+                $subjPrecise = self::isPreciseDate($person, 'BIRT', $overrideBirth);
+                $sibPrecise = self::isPreciseDate($sib, 'BIRT');
+                $isImprecise = !$subjPrecise || !$sibPrecise;
+
                 $issues[] = [
-                    'code' => 'SIBLING_TOO_CLOSE',
+                    'code' => $isImprecise ? 'SIBLING_SPACING_IMPRECISE' : 'SIBLING_TOO_CLOSE',
                     'type' => 'sibling_spacing',
                     'label' => \Fisharebest\Webtrees\I18N::translate('Check sibling'),
-                    'severity' => 'warning',
-                    'message' => \Fisharebest\Webtrees\I18N::translate(
-                        'Distance to sibling "%s" (%s: %s) is unusually short at %s months.',
-                        $sib->fullName(),
-                        $sibLabel,
-                        $sibDisplayDate,
-                        $months
-                    ),
+                    'severity' => $isImprecise ? 'info' : 'warning',
+                    'message' => $isImprecise
+                        ? \Fisharebest\Webtrees\I18N::translate(
+                            'Birth dates of siblings "%s" and "%s" are imprecise. Exact dates missing to verify spacing.',
+                            $person ? $person->fullName() : ($overrideGiven ?: 'New Person'),
+                            $sib->fullName()
+                        )
+                        : \Fisharebest\Webtrees\I18N::translate(
+                            'Distance to sibling "%s" (%s: %s) is unusually short at %s months.',
+                            $sib->fullName(),
+                            $sibLabel,
+                            $sibDisplayDate,
+                            $months
+                        ),
                 ];
             }
         }
@@ -1415,6 +1536,64 @@ class ValidationService
         $gregorian_calendar = new GregorianCalendar();
         [$year] = $gregorian_calendar->jdToYmd($jd);
         return $year;
+    }
+
+    /**
+     * Check if a date is precise (has year, month, and day)
+     *
+     * @param Individual|null $person
+     * @param string $type
+     * @param string $override
+     * @return bool
+     */
+    public static function isPreciseDate(?Individual $person, string $type, string $override = ''): bool
+    {
+        $gedcomDate = self::getGedcomDate($person, $type, $override);
+        if (empty($gedcomDate)) {
+            return false;
+        }
+
+        $parsed = DateParser::parseGedcomDate($gedcomDate);
+        return $parsed['year'] !== null && $parsed['month'] !== null && $parsed['day'] !== null;
+    }
+
+    /**
+     * Get the raw GEDCOM date string for an event
+     *
+     * @param Individual|null $person
+     * @param string $type
+     * @param string $override
+     * @return string
+     */
+    public static function getGedcomDate(?Individual $person, string $type, string $override = ''): string
+    {
+        if (!empty(trim($override))) {
+            return $override;
+        }
+
+        if (!$person) {
+            return '';
+        }
+
+        $date = null;
+        switch($type) {
+            case 'BIRT': $date = $person->getBirthDate(); break;
+            case 'DEAT': $date = $person->getDeathDate(); break;
+            case 'CHR': 
+                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'BURI':
+                $fact = $person->facts(['BURI'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'MARR':
+                $fact = $person->facts(['MARR'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+        }
+
+        return ($date && $date->isOK()) ? $date->gedcom() : '';
     }
 
     /**
@@ -1702,5 +1881,47 @@ class ValidationService
         }
 
         return false;
+    }
+
+    /**
+     * Check if child surname matches parent's surname considering "Genannt-Namen" (aliases)
+     */
+    public static function isGenanntNameMatch(string $parentSurname, string $childSurname): bool
+    {
+        return StringHelper::isGenanntNameMatch($parentSurname, $childSurname);
+    }
+
+    /**
+     * Check if dates of an individual contain non-standard month names
+     * 
+     * @param Individual $person
+     * @return array
+     */
+    private static function checkInvalidMonths(Individual $person): array
+    {
+        $issues = [];
+        $facts = $person->facts(['BIRT', 'CHR', 'DEAT', 'BURI']);
+
+        foreach ($facts as $fact) {
+            $date = $fact->date();
+            if ($date && $date->isOK()) {
+                $rawDate = $fact->value();
+                if (DateParser::hasNonStandardMonth($rawDate)) {
+                    $issues[] = [
+                        'code' => 'NON_STANDARD_MONTH_NAME',
+                        'type' => 'temporal_impossibility',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Date format'),
+                        'severity' => 'warning',
+                        'message' => \Fisharebest\Webtrees\I18N::translate(
+                            'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).',
+                            \Fisharebest\Webtrees\I18N::translate($fact->label()),
+                            $rawDate
+                        ),
+                    ];
+                }
+            }
+        }
+
+        return $issues;
     }
 }

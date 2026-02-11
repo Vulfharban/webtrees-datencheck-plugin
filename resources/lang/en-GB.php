@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Tolerates gendered suffixes (e.g. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Consider "Genannt-Namen" (alias) naming conventions',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".',
+    'Date format' => 'Date format',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Show warnings for imprecise dates',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.',
 ];

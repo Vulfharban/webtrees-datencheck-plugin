@@ -215,4 +215,11 @@ return [
     'Task created' => 'Tehtävä luotu',
     'Person not found' => 'Henkilöä ei löydy',
     'Permission denied' => 'Pääsy evätty',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Huomioi Genannt-Namen (alias) nimeämiskäytännöt',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Sallii westfalenilaiset nimet, joissa on "genannt", "gen.", "vulgo" tai "dictus".',
+    'Date format' => 'Päivämäärän muoto',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Löydetty epästandardi kuukauden nimi kohdassa %s: "%s". Odotettiin GEDCOM-standardia (esim. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Näytä varoitukset epätarkoista päivämääristä',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Jos poissa käytöstä, puuttuvasta päivästä/kuukaudesta aiheutuvat ristiriidat (esim. "1855" vs "toukokuu 1855") ohitetaan.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Liian monta ongelmaa löytyi. Näytetään vain ensimmäiset %s. Käytä CSV-vientiä nähdäksesi koko listan.',
 ];

@@ -74,6 +74,25 @@
 - [x] **Tree-Aware Breadcrumbs:** Verbesserte Navigation zurück zum aktiven Baum.
 - [x] **Back-to-Tree Navigation:** Direkter Link vom Dashboard zum Stammbaum.
 - [x] **Bugfixes:** Behebung von Variablen- und Sichtbarkeitsproblemen im Backend.
+    
+## ✅ Phase 11: Regionale Erweiterungen & Präzision (COMPLETE - 2026-02-11)
+- [x] **Ungenaues Datums-Handling:** Herabstufung von Fehlern zu Warnungen bei unpräzisen GEDCOM-Daten (z.B. nur Jahr).
+- [x] **Münsterländische Genannt-Namen:** Unterstützung für westfälische Alias-Namen („genannt“, „vulgo“, etc.) in der Namensprüfung.
+- [x] **Konfigurierbare Präzision:** Option zum vollständigen Deaktivieren von Warnungen bei ungenauen Daten.
+- [x] **Version 1.2.0 Release**
+
+## ✅ Phase 12: Performance & Datenqualität (COMPLETE - 2026-02-11)
+- [x] **ID-basierte Paginierung:** Optimierung der Bulk-Analyse für extrem große Bäume (130k+ Personen).
+- [x] **DOM-Protection:** Begrenzung der Ergebnisdarstellung im Browser auf 1000 Zeilen.
+- [x] **Monats-Validierung:** Erkennung von nicht-standardisierten (lokalisierten) Monatsnamen.
+- [x] **Alias-Matching (Allgemein):** Westfälische Namenskonventionen in der gesamten Dubletten-Suche integriert.
+- [x] **Version 1.2.1 Release**
+    
+## ✅ Phase 13: Internationalisierung & Alias-Erweiterung (COMPLETE - 2026-02-11)
+- [x] **Polnische Alias-Namen:** Erweiterung der Logik um „vel“, „zwany“, „inaczej“ etc.
+- [x] **Terminologie-Review:** Vereinheitlichung der Kategorienamen in allen 15 Sprachen.
+- [x] **Dashboard-Filter:** Vollständige Abdeckung aller Analysebereiche im UI-Filter.
+- [x] **Version 1.2.2 Release**
 
 ---
 
@@ -86,3 +105,6 @@
 - **v0.9.2:** CSV-Export, GitHub-Update-Check, Formatiertes Datum
 - **v1.0.0:** Major Release mit verfeinerter Architektur und Stabilität
 - **v1.1.0:** Skandinavische Namenskonventionen, 15 Sprachen, UX Context Persistence
+- **v1.2.0:** Münsterländische Genannt-Namen, Intelligentes Handling ungenauer Daten
+- **v1.2.1:** Performance-Optimierung für 100k+ Bäume, Monats-Validierung, Alias-Matching
+- **v1.2.2:** Polnische Alias-Namen, Harmonierte Lokalisierung, Vervollständigte Filter

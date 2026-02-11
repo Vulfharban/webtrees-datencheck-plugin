@@ -215,4 +215,11 @@ return [
     'Task created' => 'Η εργασία δημιουργήθηκε',
     'Person not found' => 'Το άτομο δεν βρέθηκε',
     'Permission denied' => 'Δεν επιτρέπεται η πρόσβαση',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Να ληφθούν υπόψη οι συμβάσεις ονοματοδοσίας "Genannt-Namen" (ψευδώνυμο)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Επιτρέπει βεστφαλικά ονόματα που περιέχουν "genannt", "gen.", "vulgo" ή "dictus".',
+    'Date format' => 'Μορφή ημερομηνίας',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Βρέθηκε μη τυπικό όνομα μήνα στο %s: "%s". Αναμενόμενο πρότυπο GEDCOM (π.χ. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Εμφάνιση προειδοποιήσεων για ασαφείς ημερομηνίες',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Εάν απενεργοποιηθεί, οι συγκρούσεις που προκαλούνται από έλλειψη ημέρας/μήνα (π.χ. "1855" έναντι "Μάιος 1855") θα αγνοηθούν.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Βρέθηκαν πάρα πολλά προβλήματα. Εμφάνιση μόνο των πρώτων %s. Χρησιμοποιήστε την Εξαγωγή CSV για την πλήρη λίστα.',
 ];

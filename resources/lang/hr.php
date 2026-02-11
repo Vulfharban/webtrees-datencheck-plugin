@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Tolerira rodne sufikse (npr. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Prezime "%s" izgleda sadrži prefiks "%s". U webtrees-u, ovo bi trebalo biti uneseno u polje "Prefiks".',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Uzmi u obzir vestfalske konvencije imenovanja (Genannt-Namen)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tolerira vestfalska imena koja sadrže "genannt", "gen.", "vulgo" ili "dictus".',
+    'Date format' => 'Format datuma',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Pronađen nestandardni naziv mjeseca u %s: "%s". Očekuje se GEDCOM standard (npr. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Prikaži upozorenja za neprecizne datume',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ako je onemogućeno, sukobi uzrokovani nedostatkom dana/mjeseca (npr. "1855" naspram "svibanj 1855") bit će zanemareni.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Pronađeno previše problema. Prikazuje se samo prvih %s. Molimo koristite CSV izvoz za puni popis.',
 ];

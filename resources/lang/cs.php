@@ -215,4 +215,11 @@ return [
     'Task created' => 'Úkol vytvořen',
     'Person not found' => 'Osoba nenalezena',
     'Permission denied' => 'Přístup odmítnut',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Zohlednit konvence pojmenování "Genannt-Namen" (alias)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Toleruje vestfálská jména obsahující "genannt", "gen.", "vulgo" nebo "dictus".',
+    'Date format' => 'Formát data',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'V %s nalezen nestandardní název měsíce: "%s". Očekáván standard GEDCOM (např. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Zobrazovat varování pro nepřesná data',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Je-li zakázáno, budou ignorovány konflikty způsobené chybějícím dnem/měsícem (např. "1855" vs "květen 1855").',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Nalezeno příliš mnoho problémů. Zobrazuje se pouze prvních %s. Pro úplný seznam použijte export do CSV.',
 ];

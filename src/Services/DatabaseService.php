@@ -75,7 +75,9 @@ class DatabaseService
             // 1. Phonetic match (very strong)
             // 2. Both names are very similar (distGiven < 3 AND distSurname < 2)
             // 3. Overall distance is very small (total dist < 4)
-            $stringMatch = ($distGiven < 3 && $distSurname < 2) || (StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate) < 4);
+            // 4. Genannt-Namen match (Westphalian aliases)
+            $genanntMatch = StringHelper::isGenanntNameMatch($inputSurname, $candSurname);
+            $stringMatch = ($distGiven < 3 && $distSurname < 2) || (StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate) < 4) || $genanntMatch;
 
             if ($stringMatch || $phoneticMatch) {
                 // Fetch GEDCOM to check birth date
@@ -270,8 +272,9 @@ class DatabaseService
                     $distance = StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate);
                     $candidatePhonetic = PhoneticHelper::cologneEncode($normalizedCandidate);
                     $phoneticMatch = !empty($inputPhonetic) && $inputPhonetic === $candidatePhonetic;
+                    $genanntMatch = StringHelper::isGenanntNameMatch($normalizedInput, $normalizedCandidate);
                     
-                    if ($distance < 5 || $phoneticMatch) {
+                    if ($distance < 5 || $phoneticMatch || $genanntMatch) {
                         $dateMatch = true;
                         
                         if ($targetYear !== null) {

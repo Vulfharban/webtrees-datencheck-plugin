@@ -1,6 +1,28 @@
 # Changelog: webtrees Datencheck Plugin
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
+    
+## [1.2.2] - 2026-02-11
+### Hinzugefügt
+- **Erweiterte Alias-Unterstützung (International)**: Die „Genannt-Namen“ Logik wurde um polnische und lateinische Varianten erweitert (z. B. „vel“, „alias“, „inaczej“, „zwany“). Dies verbessert die Dubletten-Erkennung und Namenskonsistenzprüfung in osteuropäischen Beständen.
+- **Konsistente Lokalisierung**: Vollständige Überarbeitung der Kategorienamen in allen unterstützten Sprachen zur besseren Verständlichkeit (z. B. „Biologische Plausibilität“ statt nur „Biologisch“).
+- **Verbesserter Analyse-Filter**: Der Kategorien-Filter im Ergebnis-Dashboard wurde vervollständigt und deckt nun alle Analysebereiche konsistent ab.
+
+## [1.2.1] - 2026-02-11
+### Hinzugefügt
+- **Performance-Optimierung für große Bäume**: Umstellung der Bulk-Analyse auf ID-basierte Paginierung. Dies verhindert Performance-Einbußen bei sehr großen Beständen (z.B. 130k Personen).
+- **DOM-Schutz**: Begrenzung der angezeigten Analyse-Ergebnisse im Browser auf 1000 Zeilen zur Vermeidung von Browser-Abstürzen bei massiven Fehlerlisten. (Vollständiger Export weiterhin via CSV möglich).
+- **Erkennung monatsspezifischer Inkonstistenzen**: Neue Prüfung auf nicht-GEDCOM-konforme Monatsnamen (z.B. "März", "Januar").
+- **Genannt-Namen in Dubletten-Suche**: Die Unterstützung für westfälische Alias-Namen („genannt“) wurde nun auch auf die interaktive Dubletten-Suche während der Dateneingabe ausgeweitet.
+
+    
+## [1.2.0] - 2026-02-11
+### Hinzugefügt
+- **Umgang mit ungenauen Daten**: Intelligente Erkennung von ungenauen Datumsangaben (z. B. nur Jahreszahl). Konflikte werden in diesen Fällen nun als Warnung statt als Fehler ausgegeben, um "False Positives" zu reduzieren.
+- **Optionale Warnungen für ungenaue Daten**: Neue Einstellung im Admin-Bereich, um Warnungen bei fehlender Tages-/Monatspräzision komplett zu deaktivieren.
+- **Münsterländische Genannt-Namen**: Unterstützung für westfälische Alias-Namen („genannt“, „gen.“, „vulgo“, „dictus“). Diese werden nun korrekt bei der Namenskonsistenzprüfung zwischen Eltern und Kindern berücksichtigt.
+- **Erweiterte englische Lokalisierung**: Vollständige Übersetzung aller neuen Validierungsmeldungen und Einstellungsoptionen.
+
 
 ## [1.1.3] - 2026-02-10
 ### Hinzugefügt

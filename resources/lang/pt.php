@@ -215,4 +215,11 @@ return [
     'Task created' => 'Tarefa criada',
     'Person not found' => 'Pessoa não encontrada',
     'Permission denied' => 'Permissão negada',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Considerar convenções de nomes "Genannt-Namen" (alias)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Aceita nomes vestfalianos contendo "genannt", "gen.", "vulgo" ou "dictus".',
+    'Date format' => 'Formato de data',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nome de mês não padrão encontrado em %s: "%s". Padrão GEDCOM esperado (ex: JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Mostrar avisos para datas imprecisas',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Se desativado, os conflitos causados pela falta de dia/mês (ex: "1855" vs "maio 1855") serão ignorados.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Muitos problemas encontrados. Mostrando apenas os primeiros %s. Use a exportação CSV para a lista completa.',
 ];

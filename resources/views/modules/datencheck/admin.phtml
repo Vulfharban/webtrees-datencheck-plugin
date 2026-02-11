@@ -432,7 +432,37 @@
                             <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates gendered suffixes (e.g. -is/-ou).') ?></small>
                         </label>
                     </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_genannt_names" 
+                            name="enable_genannt_names" 
+                            value="1"
+                            <?= $module->getSetting('enable_genannt_names', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_genannt_names">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Genannt-Namen (alias) naming conventions') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates alias names (Westphalian: "genannt", "gen.", "vulgo", "dictus"; Polish/Latin: "vel", "alias", "zwany", "inaczej").') ?></small>
+                        </label>
+                    </div>
                     
+                    <div class="form-check mt-3">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_imprecise_dates" 
+                            name="enable_imprecise_dates" 
+                            value="1"
+                            <?= $module->getSetting('enable_imprecise_dates', '1') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_imprecise_dates">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Show warnings for imprecise dates') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.') ?></small>
+                        </label>
+                    </div>
+
                     <div class="form-check mt-3">
                         <input 
                             class="form-check-input" 
@@ -487,6 +517,45 @@
                     <input type="hidden" id="analysis_tree_select" value="<?= htmlspecialchars($tree_name) ?>">
 <?php endif; ?>
 
+                <div class="mb-4">
+                    <label class="form-label d-block fw-bold"><?= \Fisharebest\Webtrees\I18N::translate('Categories to analyze:') ?></label>
+                    <div class="d-flex flex-wrap gap-3 p-3 bg-white border rounded">
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="biological" id="chk_bio" checked>
+                            <label class="form-check-label" for="chk_bio"><?= \Fisharebest\Webtrees\I18N::translate('Biological Plausibility') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="temporal" id="chk_temp" checked>
+                            <label class="form-check-label" for="chk_temp"><?= \Fisharebest\Webtrees\I18N::translate('Temporal Plausibility') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="marriage" id="chk_marr" checked>
+                            <label class="form-check-label" for="chk_marr"><?= \Fisharebest\Webtrees\I18N::translate('Marriage Plausibility') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="missing_data" id="chk_miss" checked>
+                            <label class="form-check-label" for="chk_miss"><?= \Fisharebest\Webtrees\I18N::translate('Missing Data') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="geographic" id="chk_geo" checked>
+                            <label class="form-check-label" for="chk_geo"><?= \Fisharebest\Webtrees\I18N::translate('Geographic Plausibility') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="names" id="chk_name" checked>
+                            <label class="form-check-label" for="chk_name"><?= \Fisharebest\Webtrees\I18N::translate('Name Consistency') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="sources" id="chk_src" checked>
+                            <label class="form-check-label" for="chk_src"><?= \Fisharebest\Webtrees\I18N::translate('Source Quality') ?></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="date_format" id="chk_date" checked>
+                            <label class="form-check-label" for="chk_date"><?= \Fisharebest\Webtrees\I18N::translate('Date Format') ?></label>
+                        </div>
+                    </div>
+                    <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('If categories are selected here, they will override the general settings for this analysis run.') ?></small>
+                </div>
+
                 <div class="d-flex align-items-center">
                     <button type="button" class="btn btn-success btn-lg me-3" id="btn-start-analysis">
                         <i class="fa fa-play"></i> <?= \Fisharebest\Webtrees\I18N::translate('Start Analysis') ?>
@@ -528,9 +597,13 @@
                             <label for="filter-category" class="form-label"><?= \Fisharebest\Webtrees\I18N::translate('Category / Error Type') ?></label>
                             <select class="form-select form-control" id="filter-category">
                                 <option value="all"><?= \Fisharebest\Webtrees\I18N::translate('All Categories') ?></option>
-                                <option value="missing_source"><?= \Fisharebest\Webtrees\I18N::translate('Missing Sources') ?></option>
-                                <option value="geography"><?= \Fisharebest\Webtrees\I18N::translate('Geographic Issues') ?></option>
-                                <option value="temporal_impossibility"><?= \Fisharebest\Webtrees\I18N::translate('Temporal Impossibility') ?></option>
+                                <option value="biological"><?= \Fisharebest\Webtrees\I18N::translate('Biological Plausibility') ?></option>
+                                <option value="temporal"><?= \Fisharebest\Webtrees\I18N::translate('Temporal Plausibility') ?></option>
+                                <option value="marriage"><?= \Fisharebest\Webtrees\I18N::translate('Marriage Plausibility') ?></option>
+                                <option value="missing_data"><?= \Fisharebest\Webtrees\I18N::translate('Missing Data') ?></option>
+                                <option value="geography"><?= \Fisharebest\Webtrees\I18N::translate('Geographic Plausibility') ?></option>
+                                <option value="names"><?= \Fisharebest\Webtrees\I18N::translate('Name Consistency') ?></option>
+                                <option value="missing_source"><?= \Fisharebest\Webtrees\I18N::translate('Source Quality') ?></option>
                                 <option value="duplicate_check"><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicates') ?></option>
                                 <option value="sibling_spacing"><?= \Fisharebest\Webtrees\I18N::translate('Sibling Spacing') ?></option>
                             </select>
@@ -605,10 +678,13 @@ document.addEventListener('DOMContentLoaded', () => {
         noIssuesFound: '<?= \Fisharebest\Webtrees\I18N::translate('No issues found!') ?>',
         cleanTree: '<?= \Fisharebest\Webtrees\I18N::translate('Your tree is clean.') ?>',
         analysisError: '<?= \Fisharebest\Webtrees\I18N::translate('Analysis error:') ?>',
-        errorRestart: '<?= \Fisharebest\Webtrees\I18N::translate('Error! Restart?') ?>'
+        errorRestart: '<?= \Fisharebest\Webtrees\I18N::translate('Error! Restart?') ?>',
+        tooManyIssues: '<?= \Fisharebest\Webtrees\I18N::translate('Too many issues found. Showing only the first %s. Please use CSV Export for the full list.', 1000) ?>'
     };
 
     let totalIssues = 0;
+    let allFoundIssues = []; // ACCUMULATE ALL ISSUES FOR CSV
+    const RENDER_LIMIT = 1000;
     
     // API Route Base
     const apiRouteBase = '<?= e(route('module', ['module' => $module->name(), 'action' => 'BatchAnalysis', 'tree' => 'TREE_PLACEHOLDER'])) ?>';
@@ -648,6 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let visible = 0;
 
         rows.forEach(row => {
+            if (row.id === 'render-limit-warning') return; // Skip the warning row
             const rowSev = row.getAttribute('data-severity'); // error, warning, info
             const rowCat = row.getAttribute('data-category'); // e.g. missing_source
 
@@ -662,7 +739,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Filter Category
             if (category !== 'all') {
-                if (rowCat !== category && rowCat !== 'unknown') show = false;
+                if (category === 'biological' && !rowCat.includes('biological') && rowCat !== 'sibling_spacing') show = false;
+                else if (category === 'temporal' && !rowCat.includes('temporal') && rowCat !== 'chronological_inconsistency') show = false;
+                else if (category === 'marriage' && !rowCat.includes('marriage')) show = false;
+                else if (category === 'geography' && rowCat !== 'geographic_issue') show = false;
+                else if (category === 'names' && rowCat !== 'name_consistency') show = false;
+                else if (category !== 'biological' && category !== 'temporal' && category !== 'marriage' && category !== 'geography' && category !== 'names' && rowCat !== category && rowCat !== 'unknown') show = false;
             }
 
             row.style.display = show ? '' : 'none';
@@ -687,24 +769,30 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar.innerText = '0%';
         progressBar.classList.add('progress-bar-animated');
         progressBar.classList.remove('bg-primary');
+        progressBar.classList.remove('bg-danger'); // Ensure it's clean on restart
         progressBar.classList.add('bg-success');
         
         progressText.innerText = i18n.initializing;
         totalIssues = 0;
+        allFoundIssues = []; // Reset for new analysis
         issueCountBadge.innerText = '0';
         visibleCountEl.innerText = '0';
         totalResultsCountEl.innerText = '0';
 
-        await runBatch(0, getSelectedTree());
+        // Collect selected categories
+        const selectedCats = Array.from(document.querySelectorAll('.analysis-category:checked')).map(cb => cb.value);
+        const categoriesStr = selectedCats.join(',');
+        
+        await runBatch('', getSelectedTree(), 0, 0, categoriesStr);
     });
 
-    async function runBatch(offset, treeName) {
+    async function runBatch(lastId, treeName, totalCountFromClient, processed, categories) {
         try {
             // Construct API URL with selected tree
             let url = apiRouteBase.replace('TREE_PLACEHOLDER', treeName);
             const separator = url.includes('?') ? '&' : '?';
             
-            const response = await fetch(`${url}${separator}offset=${offset}&limit=200`);
+            const response = await fetch(`${url}${separator}last_id=${lastId}&limit=100&total=${totalCountFromClient}&processed=${processed}&categories=${categories}`);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -731,48 +819,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Handle Results
             if (data.issues && data.issues.length > 0) {
-                totalIssues += data.issues.length;
+                allFoundIssues = allFoundIssues.concat(data.issues); // Accumulate all issues
+                totalIssues = allFoundIssues.length; // Total issues found so far
                 issueCountBadge.innerText = totalIssues;
                 totalResultsCountEl.innerText = totalIssues;
-                visibleCountEl.innerText = totalIssues; // Initially all visible
 
                 resultsContainer.style.display = 'block'; // Show if issues found
-                // Don't show filters yet until finished? Or show immediately? Show immediately is better for long runs.
                 filterControls.style.display = 'block'; 
                 
                 data.issues.forEach(issue => {
-                    const row = document.createElement('tr');
-                    
-                    // Add data attributes for filtering
-                    row.setAttribute('data-severity', issue.severity || 'info');
-                    row.setAttribute('data-category', issue.type || 'unknown');
-                    
-                    // Severity badge
-                    let badgeClass = 'bg-secondary';
-                    if (issue.severity === 'error') badgeClass = 'bg-danger';
-                    if (issue.severity === 'warning') badgeClass = 'bg-warning text-dark';
-                    if (issue.severity === 'info') badgeClass = 'bg-info text-dark';
-                    
-                    // Translate severity for display if needed, but badge color works well
-                    
-                    // Build Person URL dynamically
-                    // Replace the tree placeholder and the dummy XREF 'I1'
-                    let pUrl = personUrlBase.replace('TREE0', treeName).replace('I1', issue.xref);
-                    
-                    row.innerHTML = `
-                        <td><a href="${pUrl}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
-                        <td><span class="badge ${badgeClass}">${issue.label || issue.code}</span></td>
-                        <td>${issue.message}
-                            ${issue.debug_dump ? `<div class="text-danger small mt-2" style="white-space: pre-wrap; font-family: monospace; border: 1px dashed red;">Dump: ${issue.debug_dump}</div>` : ''}
-                            ${issue.debug_class ? `<div class="text-danger small fw-bold">Class: ${issue.debug_class}</div>` : ''}
-                        </td>
-                    `;
-                    resultsTableBody.appendChild(row);
+                    // Only render if below the limit
+                    if (resultsTableBody.children.length < RENDER_LIMIT) {
+                        const row = document.createElement('tr');
+                        
+                        // Add data attributes for filtering
+                        row.setAttribute('data-severity', issue.severity || 'info');
+                        row.setAttribute('data-category', issue.type || 'unknown');
+                        
+                        // Severity badge
+                        let badgeClass = 'bg-secondary';
+                        if (issue.severity === 'error') badgeClass = 'bg-danger';
+                        if (issue.severity === 'warning') badgeClass = 'bg-warning text-dark';
+                        if (issue.severity === 'info') badgeClass = 'bg-info text-dark';
+                        
+                        // Build Person URL dynamically
+                        // Replace the tree placeholder and the dummy XREF 'I1'
+                        let pUrl = personUrlBase.replace('TREE0', treeName).replace('I1', issue.xref);
+                        
+                        row.innerHTML = `
+                            <td><a href="${pUrl}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
+                            <td><span class="badge ${badgeClass}">${issue.label || issue.code}</span></td>
+                            <td>${issue.message}</td>
+                        `;
+                        resultsTableBody.appendChild(row);
+                    }
                 });
+
+                // Add a warning if the render limit is reached and not already present
+                if (totalIssues >= RENDER_LIMIT && !document.getElementById('render-limit-warning')) {
+                    const warnRow = document.createElement('tr');
+                    warnRow.id = 'render-limit-warning';
+                    warnRow.innerHTML = `<td colspan="3" class="text-center bg-warning text-dark font-weight-bold p-3">
+                        <i class="fa fa-exclamation-triangle"></i> 
+                        ${i18n.tooManyIssues.replace('%s', RENDER_LIMIT)}
+                    </td>`;
+                    resultsTableBody.appendChild(warnRow);
+                }
                 
                 // Re-apply filters if user changed them during run
                 if (filterSeverity.value !== 'all' || filterCategory.value !== 'all') {
                     applyFilters();
+                } else {
+                    // If no filters, visible count is the number of rendered rows (up to RENDER_LIMIT)
+                    visibleCountEl.innerText = resultsTableBody.children.length - (document.getElementById('render-limit-warning') ? 1 : 0);
                 }
             }
 
@@ -780,7 +879,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.finished) {
                 // Next Batch
                 // setTimeout ensures UI update happens before next intensive task
-                setTimeout(() => runBatch(data.offset, treeName), 10);
+                setTimeout(() => runBatch(data.last_id, treeName, data.total, data.processed, categories), 10);
             } else {
                 // Done
                 btn.disabled = false;
@@ -791,7 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (totalIssues === 0) {
                      resultsContainer.style.display = 'block';
-                     resultsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> ${i18n.noIssuesFound}</h4><p>${i18n.cleanTree}</p></td></tr>`;
+                     resultsTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> ${i18n.noIssuesFound}</h4><p>${i18n.cleanTree}</p></td></tr>`;
                      filterControls.style.display = 'none'; // No need to filter nothing
                 }
             }
@@ -806,34 +905,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // CSV Export Function
     document.getElementById('btn-export-csv').addEventListener('click', () => {
-        const rows = document.querySelectorAll('#results-table tr');
-        let csvContent = "data:text/csv;charset=utf-8,";
-        
-        // Add BOM for Excel compatibility
-        csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        if (allFoundIssues.length === 0) return; // Don't export if no issues
 
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th, td');
-            let rowData = [];
+        let csvContent = "\uFEFF"; // BOM for Excel compatibility
+        
+        // Add Header Row
+        csvContent += '"Person";"XREF";"Type";"Message";"Severity"\r\n';
+
+        allFoundIssues.forEach(issue => {
+            // Escape double quotes by doubling them, then wrap in quotes
+            const escapeAndQuote = (text) => `"${String(text).replace(/"/g, '""')}"`;
+
+            let row = [
+                escapeAndQuote(issue.name),
+                escapeAndQuote(issue.xref),
+                escapeAndQuote(issue.label || issue.code),
+                escapeAndQuote(issue.message.replace(/(\r\n|\n|\r)/gm, " ").trim()), // Clean newlines from message
+                escapeAndQuote(issue.severity)
+            ];
             
-            cols.forEach(col => {
-                // Get text content, clean up whitespace
-                let text = col.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
-                // Escape quotes
-                text = text.replace(/"/g, '""');
-                rowData.push(`"${text}"`);
-            });
-            
-            csvContent += rowData.join(";") + "\r\n";
+            csvContent += row.join(";") + "\r\n";
         });
 
-        const encodedUri = encodeURI(csvContent);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        link.setAttribute("href", url);
         link.setAttribute("download", `datencheck_analyse_${new Date().toISOString().slice(0,10)}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url); // Clean up the object URL
     });
 });
 </script>

@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Tolerálja a nemek szerinti utótagokat (pl. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'A vezetéknév "%s" úgy tűnik, előtagot tartalmaz "%s". A webtrees-ben ezt az "Előtag" mezőbe kell beírni.',
+    'Consider Genannt-Namen (alias) naming conventions' => '"Genannt-Namen" (alias) névadási szokások figyelembevétele',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tolerálja a "genannt", "gen.", "vulgo" vagy "dictus" szavakat tartalmazó vesztfáliai neveket.',
+    'Date format' => 'Dátumformátum',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nem szabványos hónapnév található a(z) %s helyen: "%s". Elvárt GEDCOM szabvány (pl. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Figyelmeztetések megjelenítése a pontatlan dátumoknál',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ha le van tiltva, a hiányzó nap/hónap által okozott konfliktusok (pl. "1855" vs "1855. május") figyelmen kívül maradnak.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Túl sok probléma található. Csak az első %s jelenik meg. Kérjük, használja a CSV exportálást a teljes listához.',
 ];

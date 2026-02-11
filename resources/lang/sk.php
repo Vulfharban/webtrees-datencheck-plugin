@@ -263,4 +263,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Toleruje rodové prípony (napr. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Priezvisko "%s" sa zdá obsahovať predponu "%s". Vo webtrees by sa to malo zadať do poľa "Predpona".',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Zohľadniť konvencie pomenovania "Genannt-Namen" (alias)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Toleruje vestfálske mená obsahujúce "genannt", "gen.", "vulgo" alebo "dictus".',
+    'Date format' => 'Formát dátumu',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'V %s bol nájdený neštandardný názov mesiaca: "%s". Očakávaný štandard GEDCOM (napr. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Zobrazovať varovania pre nepresné dátumy',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ak je zakázané, konflikty spôsobené chýbajúcim dňom/mesiacom (napr. "1855" vs "máj 1855") budú ignorované.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Našlo sa príliš veľa problémov. Zobrazuje sa iba prvých %s. Pre úplný zoznam použite export do CSV.',
 ];

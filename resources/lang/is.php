@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Leyfa kynbundnar endingar (t.d. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Eftirnafnið "%s" virðist innihalda forskeytið "%s". Í webtrees ætti þetta að vera skráð í "Forskeyti" svæðið.',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Taka tillit til "Genannt-Namen" (alias) nafnavenja',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Leyfa vestfalísk nöfn sem innihalda "genannt", "gen.", "vulgo" eða "dictus".',
+    'Date format' => 'Dagsetningarsnið',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Óstaðlað mánaðarnafn fannst í %s: "%s". Búist var við GEDCOM staðli (t.d. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Sýna viðvaranir fyrir ónákvæmar dagsetningar',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ef þetta er óvirkt verður litið framhjá misræmi vegna vöntunar á degi/mánuði (t.d. "1855" á móti "maí 1855").',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Of mörg vandamál fundust. Sýni aðeins fyrstu %s. Vinsamlegast notaðu CSV útflutning fyrir allan listann.',
 ];

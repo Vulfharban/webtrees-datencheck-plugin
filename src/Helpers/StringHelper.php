@@ -75,4 +75,34 @@ class StringHelper
         
         return $d[$len1][$len2];
     }
+
+    public static function isGenanntNameMatch(string $name1, string $name2): bool
+    {
+        // Keywords for Genannt-Namen (Westphalian aliases, Polish "vel", etc.)
+        $keywords = ['genannt', 'gen\.', 'vulgo', 'dictus', 'vel', 'alias', 'inaczej', 'zwany', 'zwana'];
+        $pattern = '/\s+(' . implode('|', $keywords) . ')\s+/i';
+        
+        $n1 = mb_strtolower(trim(strip_tags($name1)), 'UTF-8');
+        $n2 = mb_strtolower(trim(strip_tags($name2)), 'UTF-8');
+        
+        if (empty($n1) || empty($n2)) return false;
+        
+        if ($n1 === $n2) return true;
+
+        $parts1 = preg_split($pattern, $n1);
+        $parts2 = preg_split($pattern, $n2);
+        
+        $parts1 = array_map('trim', $parts1);
+        $parts2 = array_map('trim', $parts2);
+        
+        foreach ($parts1 as $p1) {
+            if (empty($p1)) continue;
+            foreach ($parts2 as $p2) {
+                if (empty($p2)) continue;
+                if ($p1 === $p2) return true;
+            }
+        }
+        
+        return false;
+    }
 }

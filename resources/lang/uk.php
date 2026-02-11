@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Толерує гендерні суфікси (напр. -іс/-у).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Прізвище "%s", здається, містить префікс "%s". У webtrees це слід вводити в поле "Префікс".',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Враховувати вестфальські "імена-псевдоніми" (Genannt-Namen)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Толерує вестфальські імена, що містять "genannt", "gen.", "vulgo" або "dictus".',
+    'Date format' => 'Формат дати',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Знайдено нестандартну назву місяця в %s: "%s". Очікується стандарт GEDCOM (наприклад, JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Показувати попередження для неточних дат',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Якщо вимкнено, конфлікти, спричинені відсутністю дня/місяця (наприклад, "1855" проти "травень 1855"), будуть ігноруватися.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Знайдено занадτο багато проблем. Показуються лише перші %s. Будь ласка, скористайтеся експортом у CSV для повного списку.',
 ];

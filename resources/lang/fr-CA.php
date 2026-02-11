@@ -267,4 +267,11 @@ return [
     'Sibling spacing too small' => 'Espacement de la fratrie trop faible',
     
     'Settings saved successfully.' => 'Réglages enregistrés avec succès.',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Tenir compte des conventions de nommage "Genannt-Namen" (alias)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tolère les noms westphaliens contenant "genannt", "gen.", "vulgo" ou "dictus".',
+    'Date format' => 'Format de date',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nom de mois non standard trouvé dans %s : "%s". Standard GEDCOM attendu (ex. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Afficher les avertissements pour les dates imprécises',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Si désactivé, les conflits causés par l\'absence de jour/mois (ex. "1855" vs "Mai 1855") seront ignorés.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Trop de problèmes trouvés. Affichage des %s premiers seulement. Veuillez utiliser l\'exportation CSV pour la liste complète.',
 ];

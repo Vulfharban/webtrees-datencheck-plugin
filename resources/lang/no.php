@@ -214,4 +214,11 @@ return [
     'Task created' => 'Oppgave opprettet',
     'Person not found' => 'Person ikke funnet',
     'Permission denied' => 'Tilgang nektet',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Ta hensyn til "Genannt-Namen" (alias) navnekonvensjoner',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Tillater westfalske navn som inneholder "genannt", "gen.", "vulgo" eller "dictus".',
+    'Date format' => 'Datoformat',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Ikke-standardisert månedsnavn funnet i %s: "%s". GEDCOM-standard forventes (f.eks. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Vis advarsler for upresise datoer',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Hvis deaktivert, vil konflikter forårsaket av manglende dag/måned (f.eks. "1855" mot "mai 1855") bli ignorert.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'For mange problemer funnet. Viser bare de første %s. Vennligst bruk CSV-eksport for den fullstendige listen.',
 ];

@@ -105,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.1.3';
+        return '1.2.1';
     }
 
     public function getVersion(): string
@@ -636,7 +636,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
         $this->setSetting('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
         $this->setSetting('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
+        $this->setSetting('enable_genannt_names', isset($params['enable_genannt_names']) ? '1' : '0');
         $this->setSetting('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
+        $this->setSetting('enable_imprecise_dates', isset($params['enable_imprecise_dates']) ? '1' : '0');
         
         // Save threshold preferences
         $this->setSetting('min_mother_age', $params['min_mother_age'] ?? '14');
@@ -860,33 +862,41 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                     ->withHeader('Content-Type', 'application/json');
             }
             
-            // Pagination
-            $offset = (int) ($params['offset'] ?? 0);
-            $limit  = (int) ($params['limit'] ?? 200); // 200 is default fallback
+            // Pagination using last ID for better performance on large tables
+            $lastId = $params['last_id'] ?? '';
+            $limit  = (int) ($params['limit'] ?? 100); 
             
-            // Fetch XREFs directly from DB for performance
             $query = DB::table('individuals')
                 ->where('i_file', '=', $tree->id())
-                ->orderBy('i_id') // Ensure consistent order
-                ->skip($offset)
-                ->take($limit)
-                ->select('i_id'); // We need the XREF (i_id)
+                ->orderBy('i_id')
+                ->take($limit);
+
+            if (!empty($lastId)) {
+                $query->where('i_id', '>', $lastId);
+            }
                 
             $rows = $query->get();
             $totalXrefs = $rows->pluck('i_id')->all();
+            
+            // Pre-warm caches for this batch
+            ValidationService::preWarmCache($tree, $totalXrefs);
             
             $results = [];
             $registry = Registry::individualFactory();
             $debugRaw = null;
             
-            // Count total individuals for progress bar (only on first call ideally, but fast enough)
-            $totalCount = DB::table('individuals')->where('i_file', '=', $tree->id())->count();
+            $totalCount = (int) ($params['total'] ?? 0);
+            if ($totalCount === 0) {
+                 $totalCount = DB::table('individuals')->where('i_file', '=', $tree->id())->count();
+            }
+
+            $categories = !empty($params['categories']) ? explode(',', $params['categories']) : [];
 
             foreach ($totalXrefs as $xref) {
                 $person = $registry->make($xref, $tree);
                 if ($person) {
-                    // Run Validation
-                    $validationResult = ValidationService::validatePerson($person, $this);
+                    // Run Validation with optional category filters
+                    $validationResult = ValidationService::validatePerson($person, $this, '', '', '', '', '', '', null, '', 'child', '', '', '', $categories);
                     
                     // Handle structured return ['issues' => [], 'debug' => []]
                     $issues = isset($validationResult['issues']) ? $validationResult['issues'] : $validationResult;
@@ -911,8 +921,13 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 }
             }
 
+            $lastProcessedId = !empty($totalXrefs) ? end($totalXrefs) : $lastId;
+            $processedCount = (int) ($params['processed'] ?? 0) + count($totalXrefs);
+
             return response(json_encode([
-                'offset' => $offset + count($totalXrefs),
+                'last_id' => $lastProcessedId,
+                'offset' => $processedCount,
+                'processed' => $processedCount,
                 'finished' => count($totalXrefs) < $limit,
                 'total' => $totalCount,
                 'issues' => $results,

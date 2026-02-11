@@ -80,6 +80,46 @@ class DateParser
         
         return $result;
     }
+
+    /**
+     * Check if a date string contains a month that we can parse but is not in the GEDCOM JAN/FEB/... format
+     */
+    public static function hasNonStandardMonth(string $dateStr): bool
+    {
+        if (empty(trim($dateStr))) return false;
+
+        // Strip GEDCOM escape sequences like @#DJULIAN@ or @#DGREGORIAN@
+        $dateStr = preg_replace('/@#D[A-Z ]+@\s*/', '', $dateStr);
+
+        $s = str_replace(['.', '-', '/'], ' ', trim($dateStr));
+        $parts = preg_split('/\s+/', $s);
+
+        $gedcomMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        $gedcomModifiers = ['ABT', 'CAL', 'EST', 'AFT', 'BEF', 'BET', 'AND', 'FROM', 'TO', 'INT'];
+
+        foreach ($parts as $part) {
+            $upper = mb_strtoupper(trim($part));
+            if (empty($upper)) continue;
+
+            // 1. If it's a standard month, it's fine
+            if (in_array($upper, $gedcomMonths)) continue;
+
+            // 2. If it's a standard GEDCOM modifier (ABT, BET, etc.), it's fine
+            if (in_array($upper, $gedcomModifiers)) continue;
+
+            // 3. If it's purely numeric (Day or Year), it's not a month name to check
+            if (is_numeric($upper)) continue;
+
+            // 4. If we can map it to a month but it wasn't caught by the 'JAN' check above,
+            // it's a non-standard name like "Januar", "January", etc.
+            $lower = mb_strtolower($upper);
+            if (isset(self::MONTH_MAP[$lower])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     /**
      * Parse age string like "56y 5m 3w 2d" or "56" to years

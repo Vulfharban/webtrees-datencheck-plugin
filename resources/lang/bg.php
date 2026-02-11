@@ -267,4 +267,11 @@ return [
     'Tolerates gendered suffixes (e.g. -is/-ou).' => 'Толерира наставки по род (напр. -is/-ou).',
 
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Фамилията "%s" изглежда съдържа префикс "%s". В webtrees това трябва да бъде въведено в полето "Префикс".',
+    'Consider Genannt-Namen (alias) naming conventions' => 'Вземи предвид вестфалските конвенции за именуване (Genannt-Namen)',
+    'Tolerates Westphalian names containing "genannt", "gen.", "vulgo" or "dictus".' => 'Толерира вестфалски имена, съдържащи "genannt", "gen.", "vulgo" или "dictus".',
+    'Date format' => 'Формат на датата',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Намерено е нестандартно име на месец в %s: "%s". Очаква се стандарт GEDCOM (напр. JAN, FEB).',
+    'Show warnings for imprecise dates' => 'Показвай предупреждения за неточни дати',
+    'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ако е деактивирано, конфликтите, причинени от липсващ ден/месец (напр. "1855" срещу "май 1855"), ще бъдат игнорирани.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Открити са твърде много проблеми. Показват се само първите %s. Моля, използвайте CSV експорт за пълния списък.',
 ];

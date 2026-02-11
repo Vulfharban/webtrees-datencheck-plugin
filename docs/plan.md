@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.1.0 - **Stable** (Regional Support & UX)
+**Status:** Version 1.2.2 - **Stable** (International & Aliases)
 
 ## Kernfunktionen
 
@@ -23,6 +23,7 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
     - [x] **Automatischer Vorschlag:** Button "Diese Familie nutzen" zur schnellen Zuweisung
     - [x] **Geschwister-Matching:** Warnung vor Dubletten innerhalb derselben Familie
     - [x] **Skandinavische Patronymika:** Unterstützung regionaler Namensregeln (-son, -dóttir, etc.) in ganz Skandinavien/Island.
+    - [x] **Regionale Alias-Namen:** Unterstützung für westfälische („genannt“) und polnische/lateinische („vel“, „alias“, „zwany“) Alias-Formen zur Vermeidung von Namens-Inkonsistenzen.
 
 ### 3. Workflow-Integration & Datenqualität ✅ DONE
 - **Ignore-Funktion (False-Positives):**
@@ -58,13 +59,16 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 
 ## Phase 5: Erweiterte Features (WIP)
 - [x] **Orts-Plausibilität:** Prüfung auf geografisch unwahrscheinliche Ortswechsel (implementiert, aber Optimierung nötig)
+- [x] **Präzisions-Handling:** Differenzierung zwischen harten Fehlern und Warnungen bei ungenauen Daten (1855 vs. Mai 1855).
 - [x] **Quellen-Pflicht:** Optionale Prüfung auf SOUR-Tags (implementiert & robust)
 - [x] **Reporting-Export:** CSV-Export der Analyse-Ergebnisse.
 - [x] **UX & Kontext:** Erhalt der Baum-Auswahl und verbesserte Breadcrumb-Navigation.
-- [ ] **Orts-Normalisierung:** Unterstützung bei der Vereinheitlichung von Ortsnamen
-- [ ] **Performance-Optimierung:** Caching für Geodaten bei Bulk-Analyse.
+- [x] **Orts-Normalisierung:** Unterstützung bei der Vereinheitlichung von Ortsnamen
+- [x] **Performance-Optimierung:** ID-basierte Paginierung für 100k+ Bäume.
+- [x] **Monats-Validierung:** Prüfung auf nicht-GEDCOM konforme Datumsangaben.
 
 ## Abgeschlossene Meilensteine (2026-02-08)
 1. ✅ Rust-Kern vollständig in PHP reimplementiert
 2. ✅ Admin-UI & Ignore-Funktion vollständig integriert
 3. ✅ Bulk-Analyse Feature implementiert (Backend & Frontend)
+4. ✅ Unterstützung für regionale westfälische Namensformen (Genannt-Namen)
