@@ -7,6 +7,7 @@ use Fisharebest\Webtrees\DB;
 use Wolfrum\Datencheck\Helpers\StringHelper;
 use Wolfrum\Datencheck\Helpers\PhoneticHelper;
 use Wolfrum\Datencheck\Helpers\DateParser;
+use Wolfrum\Datencheck\Helpers\NameHelper;
 
 /**
  * Database Service for webtrees data checks
@@ -77,7 +78,8 @@ class DatabaseService
             // 3. Overall distance is very small (total dist < 4)
             // 4. Genannt-Namen match (Westphalian aliases)
             $genanntMatch = StringHelper::isGenanntNameMatch($inputSurname, $candSurname);
-            $stringMatch = ($distGiven < 3 && $distSurname < 2) || (StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate) < 4) || $genanntMatch;
+            $equivalentMatch = NameHelper::areNamesEquivalent($inputGiven, $candGiven) && $distSurname < 3;
+            $stringMatch = ($distGiven < 3 && $distSurname < 2) || (StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate) < 4) || $genanntMatch || $equivalentMatch;
 
             if ($stringMatch || $phoneticMatch) {
                 // Fetch GEDCOM to check birth date
@@ -273,8 +275,9 @@ class DatabaseService
                     $candidatePhonetic = PhoneticHelper::cologneEncode($normalizedCandidate);
                     $phoneticMatch = !empty($inputPhonetic) && $inputPhonetic === $candidatePhonetic;
                     $genanntMatch = StringHelper::isGenanntNameMatch($normalizedInput, $normalizedCandidate);
+                    $equivalentMatch = NameHelper::areNamesEquivalent($childGiven, $candidateName);
                     
-                    if ($distance < 5 || $phoneticMatch || $genanntMatch) {
+                    if ($distance < 5 || $phoneticMatch || $genanntMatch || $equivalentMatch) {
                         $dateMatch = true;
                         
                         if ($targetYear !== null) {

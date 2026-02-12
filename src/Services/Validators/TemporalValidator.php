@@ -12,17 +12,19 @@ class TemporalValidator extends AbstractValidator
      */
     public static function checkBirthAfterDeath(?Individual $person, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = ''): ?array
     {
-        $birthJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        $deathJD = ValidationService::getEffectiveJD($person, 'DEAT', $overrideDeath);
-        $burialJD = ValidationService::getEffectiveJD($person, 'BURI', $overrideBurial);
+        $birthMinJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
+        $deathMaxJD = ValidationService::getEffectiveMaxJD($person, 'DEAT', $overrideDeath);
+        $burialMaxJD = ValidationService::getEffectiveMaxJD($person, 'BURI', $overrideBurial);
 
-        $endJD = $deathJD ?? $burialJD;
-        $endType = $deathJD ? 'DEAT' : 'BURI';
-        $label = $deathJD ? self::translate('Death date') : self::translate('Burial date');
+        if (!$birthMinJD) return null;
 
-        if ($birthJD && $endJD && $birthJD > $endJD) {
-            $birthYear = ValidationService::getYearFromJD($birthJD);
-            $endYear = ValidationService::getYearFromJD($endJD);
+        $endMaxJD = $deathMaxJD ?? $burialMaxJD;
+        $endType = $deathMaxJD ? 'DEAT' : 'BURI';
+
+        // Definitely impossible
+        if ($endMaxJD && $birthMinJD > $endMaxJD) {
+            $birthYear = ValidationService::getYearFromJD($birthMinJD);
+            $endYear = ValidationService::getYearFromJD($endMaxJD);
 
             $birthPrecise = ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth);
             $endPrecise = ValidationService::isPreciseDate($person, $endType, $endType === 'DEAT' ? $overrideDeath : $overrideBurial);
@@ -33,18 +35,18 @@ class TemporalValidator extends AbstractValidator
                 'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_BIRTH_DEATH' : 'BIRTH_AFTER_DEATH',
                 'type' => 'temporal_impossibility',
                 'label' => self::translate('Date conflict'),
-                'severity' => $isImpreciseConflict ? 'warning' : 'error',
+                'severity' => $isImpreciseConflict ? 'info' : 'error',
                 'message' => $isImpreciseConflict 
                     ? self::translate(
                         'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
                         self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
-                        $deathJD ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
+                        $deathMaxJD ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
                     )
                     : self::translate(
                         'Birth date (%s) is after %s (%s)',
                         self::formatDate($person, 'BIRT', $overrideBirth) ?: $birthYear,
-                        $deathJD ? self::translate('the death date') : self::translate('the burial'),
-                        $deathJD ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
+                        $deathMaxJD ? self::translate('the death date') : self::translate('the burial'),
+                        $deathMaxJD ? (self::formatDate($person, 'DEAT', $overrideDeath) ?: $endYear) : (self::formatDate($person, 'BURI', $overrideBurial) ?: $endYear)
                     ),
             ];
         }
@@ -92,34 +94,43 @@ class TemporalValidator extends AbstractValidator
      */
     public static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = '', string $overrideBap = ''): ?array
     {
-        $birthJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        $bapJD = ValidationService::getEffectiveJD($person, 'CHR', $overrideBap);
+        $birthMinJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
+        $bapMinJD = ValidationService::getEffectiveJD($person, 'CHR', $overrideBap);
+        $bapMaxJD = ValidationService::getEffectiveMaxJD($person, 'CHR', $overrideBap);
 
-        if ($birthJD && $bapJD && $bapJD < $birthJD) {
-            $birthYear = ValidationService::getYearFromJD($birthJD);
-            $bapYear = ValidationService::getYearFromJD($bapJD);
+        if (!$birthMinJD || !$bapMinJD) return null;
 
-            $birthPrecise = ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth);
-            $bapPrecise = ValidationService::isPreciseDate($person, 'CHR', $overrideBap);
-
-            $isImpreciseConflict = (!$birthPrecise || !$bapPrecise) && ($bapYear >= $birthYear);
-
+        // Definitely impossible: Baptism range ends before birth range starts
+        if ($bapMaxJD < $birthMinJD) {
             return [
-                'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_BAPTISM' : 'BAPTISM_BEFORE_BIRTH',
+                'code' => 'BAPTISM_BEFORE_BIRTH',
                 'type' => 'chronological_inconsistency',
                 'label' => self::translate('Check sequence'),
-                'severity' => $isImpreciseConflict ? 'warning' : 'error',
-                'message' => $isImpreciseConflict
-                    ? self::translate('Birth/Baptism dates are imprecise. Exact dates are missing.')
-                    : self::translate('Baptism is before birth.'),
+                'severity' => 'error',
+                'message' => self::translate('Baptism is before birth.'),
             ];
         }
 
+        // Potential conflict: Overlap or imprecise
+        if ($bapMinJD < $birthMinJD) {
+            $birthPrecise = ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth);
+            $bapPrecise = ValidationService::isPreciseDate($person, 'CHR', $overrideBap);
+
+            if (!$birthPrecise || !$bapPrecise) {
+                return [
+                    'code' => 'IMPRECISE_DATE_CONFLICT_BAPTISM',
+                    'type' => 'chronological_inconsistency',
+                    'label' => self::translate('Check sequence'),
+                    'severity' => 'info',
+                    'message' => self::translate('Birth/Baptism dates are imprecise. Exact dates are missing.'),
+                ];
+            }
+        }
+
         // Proximity check: Baptism should be close to birth (e.g. within 30 days for infant baptism)
-        // Only if it's Christening (CHR) or if we want to be strict
-        if ($birthJD && $bapJD && $bapJD > $birthJD) {
-            $diff = $bapJD - $birthJD;
-            if ($diff > 30 && $diff < 3650) { // More than 30 days but less than 10 years (likely not adult baptism yet)
+        if ($birthMinJD && $bapMinJD && $bapMinJD > $birthMinJD) {
+            $diff = $bapMinJD - $birthMinJD;
+            if ($diff > 30 && $diff < 3650) { // More than 30 days but less than 10 years
                 return [
                     'code' => 'BAPTISM_DELAYED',
                     'type' => 'chronological_inconsistency',
@@ -138,27 +149,37 @@ class TemporalValidator extends AbstractValidator
      */
     public static function checkBurialBeforeDeath(?Individual $person, string $overrideDeath = '', string $overrideBurial = ''): ?array
     {
-        $deathJD = ValidationService::getEffectiveJD($person, 'DEAT', $overrideDeath);
-        $burialJD = ValidationService::getEffectiveJD($person, 'BURI', $overrideBurial);
+        $deathMinJD = ValidationService::getEffectiveJD($person, 'DEAT', $overrideDeath);
+        $burialMinJD = ValidationService::getEffectiveJD($person, 'BURI', $overrideBurial);
+        $burialMaxJD = ValidationService::getEffectiveMaxJD($person, 'BURI', $overrideBurial);
 
-        if ($deathJD && $burialJD && $burialJD < $deathJD) {
-            $deathYear = ValidationService::getYearFromJD($deathJD);
-            $burialYear = ValidationService::getYearFromJD($burialJD);
+        if (!$deathMinJD || !$burialMinJD) return null;
 
+        // Definitely impossible
+        if ($burialMaxJD < $deathMinJD) {
+            return [
+                'code' => 'BURIAL_BEFORE_DEATH',
+                'type' => 'chronological_inconsistency',
+                'label' => self::translate('Check sequence'),
+                'severity' => 'error',
+                'message' => self::translate('Burial is before death.'),
+            ];
+        }
+
+        // Potential conflict: Overlap or imprecise
+        if ($burialMinJD < $deathMinJD) {
             $deathPrecise = ValidationService::isPreciseDate($person, 'DEAT', $overrideDeath);
             $burialPrecise = ValidationService::isPreciseDate($person, 'BURI', $overrideBurial);
 
-            $isImpreciseConflict = (!$deathPrecise || !$burialPrecise) && ($burialYear >= $deathYear);
-
-            return [
-                'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_BURIAL' : 'BURIAL_BEFORE_DEATH',
-                'type' => 'chronological_inconsistency',
-                'label' => self::translate('Check sequence'),
-                'severity' => $isImpreciseConflict ? 'warning' : 'error',
-                'message' => $isImpreciseConflict
-                    ? self::translate('Death/Burial dates are imprecise. Exact dates are missing.')
-                    : self::translate('Burial is before death.'),
-            ];
+            if (!$deathPrecise || !$burialPrecise) {
+                return [
+                    'code' => 'IMPRECISE_DATE_CONFLICT_BURIAL',
+                    'type' => 'chronological_inconsistency',
+                    'label' => self::translate('Check sequence'),
+                    'severity' => 'info',
+                    'message' => self::translate('Death/Burial dates are imprecise. Exact dates are missing.'),
+                ];
+            }
         }
 
         return null;

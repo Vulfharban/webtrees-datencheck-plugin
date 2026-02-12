@@ -94,6 +94,12 @@
 - [x] **Dashboard-Filter:** Vollständige Abdeckung aller Analysebereiche im UI-Filter.
 - [x] **Version 1.2.2 Release**
 
+## ✅ Phase 14: Globale Namens-Wissensdatenbank (COMPLETE - 2026-02-12)
+- [x] **Namens-Äquivalente:** Aufbau einer zentralen `NameHelper` Datenbank für 10+ Sprachen.
+- [x] **Intelligente Ehenamen-Erkennung:** Reduktion von Fehlalarmen bei webtrees-spezifischem Name-Tagging.
+- [x] **Diakritika-Normalisierung:** Erhöhung der Fehlertoleranz bei internationalen Sonderzeichen.
+- [x] **Version 1.3.0 Release**
+
 ---
 
 ## Versionshistorie
@@ -107,4 +113,5 @@
 - **v1.1.0:** Skandinavische Namenskonventionen, 15 Sprachen, UX Context Persistence
 - **v1.2.0:** Münsterländische Genannt-Namen, Intelligentes Handling ungenauer Daten
 - **v1.2.1:** Performance-Optimierung für 100k+ Bäume, Monats-Validierung, Alias-Matching
-- **v1.2.2:** Polnische Alias-Namen, Harmonierte Lokalisierung, Vervollständigte Filter
+- [x] **v1.2.2:** Polnische Alias-Namen, Harmonierte Lokalisierung, Vervollständigte Filter
+- **v1.3.0:** Globale Namens-Datenbank (10+ Sprachen), Intelligente Ehenamen-Logik, Diakritika-Handling

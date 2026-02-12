@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.2.2 - **Stable** (International & Aliases)
+**Status:** Version 1.3.0 - **Stable** (Global Name Knowledge Base)
 
 ## Kernfunktionen
 
@@ -23,7 +23,7 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
     - [x] **Automatischer Vorschlag:** Button "Diese Familie nutzen" zur schnellen Zuweisung
     - [x] **Geschwister-Matching:** Warnung vor Dubletten innerhalb derselben Familie
     - [x] **Skandinavische Patronymika:** Unterstützung regionaler Namensregeln (-son, -dóttir, etc.) in ganz Skandinavien/Island.
-    - [x] **Regionale Alias-Namen:** Unterstützung für westfälische („genannt“) und polnische/lateinische („vel“, „alias“, „zwany“) Alias-Formen zur Vermeidung von Namens-Inkonsistenzen.
+    - [x] **Globale Namens-Datenbank:** Unterstützung für hunderte Namens-Äquivalente über 10+ Sprachen hinweg (DE, PL, LAT, EN, NL, CZ, RU, FR, ES, IT). Erkennt Alias-Formen und Varianten automatisch.
 
 ### 3. Workflow-Integration & Datenqualität ✅ DONE
 - **Ignore-Funktion (False-Positives):**

@@ -199,9 +199,28 @@ class DateParser
      */
     public static function normalizeToGedcom(string $dateStr): ?string
     {
+        $dateStr = trim($dateStr);
+        if (empty($dateStr)) {
+            return null;
+        }
+
+        // Detect modifier
+        $modifier = '';
+        $gedcomModifiers = ['ABT', 'CAL', 'EST', 'AFT', 'BEF', 'BET', 'AND', 'FROM', 'TO', 'INT'];
+        
+        $upper = mb_strtoupper($dateStr);
+        foreach ($gedcomModifiers as $m) {
+            if (str_starts_with($upper, $m . ' ')) {
+                $modifier = $m . ' ';
+                $dateStr = trim(mb_substr($dateStr, mb_strlen($m)));
+                break;
+            }
+        }
+
         $parsed = self::parseGedcomDate($dateStr);
         
         if ($parsed['year'] === null) {
+            // Keep original if it's already a year or something we can't parse but might be a valid GEDCOM fragment
             return null;
         }
         
@@ -214,6 +233,6 @@ class DateParser
         }
         $parts[] = $parsed['year'];
         
-        return implode(' ', $parts);
+        return $modifier . implode(' ', $parts);
     }
 }

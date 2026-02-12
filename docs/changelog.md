@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
     
+## [1.3.0] - 2026-02-12
+### Hinzugefügt
+- **Globale Namens-Wissensdatenbank**: Einführung einer umfassenden Datenbank für Namens-Äquivalente über verschiedene Sprachen hinweg (Deutsch, Polnisch, Latein, Englisch, Holländisch, Tschechisch, Russisch, Französisch, Spanisch, Italienisch, Skandinavisch). 
+  - Erkennt nun hunderte Variationen wie `Henryk = Heinrich = Enrico`, `Wacław = Wenzel`, `Katarzyna = Katharina`, `Władysław = Ladislaus = Walter`, `Rosina = Rozyna`, `Apolonia = Polly = Pauline`.
+  - **Teilmengen-Matching**: Intelligenter Vergleich von Mehrfachvornamen (z.B. wird "Johann" als Übereinstimmung zu "Johann Friedrich" akzeptiert).
+  - Verbessert die Genauigkeit der Dubletten-Erkennung und reduziert "False Positives" bei der Namenskonsistenzprüfung massiv.
+- **Intelligente Datums-Zeitraum-Prüfung**: Korrekte Behandlung von GEDCOM-Modifikatoren wie `AFT`, `BEF`, `ABT`. 
+  - Behebt fehlerhafte Warnungen bei Reihenfolge-Checks (z.B. "Bestattung nach 1971" vs "Tod 1981").
+  - Unpräzise Überlappungen oder fehlende Tagesdaten werden nun als **"Hinweis" (Info)** statt als Fehler gemeldet.
+- **Intelligente Ehenamen-Logik**: Automatisches Ignorieren von Warnungen bei Ehenamen, wenn diese nur den neuen Nachnamen enthalten oder der Geburtsvorname im Feld enthalten ist.
+- **Platzhalter-Schutz**: Automatisches Ignorieren von webtrees-Platzhaltern (z.B. Namen beginnend mit `@`) in der Namensprüfung.
+
 ## [1.2.3] - 2026-02-11
 ### Behoben
 - **Date-API Fehler**: Korrektur eines kritischen Fehlers bei der Bulk-Analyse. Die nicht existierende Methode `gedcom()` wurde durch die korrekte webtrees-API-Methode `format('%@')` ersetzt.

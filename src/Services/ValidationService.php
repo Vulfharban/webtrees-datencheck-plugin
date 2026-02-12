@@ -8,6 +8,7 @@ use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\ExtCalendar\GregorianCalendar;
 use Wolfrum\Datencheck\Helpers\DateParser;
+use Wolfrum\Datencheck\Helpers\NameHelper;
 use Wolfrum\Datencheck\Services\IgnoredErrorService;
 use Wolfrum\Datencheck\Services\Validators;
 
@@ -414,7 +415,7 @@ class ValidationService
      * @param string $overrideDeath
      * @return array
      */
-    private static function checkTemporalPlausibility(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = ''): array
+    private static function checkTemporalPlausibility(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideBap = ''): array
     {
         $issues = [];
 
@@ -425,7 +426,7 @@ class ValidationService
         }
 
         // NEW: Check baptism before birth
-        $issue = Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth);
+        $issue = Validators\TemporalValidator::checkBaptismBeforeBirth($person, $overrideBirth, $overrideBap);
         if ($issue) $issues[] = $issue;
 
         // NEW: Check burial before death
@@ -1121,8 +1122,30 @@ class ValidationService
             $type = strtoupper($name['type'] ?? '');
             $givenOther = mb_strtolower($name['givn'] ?? '');
             
+            // Ignore placeholder names (e.g. @P.N.)
+            if (str_starts_with($name['full'] ?? '', '@')) {
+                continue;
+            }
+
             // We focus on Married Names (_MARNM) or any secondary NAME tag
             if (!empty($givenOther) && $givenOther !== $givenNamePrimary) {
+                // 1. Check for name equivalents (Groups)
+                if (NameHelper::areNamesEquivalent($primaryName['givn'] ?? '', $name['givn'] ?? '')) {
+                    continue;
+                }
+
+                // 2. Check if the alternative full name contains the primary given name
+                // (Handles cases where married surname is appended in the given name field)
+                if (!empty($givenNamePrimary) && str_contains(mb_strtolower($name['full'] ?? ''), $givenNamePrimary)) {
+                    continue;
+                }
+
+                // 3. Special case for married names: If it's just one word and no explicit surname part,
+                // it's almost certainly the husband's surname being recorded as the married name.
+                if (($type === '_MARNM' || str_contains($type, 'MARRIED')) && empty($name['surn']) && !str_contains(trim($name['full'] ?? ''), ' ')) {
+                    continue;
+                }
+
                 // Similarity check (Maria vs Elisabeth should fail)
                 $lev = levenshtein($givenNamePrimary, $givenOther);
                 $maxLen = max(strlen($givenNamePrimary), strlen($givenOther));
@@ -1421,8 +1444,8 @@ class ValidationService
         $sibYear = self::getEffectiveYear($sib, 'BIRT');
         $sameYear = ($subjYear !== null && $sibYear !== null && $subjYear === $sibYear);
 
-        // Match if one name contains the other (multibyte safe)
-        $nameMatch = !empty($subjNorm) && !empty($sibNorm) && (str_contains($sibNorm, $subjNorm) || str_contains($subjNorm, $sibNorm));
+        // Match if one name contains the other (multibyte safe) or if names are equivalent
+        $nameMatch = (!empty($subjNorm) && !empty($sibNorm) && (str_contains($sibNorm, $subjNorm) || str_contains($subjNorm, $sibNorm))) || NameHelper::areNamesEquivalent($subjGiven, $sibGiven);
 
         // Diagnostic for duplicates
         if (!isset($debug['sibling_comp'])) $debug['sibling_comp'] = [];
@@ -1526,6 +1549,42 @@ class ValidationService
         }
 
         return ($date && $date->isOK()) ? $date->minimumJulianDay() : null;
+    }
+
+    /**
+     * Get effective Maximum Julian Day for an event
+     */
+    public static function getEffectiveMaxJD(?Individual $person, string $type, string $override = ''): ?int
+    {
+        if (!empty(trim($override))) {
+            $normalized = DateParser::normalizeToGedcom($override);
+            if ($normalized) {
+                $date = new \Fisharebest\Webtrees\Date($normalized);
+                if ($date->isOK()) return $date->maximumJulianDay();
+            }
+        }
+
+        if (!$person) return null;
+
+        $date = null;
+        switch($type) {
+            case 'BIRT': $date = $person->getBirthDate(); break;
+            case 'DEAT': $date = $person->getDeathDate(); break;
+            case 'CHR': 
+                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'BURI':
+                $fact = $person->facts(['BURI'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'MARR':
+                $fact = $person->facts(['MARR'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+        }
+
+        return ($date && $date->isOK()) ? $date->maximumJulianDay() : null;
     }
 
     /**
