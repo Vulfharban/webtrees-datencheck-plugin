@@ -23,6 +23,17 @@ class BiologicalValidator extends AbstractValidator
             $maxAge = (int)ValidationService::getModuleSetting($module, 'max_mother_age', '50');
 
             if ($motherAge < $minAge) {
+                // Check if dates are imprecise (e.g. only years or "ABT")
+                $motherPrecise = ValidationService::isPreciseDate($mother, 'BIRT');
+                $childPrecise = ValidationService::isPreciseDate($child, 'BIRT', $overrideBirth);
+
+                if (!$motherPrecise || !$childPrecise) {
+                    // Small discrepancy on imprecise dates is often just estimation error
+                    if ($motherAge >= $minAge - 5) {
+                        return null;
+                    }
+                }
+
                 return [
                     'code' => 'MOTHER_TOO_YOUNG',
                     'type' => 'biological_implausibility',
@@ -73,6 +84,17 @@ class BiologicalValidator extends AbstractValidator
             $maxAge = (int)ValidationService::getModuleSetting($module, 'max_father_age', '80');
 
             if ($fatherAge < $minAge) {
+                // Check if dates are imprecise (e.g. only years or "ABT")
+                $fatherPrecise = ValidationService::isPreciseDate($father, 'BIRT');
+                $childPrecise = ValidationService::isPreciseDate($child, 'BIRT', $overrideBirth);
+
+                if (!$fatherPrecise || !$childPrecise) {
+                    // Small discrepancy on imprecise dates is often just estimation error
+                    if ($fatherAge >= $minAge - 5) {
+                        return null;
+                    }
+                }
+
                 return [
                     'code' => 'FATHER_TOO_YOUNG',
                     'type' => 'biological_implausibility',
