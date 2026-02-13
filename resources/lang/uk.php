@@ -274,4 +274,19 @@ return [
     'Show warnings for imprecise dates' => 'Показувати попередження для неточних дат',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Якщо вимкнено, конфлікти, спричинені відсутністю дня/місяця (наприклад, "1855" проти "травень 1855"), будуть ігноруватися.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Знайдено занадτο багато проблем. Показуються лише перші %s. Будь ласка, скористайтеся експортом у CSV для повного списку.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Порівняння сімей',
+    'Current Form Data' => 'Поточні дані форми',
+    'Existing Family' => 'Існуюча сім\'я',
+    'Use this person' => 'Вик. цю особу',
+    'Marriage' => 'Шлюб',
+    'None' => 'Немає',
+    'Biological Plausibility' => 'Біологічна вірогідність',
+    'Temporal Plausibility' => 'Часова вірогідність',
+    'Marriage Plausibility' => 'Вірогідність шлюбу',
+    'Missing Data' => 'Відсутність даних',
+    'Geographic Plausibility' => 'Географічна вірогідність',
+    'Name Consistency' => 'Узгодженість імен',
+    'Source Quality' => 'Якість джерел',
 ];

@@ -131,6 +131,8 @@ class NameHelper
         ['Gottlieb', 'Bogumił', 'Bogumil', 'Boguslaw', 'Bogusław', 'Theophilus', 'Amadeus', 'Amedeo'],
         // Gregory variants
         ['Gregory', 'Gregor', 'Grzegorz', 'Gregorius', 'Gregorio'],
+        // Hans variants
+        ['Hans', 'Hannes'],
         // Hedwig variants
         ['Hedwig', 'Jadwiga', 'Hadwig'],
         // Helen variants
@@ -153,8 +155,8 @@ class NameHelper
         ['Jacob', 'Jakob', 'Jacobus', 'James', 'Kuba', 'Iacobus', 'Jakub', 'Giacomo', 'Diego', 'Jaime', 'Jacques', 'Ib'],
         // Joachim variants
         ['Joachim', 'Gioacchino', 'Joaquin'],
-        // John variants
-        ['Jan', 'Johann', 'Johannes', 'John', 'Hans', 'Ivan', 'Janek', 'Janko', 'Joannes', 'Jean', 'Janina', 'Giovanni', 'Juan', 'Ioannes', 'Iwan', 'Hannes', 'Jens', 'Johan'],
+        // John/Johannes variants
+        ['Jan', 'Johann', 'Johannes', 'John', 'Ivan', 'Janek', 'Janko', 'Joannes', 'Jean', 'Janina', 'Giovanni', 'Juan', 'Ioannes', 'Iwan', 'Jens', 'Johan'],
         // Joseph variants
         ['Joseph', 'Josef', 'Józef', 'Joe', 'Giuseppe', 'José', 'Jose', 'Sepp', 'Pepi', 'Beppo'],
         // Judith variants
@@ -192,7 +194,7 @@ class NameHelper
         // Martha variants
         ['Martha', 'Marthe', 'Marta'],
         // Martin variants
-        ['Martin', 'Marcin', 'Martinus', 'Martinius', 'Martino'],
+        ['Martin', 'Marcin', 'Martinus', 'Martinius', 'Martino', 'Merten'],
         // Mary variants
         ['Maria', 'Mary', 'Marie', 'Maryja', 'Mariam', 'Marija', 'Mariya', 'Mitzi', 'Ria', 'Mari', 'Marianna', 'Marianne', 'Maria Anna'],
         // Matthias variants

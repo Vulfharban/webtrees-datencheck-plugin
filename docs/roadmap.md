@@ -100,6 +100,13 @@
 - [x] **Diakritika-Normalisierung:** Erhöhung der Fehlertoleranz bei internationalen Sonderzeichen.
 - [x] **Version 1.3.0 Release**
 
+## ✅ Phase 15: UX Verfeinerung & Anzeige-Dichte (COMPLETE - 2026-02-13)
+- [x] **Kompakte Orts-Darstellung**: Automatisches Kürzen von Orten bis zum ersten Komma.
+- [x] **Informations-Dichte im Vergleich**: Anzeige von Sterbeorten und getrennte Zeilen für Lebensdaten (* / †).
+- [x] **Vervollständigte Lokalisierung**: Unterstützung für Bulgarisch (bg) auf 100% gebracht.
+- [x] **Stabiles Heirats-Parsing**: Multi-Strategie-Extraktor zur Vermeidung von Datenverlust bei komplexen GEDCOM-Strukturen.
+- [x] **Version 1.3.3 Release**
+
 ---
 
 ## Versionshistorie
@@ -113,5 +120,6 @@
 - **v1.1.0:** Skandinavische Namenskonventionen, 15 Sprachen, UX Context Persistence
 - **v1.2.0:** Münsterländische Genannt-Namen, Intelligentes Handling ungenauer Daten
 - **v1.2.1:** Performance-Optimierung für 100k+ Bäume, Monats-Validierung, Alias-Matching
-- [x] **v1.2.2:** Polnische Alias-Namen, Harmonierte Lokalisierung, Vervollständigte Filter
+- **v1.2.2:** Polnische Alias-Namen, Harmonierte Lokalisierung, Vervollständigte Filter
 - **v1.3.0:** Globale Namens-Datenbank (10+ Sprachen), Intelligente Ehenamen-Logik, Diakritika-Handling
+- [x] **v1.3.3:** Kompakte Anzeige, Sterbeort-Integration, bulgarische Lokalisierung

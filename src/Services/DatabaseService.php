@@ -31,21 +31,35 @@ class DatabaseService
         string $surname,
         string $birthDate,
         int $fuzzyDiffHighAge,
-        int $fuzzyDiffDefault
+        int $fuzzyDiffDefault,
+        string $deathDate = '',
+        string $baptismDate = '',
+        string $sex = '',
+        string $marriedSurname = ''
     ): array {
-        $fullInput = trim($given . ' ' . $surname);
-        $normalizedInput = StringHelper::normalizeName($fullInput);
-        $inputPhonetic = PhoneticHelper::cologneEncode($normalizedInput);
+        $inputGivenNormalized = StringHelper::normalizeName($given);
+        $inputGivenParts = array_filter(explode(' ', $inputGivenNormalized));
+        $inputSurnameNormalized = StringHelper::normalizeName($surname);
         
-        $parsedDate = DateParser::parseGedcomDate($birthDate);
-        $targetYear = $parsedDate['year'];
+        $parsedBirth = DateParser::parseGedcomDate($birthDate);
+        $parsedDeath = DateParser::parseGedcomDate($deathDate);
+        $parsedBaptism = DateParser::parseGedcomDate($baptismDate);
         
-        // Search for candidates with similar surname
+        // Search for candidates with similar surname or matching full name
         $surnamePattern = '%' . $surname . '%';
+        $marriedPattern = $marriedSurname ? '%' . $marriedSurname . '%' : null;
+        $treeId = (int)$tree->id();
         
         $rows = DB::table('name')
-            ->where('n_file', '=', $tree->id())
-            ->where('n_surname', 'LIKE', $surnamePattern)
+            ->where('n_file', '=', $treeId)
+            ->where(function($query) use ($surnamePattern, $marriedPattern) {
+                $query->where('n_surname', 'LIKE', $surnamePattern)
+                      ->orWhere('n_full', 'LIKE', $surnamePattern);
+                if ($marriedPattern) {
+                    $query->orWhere('n_surname', 'LIKE', $marriedPattern)
+                          ->orWhere('n_full', 'LIKE', $marriedPattern);
+                }
+            })
             ->select(['n_id', 'n_full'])
             ->get();
         
@@ -55,82 +69,140 @@ class DatabaseService
             $candidateId = $row->n_id;
             $candidateName = $row->n_full;
             
-            $normalizedCandidate = StringHelper::normalizeName($candidateName);
+            // 1. Fetch GEDCOM to check sex and other dates
+            $gedcomRow = DB::table('individuals')
+                ->where('i_file', '=', $treeId)
+                ->where('i_id', '=', $candidateId)
+                ->select(['i_gedcom'])
+                ->first();
+                
+            if (!$gedcomRow) {
+                continue;
+            }
             
-            // Separate given and surname check for better precision
-            $inputGiven = StringHelper::normalizeName($given);
-            $inputSurname = StringHelper::normalizeName($surname);
-            
-            // Extract candidate names (very rough estimation by space)
-            $parts = explode(' ', $normalizedCandidate);
-            $candSurname = array_pop($parts);
-            $candGiven = implode(' ', $parts);
-            
-            $distGiven = StringHelper::levenshteinDistance($inputGiven, $candGiven);
-            $distSurname = StringHelper::levenshteinDistance($inputSurname, $candSurname);
-            
-            $candidatePhonetic = PhoneticHelper::cologneEncode($normalizedCandidate);
-            $phoneticMatch = !empty($inputPhonetic) && $inputPhonetic === $candidatePhonetic;
-            
-            // Match criteria:
-            // 1. Phonetic match (very strong)
-            // 2. Both names are very similar (distGiven < 3 AND distSurname < 2)
-            // 3. Overall distance is very small (total dist < 4)
-            // 4. Genannt-Namen match (Westphalian aliases)
-            $genanntMatch = StringHelper::isGenanntNameMatch($inputSurname, $candSurname);
-            $equivalentMatch = NameHelper::areNamesEquivalent($inputGiven, $candGiven) && $distSurname < 3;
-            $stringMatch = ($distGiven < 3 && $distSurname < 2) || (StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate) < 4) || $genanntMatch || $equivalentMatch;
+            $gedcom = $gedcomRow->i_gedcom;
 
-            if ($stringMatch || $phoneticMatch) {
-                // Fetch GEDCOM to check birth date
-                $gedcomRow = DB::table('individuals')
-                    ->where('i_file', '=', $tree->id())
-                    ->where('i_id', '=', $candidateId)
-                    ->select(['i_gedcom'])
-                    ->first();
-                
-                $birthMatch = true;
-                
-                if ($gedcomRow && $targetYear !== null) {
-                    $gedcom = $gedcomRow->i_gedcom;
-                    
-                    // Extract birth year from GEDCOM
-                    $candidateBirthYear = self::extractBirthYearFromGedcom($gedcom);
-                    
-                    // Extract death info for age calculation
-                    $deathInfo = self::extractDeathInfoFromGedcom($gedcom);
-                    $candidateDeathYear = $deathInfo['year'];
-                    $explicitAge = $deathInfo['age'];
-                    
-                    // If no birth year, try to estimate from death year and age
-                    if ($candidateBirthYear === null && $candidateDeathYear !== null && $explicitAge !== null) {
-                        $candidateBirthYear = $candidateDeathYear - (int)round($explicitAge);
-                    }
-                    
-                    // Check birth year plausibility
-                    if ($candidateBirthYear !== null) {
-                        // Calculate age at death for uncertainty logic
-                        $deathAge = null;
-                        if ($explicitAge !== null) {
-                            $deathAge = $explicitAge;
-                        } elseif ($candidateDeathYear !== null && $candidateBirthYear !== null) {
-                            $deathAge = (float)($candidateDeathYear - $candidateBirthYear);
-                        }
-                        
-                        if (!DateParser::isDatePlausible($targetYear, $candidateBirthYear, $deathAge, $fuzzyDiffHighAge, $fuzzyDiffDefault)) {
-                            $birthMatch = false;
-                        }
-                    }
+            // 2. Gender Check
+            if (!empty($sex)) {
+                $candidateSex = '';
+                if (preg_match('/^1 SEX (.+)$/m', $gedcom, $sexMatch)) {
+                    $candidateSex = trim($sexMatch[1]);
+                }
+                if ($candidateSex !== '' && $candidateSex !== 'U' && $sex !== 'U' && $candidateSex !== $sex) {
+                    continue;
+                }
+            }
+
+            // 3. Given Name Check (At least one given name must match or have phonetic overlap)
+            $normalizedCandidate = StringHelper::normalizeName($candidateName);
+            $candParts = explode(' ', $normalizedCandidate);
+            $candSurname = array_pop($candParts);
+            $candGivenParts = array_filter($candParts);
+            $candGiven = implode(' ', $candGivenParts);
+            
+            $nameOverlap = false;
+            
+            // Prepare phonetics for input parts
+            $inputPartPhonetics = [];
+            foreach ($inputGivenParts as $part) {
+                $p = PhoneticHelper::cologneEncode($part);
+                if ($p) $inputPartPhonetics[] = $p;
+            }
+
+            foreach ($candGivenParts as $cPart) {
+                // Exact match
+                if (in_array($cPart, $inputGivenParts)) {
+                    $nameOverlap = true;
+                    break;
                 }
                 
-                if ($birthMatch) {
-                    $possibleDuplicates[] = [
-                        'id2' => $candidateId,
-                        'name2' => $candidateName,
-                        'distance' => StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate),
-                        'phonetic_match' => $phoneticMatch,
-                    ];
+                // Phonetic match (handles Elisabeth/Elizabeth, Friedrich/Fridrich etc.)
+                $cPhonetic = PhoneticHelper::cologneEncode($cPart);
+                if ($cPhonetic && in_array($cPhonetic, $inputPartPhonetics)) {
+                    $nameOverlap = true;
+                    break;
                 }
+            }
+            
+            // Also check phonetic match of the full name as final fallback
+            $inputFullPhonetic = PhoneticHelper::cologneEncode($inputGivenNormalized . ' ' . $inputSurnameNormalized);
+            $candidateFullPhonetic = PhoneticHelper::cologneEncode($normalizedCandidate);
+            $phoneticMatch = !empty($inputFullPhonetic) && $inputFullPhonetic === $candidateFullPhonetic;
+            
+            // Also check NameHelper for defined equivalences (Jan == Johann, Adalbert == Wojciech, etc.)
+            $equivalentMatch = NameHelper::areNamesEquivalent($given, $candGiven);
+            
+            if (!$nameOverlap && !$phoneticMatch && !$equivalentMatch) {
+                continue;
+            }
+
+            // 4. Date Check (Month and Year must match for AT LEAST ONE date)
+            $dateOverlap = false;
+            
+            // Candidate dates
+            $candBirth = self::extractDateFromGedcom($gedcom, 'BIRT');
+            $candBaptism = self::extractDateFromGedcom($gedcom, 'CHR') ?: self::extractDateFromGedcom($gedcom, 'BAPM');
+            $candDeath = self::extractDateFromGedcom($gedcom, 'DEAT');
+
+            // Compare Birth
+            if ($parsedBirth['year'] && $parsedBirth['month'] && $candBirth['year'] && $candBirth['month']) {
+                if ($parsedBirth['year'] === $candBirth['year'] && $parsedBirth['month'] === $candBirth['month']) {
+                    $dateOverlap = true;
+                }
+            } elseif ($parsedBirth['year'] && $candBirth['year'] && $parsedBirth['year'] === $candBirth['year']) {
+                $dateOverlap = true;
+            }
+
+            // Compare Baptism
+            if (!$dateOverlap && $parsedBaptism['year'] && $parsedBaptism['month'] && $candBaptism['year'] && $candBaptism['month']) {
+                if ($parsedBaptism['year'] === $candBaptism['year'] && $parsedBaptism['month'] === $candBaptism['month']) {
+                    $dateOverlap = true;
+                }
+            }
+
+            // Compare Death
+            if (!$dateOverlap && $parsedDeath['year'] && $parsedDeath['month'] && $candDeath['year'] && $candDeath['month']) {
+                if ($parsedDeath['year'] === $candDeath['year'] && $parsedDeath['month'] === $candDeath['month']) {
+                    $dateOverlap = true;
+                }
+            }
+            
+            // If no month/year match, check if at least years are very close (fallback for imprecise entries)
+            if (!$dateOverlap) {
+                $yearsMatch = false;
+                if ($parsedBirth['year'] && $candBirth['year'] && $parsedBirth['year'] === $candBirth['year']) $yearsMatch = true;
+                if ($parsedDeath['year'] && $candDeath['year'] && $parsedDeath['year'] === $candDeath['year']) $yearsMatch = true;
+                
+                if ($yearsMatch) {
+                    $dateOverlap = true;
+                }
+            }
+
+            if ($dateOverlap) {
+                $extract = function($tag, $subtag, $gedcom) {
+                    if (preg_match('/1 ' . $tag . '(.*?)(?=\n1 |$)/s', $gedcom, $block)) {
+                        if (preg_match('/2 ' . $subtag . ' ([^\n\r]+)/', $block[1], $match)) {
+                            return trim($match[1]);
+                        }
+                    }
+                    return '';
+                };
+
+                $possibleDuplicates[] = [
+                    'id2' => $candidateId,
+                    'name2' => $candidateName,
+                    'birth' => [
+                        'date' => $extract('BIRT', 'DATE', $gedcom),
+                        'place' => $extract('BIRT', 'PLAC', $gedcom)
+                    ],
+                    'death' => [
+                        'date' => $extract('DEAT', 'DATE', $gedcom),
+                        'place' => $extract('DEAT', 'PLAC', $gedcom)
+                    ],
+                    'distance' => StringHelper::levenshteinDistance($inputGivenNormalized . ' ' . $inputSurnameNormalized, $normalizedCandidate),
+                    'phonetic_match' => $phoneticMatch,
+                    'families' => self::getPersonFamilies($tree, $candidateId),
+                ];
             }
         }
         
@@ -139,6 +211,29 @@ class DatabaseService
             'description' => 'Found ' . count($possibleDuplicates) . ' potential matches',
             'data' => $possibleDuplicates,
         ];
+    }
+
+    private static function extractDateFromGedcom(string $gedcom, string $tag): array {
+        $lines = explode("\n", str_replace("\r", "", $gedcom));
+        $inTag = false;
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (str_starts_with($line, "1 " . $tag)) {
+                $inTag = true;
+                continue;
+            }
+            if ($inTag) {
+                if (str_starts_with($line, "1 ")) {
+                    break;
+                }
+                if (str_starts_with($line, "2 DATE ")) {
+                    $dateStr = trim(substr($line, 7));
+                    $p = DateParser::parseGedcomDate($dateStr);
+                    return ['year' => $p['year'], 'month' => $p['month']];
+                }
+            }
+        }
+        return ['year' => null, 'month' => null];
     }
     
     /**
@@ -267,9 +362,9 @@ class DatabaseService
                 
                 $gedcom = $gedcomRow->i_gedcom;
                 
-                // Extract name
-                if (preg_match('/1 NAME (.+)/m', $gedcom, $nameMatch)) {
-                    $candidateName = trim($nameMatch[1]);
+                // Extract name more robustly
+                $candidateName = self::extractNameFromGedcom($gedcom);
+                if ($candidateName) {
                     $normalizedCandidate = StringHelper::normalizeName($candidateName);
                     $distance = StringHelper::levenshteinDistance($normalizedInput, $normalizedCandidate);
                     $candidatePhonetic = PhoneticHelper::cologneEncode($normalizedCandidate);
@@ -280,11 +375,18 @@ class DatabaseService
                     if ($distance < 5 || $phoneticMatch || $genanntMatch || $equivalentMatch) {
                         $dateMatch = true;
                         
+                        // If we have a target year, we only match if dates are within +/- 2 years 
+                        // or if the candidate has no birth date at all (to avoid false negatives).
                         if ($targetYear !== null) {
-                            $candidateBirthYear = self::extractBirthYearFromGedcom($gedcom);
+                            $candBirth = self::extractDateFromGedcom($gedcom, 'BIRT');
+                            if ($candBirth['year'] === null) {
+                                // Fallback to baptism
+                                $candBirth = self::extractDateFromGedcom($gedcom, 'CHR') ?: self::extractDateFromGedcom($gedcom, 'BAPM');
+                            }
                             
-                            if ($candidateBirthYear !== null) {
-                                if (!DateParser::isDatePlausible($targetYear, $candidateBirthYear, null, $fuzzyDiffHighAge, $fuzzyDiffDefault)) {
+                            if ($candBirth['year'] !== null) {
+                                // Apply specific sibling tolerance (+/- 2 years)
+                                if (abs($targetYear - $candBirth['year']) > 2) {
                                     $dateMatch = false;
                                 }
                             }
@@ -296,6 +398,7 @@ class DatabaseService
                                 'name2' => $candidateName,
                                 'distance' => $distance,
                                 'phonetic_match' => $phoneticMatch,
+                                'family_id' => $familyId,
                             ];
                         }
                     }
@@ -311,21 +414,24 @@ class DatabaseService
     }
     
     /**
-     * Extract birth year from GEDCOM text
+     * Extract name from GEDCOM text
      *
      * @param string $gedcom
-     * @return int|null
+     * @return string
      */
-    private static function extractBirthYearFromGedcom(string $gedcom): ?int
+    private static function extractNameFromGedcom(string $gedcom): string
     {
-        // Look for "1 BIRT\n2 DATE ..."
-        if (preg_match('/1 BIRT\s*\n2 DATE (.+)/m', $gedcom, $match)) {
-            $dateStr = trim($match[1]);
-            $parsed = DateParser::parseGedcomDate($dateStr);
-            return $parsed['year'];
+        if (preg_match('/^1 NAME ([^\n\r]+)/m', $gedcom, $match)) {
+            return trim($match[1]);
         }
         
-        return null;
+        return '';
+    }
+
+    private static function extractBirthYearFromGedcom(string $gedcom): ?int
+    {
+        $d = self::extractDateFromGedcom($gedcom, 'BIRT');
+        return $d['year'];
     }
     
     /**
@@ -353,5 +459,32 @@ class DatabaseService
         }
         
         return ['year' => $year, 'age' => $age];
+    }
+
+    /**
+     * Get all family IDs where this person is a spouse
+     *
+     * @param Tree   $tree
+     * @param string $personId
+     * @return array
+     */
+    private static function getPersonFamilies(Tree $tree, string $personId): array
+    {
+        $personId = trim($personId, '@');
+        
+        $results = DB::table('families')
+            ->where('f_file', '=', $tree->id())
+            ->where(function($query) use ($personId) {
+                $query->where('f_husb', '=', $personId)
+                      ->orWhere('f_wife', '=', $personId);
+            })
+            ->select(['f_id'])
+            ->get();
+            
+        $ids = [];
+        foreach ($results as $row) {
+            $ids[] = $row->f_id;
+        }
+        return $ids;
     }
 }

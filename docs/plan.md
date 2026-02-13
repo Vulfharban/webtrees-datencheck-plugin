@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.3.0 - **Stable** (Global Name Knowledge Base)
+**Status:** Version 1.3.3 - **Stable** (UX Refinement)
 
 ## Kernfunktionen
 
@@ -63,12 +63,15 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 - [x] **Quellen-Pflicht:** Optionale Prüfung auf SOUR-Tags (implementiert & robust)
 - [x] **Reporting-Export:** CSV-Export der Analyse-Ergebnisse.
 - [x] **UX & Kontext:** Erhalt der Baum-Auswahl und verbesserte Breadcrumb-Navigation.
-- [x] **Orts-Normalisierung:** Unterstützung bei der Vereinheitlichung von Ortsnamen
+- [x] **Orts-Normalisierung:** Unterstützung bei der Vereinheitlichung von Ortsnamen (Kürzung auf 1. Komma).
 - [x] **Performance-Optimierung:** ID-basierte Paginierung für 100k+ Bäume.
 - [x] **Monats-Validierung:** Prüfung auf nicht-GEDCOM konforme Datumsangaben.
+- [x] **Verbesserte Anzeige-Dichte:** Getrennte Darstellung von Geburts-/Sterbedaten und Integration von Sterbeorten.
+- [x] **Robustes GEDCOM-Parsing:** Mehrstufige Extraktion von Heirats- und Ortsdaten.
 
-## Abgeschlossene Meilensteine (2026-02-08)
+## Abgeschlossene Meilensteine (2026-02-13)
 1. ✅ Rust-Kern vollständig in PHP reimplementiert
 2. ✅ Admin-UI & Ignore-Funktion vollständig integriert
 3. ✅ Bulk-Analyse Feature implementiert (Backend & Frontend)
-4. ✅ Unterstützung für regionale westfälische Namensformen (Genannt-Namen)
+4. ✅ Globale Namens-Wissensdatenbank (10+ Sprachen)
+5. ✅ UX Optimierung & Anzeige-Dichte (Version 1.3.3)

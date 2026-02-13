@@ -274,4 +274,19 @@ return [
     'Show warnings for imprecise dates' => 'Prikaži upozorenja za neprecizne datume',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ako je onemogućeno, sukobi uzrokovani nedostatkom dana/mjeseca (npr. "1855" naspram "svibanj 1855") bit će zanemareni.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Pronađeno previše problema. Prikazuje se samo prvih %s. Molimo koristite CSV izvoz za puni popis.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Usporedba obitelji',
+    'Current Form Data' => 'Trenutni podaci obrasca',
+    'Existing Family' => 'Postojeća obitelj',
+    'Use this person' => 'Koristi osobu',
+    'Marriage' => 'Brak',
+    'None' => 'Nijedno',
+    'Biological Plausibility' => 'Biološka vjerodostojnost',
+    'Temporal Plausibility' => 'Vremenska vjerodostojnost',
+    'Marriage Plausibility' => 'Bračna vjerodostojnost',
+    'Missing Data' => 'Nedostajući podaci',
+    'Geographic Plausibility' => 'Geografska vjerodostojnost',
+    'Name Consistency' => 'Dosljednost imena',
+    'Source Quality' => 'Kvaliteta izvora',
 ];

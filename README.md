@@ -11,7 +11,8 @@ Vermeiden Sie doppelt angelegte Personen bereits im Entstehungsprozess.
 *   **Echtzeit-Validierung:** Schon während der Dateneingabe (Name, Geburtsdatum) sucht das System im Hintergrund nach potenziellen Treffern.
 *   **Phonetik & Fuzzy-Match:** Nutzt die **Kölner Phonetik** für deutsche Namen und die **Levenshtein-Distanz** für Tippfehler-Toleranz. So werden auch "Meier" und "Maier" oder "Christoph" und "Kristof" erkannt.
 *   **Kontext-Analyse:** Das System vergleicht nicht nur Namen, sondern auch Eltern und Geschwister, um die Genauigkeit bei häufig vorkommenden Namen zu erhöhen.
-*   **Interaktiver Vergleich:** Ein detailliertes "Side-by-Side"-Modal erlaubt den direkten Vergleich zwischen dem neuen Datensatz und bestehenden Personen, bevor eine Dublette entsteht.
+*   **Interaktiver Vergleich:** Ein detailliertes "Side-by-Side"-Modal erlaubt den direkten Vergleich zwischen dem neuen Datensatz und bestehenden Personen oder Familien, bevor eine Dublette entsteht.
+*   **Familien-Zusammenführung:** Erkennt, wenn für ein Elternpaar bereits eine Familie existiert, und ermöglicht die direkte Verknüpfung statt einer Neuanlage.
 
 ### ✅ Erweiterte Plausibilitätsprüfungen
 Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeiten.
@@ -24,6 +25,7 @@ Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeit
     *   **Lebensspanne:** Anpassbare Warnung bei extremem Alter (z.B. >120 Jahre).
 *   **Namens- & Formalkonsistenz:**
     *   Prüft auf fehlende Nachnamen oder Unstimmigkeiten zwischen Kindern und Vätern.
+    *   **Alias- & Genannt-Namen:** Unterstützung für westfälische Genannt-Namen ("gen.", "vulgo"), polnische/lateinische Aliase ("vel", "alias") und weitere Namensvarianten.
     *   **Internationale Regeln:** Unterstützung für skandinavische Patronymika (-sen/-datter), slawische Endungen (-ski/-ska), spanische Doppelnamen und niederländische Tussenvoegsels.
 
 ### 📊 Analyse-Dashboard & Reporting
@@ -73,7 +75,8 @@ Prevent duplicate individuals before they are even created.
 *   **Real-time Validation:** While entering data (name, birth date), the system searches in the background for potential matches.
 *   **Phonetics & Fuzzy Matching:** Utilizes **Cologne Phonetic** for German names and **Levenshtein Distance** for typo tolerance (e.g., catching "Smith" vs. "Smyth").
 *   **Contextual Analysis:** Compares not only names but also parents and sibling constellations to increase accuracy for common names.
-*   **Interactive Comparison:** A detailed "side-by-side" modal allows for direct comparison between the new record and existing individuals before a duplicate is created.
+*   **Interactive Comparison:** A detailed "side-by-side" modal allows for direct comparison between the new record and existing individuals or families before a duplicate is created.
+*   **Family Merging:** Detects if a family already exists for a pair of parents and allows for direct linking instead of creating a new family record.
 
 ### ✅ Advanced Plausibility Checks
 Comprehensive rules to identify biological and logical inconsistencies.
@@ -86,6 +89,7 @@ Comprehensive rules to identify biological and logical inconsistencies.
     *   **Lifespan:** Customizable warnings for extreme ages (e.g., >120 years).
 *   **Naming & Formal Consistency:**
     *   Checks for missing surnames or inconsistencies between children and fathers.
+    *   **Alias & Alias Names:** Support for German "Genannt-Namen" ("gen.", "vulgo"), Polish/Latin aliases ("vel", "alias"), and other naming variants.
     *   **International Conventions:** Support for Scandinavian patronymics (-sen/-datter), Slavic gendered endings (-ski/-ska), Spanish double surnames, and Dutch "tussenvoegsels".
 
 ### 📊 Analysis Dashboard & Reporting

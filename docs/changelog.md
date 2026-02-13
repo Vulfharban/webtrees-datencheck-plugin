@@ -1,6 +1,29 @@
 # Changelog: webtrees Datencheck Plugin
 
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
+
+## [1.3.3] - 2026-02-13
+### Hinzugefügt
+- **Vollständige Lokalisierung (bg)**: Unterstützung für Bulgarisch vervollständigt (inkl. aller neuen Vergleichs-Strings).
+- **UX / Formular-Automatisierung**: Optimierte Feld-Erkennung für die Buttons "Diese Familie nutzen" / "Diese Person nutzen" (Unterstützung für weitere webtrees 2.2-spezifische IDs wie `fid`, `f_id`).
+- **Anzeige-Optimierung**:
+  - Ortsangaben werden für bessere Lesbarkeit nun bis zum ersten Komma gekürzt.
+  - Sterbeorte werden nun für alle Personen im Vergleich angezeigt.
+  - Klare Trennung durch Symbole (* für Geburt, † für Tod) in separaten Zeilen.
+### Behoben
+- **Flimmern im Modal**: Priorisierung von Formular-Daten gegenüber Server-Daten verhindert das Überschreiben ungespeicherter Änderungen während des Vergleichs.
+- **Robustes Parsing**: Einführung eines Multi-Strategie-Extraktors für GEDCOM-Daten (MARR, PLAC), der fehlertolerant gegenüber verschiedenen Zeilenumbruch-Flavors ist.
+
+## [1.3.2] - 2026-02-13
+### Hinzugefügt
+- **Erweiterter Familien-Vergleich**:
+  - **Geburts- & Sterbeorte**: Anzeige von Orten für alle Personen im Vergleichs-Modal (sowohl aktueller Eintrag als auch Duplikat-Kandidaten).
+  - **Elegantes Layout**: Vollständige Überarbeitung der Familien-Ansicht. Ehepartner werden nun platzsparend dargestellt.
+  - **Heirats-Sektion**: Integration der Heiratsdaten (Ring-Symbol `∞`, Datum und Ort) direkt neben den Ehepartnern.
+- **Robustes GEDCOM-Parsing**: Verbesserte Extraktion von Heiratsdaten (MARR) und Orten (PLAC) aus verschiedensten GEDCOM-Dialekten (Regex-Optimierung für CRLF/LF).
+### Behoben
+- **Rollen-Duplizierung**: Fix für einen Fehler, bei dem eine Person fälschlicherweise gleichzeitig als Ehemann und Ehefrau im Vergleich angezeigt wurde.
+- **Daten-Synchronität**: Sicherstellung, dass manuelle Formulareingaben (Orte/Daten) korrekt in das Vergleichs-Modal übernommen werden.
     
 ## [1.3.1] - 2026-02-12
 ### Geändert

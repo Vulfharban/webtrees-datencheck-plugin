@@ -274,4 +274,5 @@ return [
     'Show warnings for imprecise dates' => 'Show warnings for imprecise dates',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.',
+    'No marriage data' => 'No marriage data',
 ];

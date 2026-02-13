@@ -221,4 +221,20 @@ return [
     'Show warnings for imprecise dates' => 'Visa varningar för oprecisa datum',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Om inaktiverat kommer konflikter orsakade av saknad dag/månad (t.ex. "1855" mot "maj 1855") att ignoreras.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'För många problem hittades. Visar endast de första %s. Använd CSV-export för den fullständiga listan.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Familjejämförelse',
+    'Current Form Data' => 'Nuvarande formulärdata',
+    'Existing Family' => 'Befintlig familj',
+    'Use this person' => 'Använd personen',
+    'Marriage' => 'Vigsel',
+    'None' => 'Inga',
+    'Biological Plausibility' => 'Biologisk rimlighet',
+    'Temporal Plausibility' => 'Tidsmässig rimlighet',
+    'Marriage Plausibility' => 'Äktenskaplig rimlighet',
+    'Missing Data' => 'Saknade data',
+    'Geographic Plausibility' => 'Geografisk rimlighet',
+    'Name Consistency' => 'Namnkonsekvens',
+    'Source Quality' => 'Källkvalitet',
+    'No marriage data' => 'Ingen vigselinformation',
 ];

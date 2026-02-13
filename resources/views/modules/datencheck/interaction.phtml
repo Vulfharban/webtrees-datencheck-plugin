@@ -4,6 +4,7 @@
  * @var string $sibling_url
  * @var string $family_url
  * @var string $details_url
+ * @var string $family_details_url
  * @var string $validation_url
  * @var string $individual_url
  */
@@ -61,6 +62,8 @@
     .dc-issue-warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
     .dc-issue-error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
     .dc-issue-info { background: #d1e7dd; color: #0f5132; border-left: 4px solid #198754; }
+    #comparison-current { background-color: #f0f7ff; border-color: #cce3ff !important; }
+    #comparison-duplicate { background-color: #fff9eb; border-color: #ffecd1 !important; }
 </style>
 
 <script>
@@ -69,6 +72,12 @@ document.addEventListener("DOMContentLoaded", function() {
     let familyTimeout = null;
     let siblingTimeout = null;
     let validationTimeout = null;
+    
+    const isXref = (val) => {
+        if (!val || typeof val !== 'string') return false;
+        const clean = val.replace(/@/g, '').trim();
+        return clean.match(/^[IXF]\d+$/);
+    };
 
     function makeDraggable(el, header) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -103,10 +112,32 @@ document.addEventListener("DOMContentLoaded", function() {
         const given = document.querySelector('[id*="GIVN"]')?.value || "";
         const surname = document.querySelector('[id*="SURN"]')?.value || "";
         const birth = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
+        const death = document.querySelector('[id*="DEAT"][id*="DATE"]')?.value || "";
+        const baptism = document.querySelector('[id*="BAPM"][id*="DATE"], [id*="CHR"][id*="DATE"]')?.value || "";
+        const sex = document.querySelector('select[id*="SEX"], input[name*="SEX"]:checked')?.value || "";
 
         if (given.length < 2 && surname.length < 2) return;
 
-        fetch("<?= $check_url ?>?given_name=" + encodeURIComponent(given) + "&surname=" + encodeURIComponent(surname) + "&birth_date=" + encodeURIComponent(birth))
+        let marriedSurname = "";
+        if (sex === "F") {
+            // Try to find husband's surname from the form if we're adding a wife
+            const husbName = document.querySelector('[id*="HUSB"]')?.parentElement?.innerText || 
+                             document.querySelector('.indi-search[data-role="HUSB"]')?.innerText || "";
+            if (husbName) {
+                const parts = husbName.split(' ');
+                marriedSurname = parts[parts.length - 1].replace(/[()]/g, '');
+            }
+        }
+
+        const url = "<?= $check_url ?>?given_name=" + encodeURIComponent(given) + 
+                    "&surname=" + encodeURIComponent(surname) + 
+                    "&birth_date=" + encodeURIComponent(birth) +
+                    "&death_date=" + encodeURIComponent(death) +
+                    "&baptism_date=" + encodeURIComponent(baptism) +
+                    "&sex=" + encodeURIComponent(sex) +
+                    "&married_surname=" + encodeURIComponent(marriedSurname);
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 let warningArea = document.getElementById("datencheck-warning");
@@ -136,10 +167,67 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (item.phonetic_match) {
                             label += " <small class='text-muted'>(<?= \Fisharebest\Webtrees\I18N::translate('phonetically') ?>)</small>";
                         }
-                        html += "<li class='mb-1'>" + label + 
-                                " <button type='button' class='btn btn-sm btn-outline-primary ms-2' " +
+                        
+                        // Add birth/death info with places
+                        let details = "";
+                        if (item.birth || item.death) {
+                            const b = item.birth ? (item.birth.date || "").trim() : "";
+                            const bp = item.birth ? (item.birth.place || "").trim() : "";
+                            const d = item.death ? (item.death.date || "").trim() : "";
+                            const dp = item.death ? (item.death.place || "").trim() : "";
+                            
+                            let bStr = b;
+                            if (bp) bStr += (b ? ", " : "") + bp;
+                            let dStr = d;
+                            if (dp) dStr += (d ? ", " : "") + dp;
+                            
+                            details = " <small class='text-muted d-block' style='margin-left: 1.5rem'>(" + (bStr || "?") + " - " + (dStr || "?") + ")</small>";
+                        }
+                        
+                        html += "<li class='mb-2 border-bottom pb-1'>" + label + details + 
+                                " <div class='mt-1'>" +
+                                " <button type='button' class='btn btn-sm btn-outline-primary' " +
                                 "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowComparison(\"" + (currentXref || "NEW") + "\", \"" + item.id2 + "\")'>" +
-                                "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button></li>";
+                                "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button>";
+                        
+                        if (item.families && item.families.length > 0) {
+                            html += " <button type='button' class='btn btn-sm btn-outline-info ms-1' " +
+                                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowFamilyComparison(\"" + item.families[0] + "\")'>" +
+                                    "👨‍👩‍👧‍👦 " + "<?= \Fisharebest\Webtrees\I18N::translate('Compare Family') ?></button>";
+                        }
+                        
+                        html += " <button type='button' class='btn btn-sm btn-outline-success ms-1' " +
+                                  "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckFillPerson(\"" + item.id2 + "\")'>" +
+                                  "👤 " + "<?= \Fisharebest\Webtrees\I18N::translate('Use this person') ?></button>";
+                        
+                        if (item.families && item.families.length > 0) {
+                            html += " <button type='button' class='btn btn-sm btn-outline-danger ms-1' " +
+                                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckJoinFamily(\"" + item.families[0] + "\")'>" +
+                                    "👨‍👩‍👧‍👦 " + "<?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>";
+                        }
+                        
+                        html += "</li>";
+
+                        // NEW: If we found a duplicate person, and the OTHER spouse is already in the form, 
+                        // check if they already have a family together.
+                        const husbId = document.getElementById("HUSB")?.value || "";
+                        const wifeId = document.getElementById("WIFE")?.value || "";
+                        let otherSpouseId = "";
+                        let testHusb = "";
+                        let testWife = "";
+
+                        if (husbId && !wifeId) { testHusb = husbId; testWife = item.id2; }
+                        else if (!husbId && wifeId) { testHusb = item.id2; testWife = wifeId; }
+
+                        if (testHusb && testWife) {
+                            fetch("<?= $family_url ?>?husb=" + encodeURIComponent(testHusb) + "&wife=" + encodeURIComponent(testWife))
+                                .then(r => r.json())
+                                .then(famData => {
+                                    if (famData.data && famData.data.length > 0) {
+                                        showFamilyWarning(famData.data);
+                                    }
+                                });
+                        }
                     });
                     html += "</ul>";
                     warningArea.innerHTML = html;
@@ -173,9 +261,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 if (data.data && data.data.length > 0) {
-                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('This person already exists as a child in this family:') ?></strong><ul>";
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('This person already exists as a child in this family:') ?></strong><ul class='list-unstyled'>";
                     data.data.forEach(item => {
-                        html += "<li>" + item.name2 + " (" + item.id2 + ")</li>";
+                        html += "<li class='mb-2'>" + item.name2 + " (" + item.id2 + ")";
+                        if (item.family_id) {
+                            html += " <button type='button' class='btn btn-sm btn-outline-primary ms-1' onclick='window.datencheckShowFamilyComparison(\"" + item.family_id + "\")'>" +
+                                    "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button>";
+                            html += " <button type='button' class='btn btn-sm btn-outline-danger ms-1' onclick='window.datencheckJoinFamily(\"" + item.family_id + "\")'>" +
+                                    "<?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>";
+                        }
+                        html += "</li>";
                     });
                     html += "</ul>";
                     sibWarning.innerHTML = html;
@@ -184,6 +279,31 @@ document.addEventListener("DOMContentLoaded", function() {
                     sibWarning.style.display = "none";
                 }
             });
+    };
+
+    const showFamilyWarning = (famIds) => {
+        let famWarning = document.getElementById("datencheck-fam-warning");
+        if (!famWarning) {
+            famWarning = document.createElement("div");
+            famWarning.id = "datencheck-fam-warning";
+            famWarning.className = "alert alert-info mt-2";
+            famWarning.style.display = "none";
+            const target = document.querySelector("form[name='changefamform']") || 
+                          document.querySelector("#HUSB")?.closest(".row") || 
+                          document.querySelector("#WIFE")?.closest(".row") ||
+                          document.getElementById("interactive-duplicate-warning");
+            if (target) target.parentNode.insertBefore(famWarning, target);
+        }
+
+        if (famIds && famIds.length > 0) {
+            let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('These parents already have a family:') ?></strong> " + famIds.join(", ");
+            html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="window.datencheckShowFamilyComparison(\'' + famIds[0] + '\')"><?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button>';
+            html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-1" onclick="window.datencheckJoinFamily(\'' + famIds[0] + '\')"><?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>';
+            famWarning.innerHTML = html;
+            famWarning.style.display = "block";
+        } else {
+            famWarning.style.display = "none";
+        }
     };
 
     const checkFamily = () => {
@@ -195,79 +315,74 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch("<?= $family_url ?>?husb=" + encodeURIComponent(husb) + "&wife=" + encodeURIComponent(wife))
             .then(response => response.json())
             .then(data => {
-                let famWarning = document.getElementById("datencheck-fam-warning");
-                if (!famWarning) {
-                    famWarning = document.createElement("div");
-                    famWarning.id = "datencheck-fam-warning";
-                    famWarning.className = "alert alert-info mt-2";
-                    famWarning.style.display = "none";
-                    const target = document.querySelector("form[name='changefamform']") || document.querySelector("#HUSB")?.closest(".row");
-                    if (target) target.parentNode.insertBefore(famWarning, target);
-                }
-
-                if (data.data && data.data.length > 0) {
-                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('These parents already have a family:') ?></strong> " + data.data.join(", ");
-                    html += ' <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="window.datencheckJoinFamily(\'' + data.data[0] + '\')"><?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>';
-                    famWarning.innerHTML = html;
-                    famWarning.style.display = "block";
-                } else {
-                    famWarning.style.display = "none";
-                }
+                showFamilyWarning(data.data);
             });
     };
 
     window.datencheckJoinFamily = (famId) => {
-        // Remove @ symbols if present
         const cleanId = famId.replace(/@/g, '');
-        
-        // 1. Try common webtrees input fields for family ID
-        // On "Add Child" or "Add Spouse" pages, these are common names/IDs
         const selectors = [
-            'input[name="f"]',
-            'input[name="fam"]',
-            'input[name="family_id"]',
-            '#f',
-            '#fam'
+            'input[name="f"]', 'input[name="fam"]', 'input[name="fid"]', 'input[name="f_id"]',
+            'input[name="family_id"]', '#f', '#fam', '#fid', '#f_id',
+            'input[id*="FAM_ID"]', 'input[name*="FAM_ID"]'
         ];
         
         let found = false;
         for (const selector of selectors) {
             const el = document.querySelector(selector);
-            if (el && (el.type === 'text' || el.type === 'hidden')) {
+            if (el && (el.type === 'text' || el.type === 'hidden' || el.tagName === 'INPUT')) {
                 el.value = cleanId;
-                // Trigger change event for any listeners
                 el.dispatchEvent(new Event('change', { bubbles: true }));
+                el.dispatchEvent(new Event('input', { bubbles: true }));
                 found = true;
                 break;
             }
         }
 
         if (found) {
-            // Give feedback
             const btn = event?.target;
             if (btn && btn.tagName === 'BUTTON') {
                 const oldText = btn.innerHTML;
                 btn.innerHTML = "✅ <?= \Fisharebest\Webtrees\I18N::translate('Linked') ?>";
                 btn.disabled = true;
-                setTimeout(() => {
-                    btn.innerHTML = oldText;
-                    btn.disabled = false;
-                }, 2000);
+                setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 2000);
             }
-            // Optionally close the warning
             const warning = document.getElementById("datencheck-fam-warning");
             if (warning) warning.style.display = "none";
-            
-            // Success alert (less intrusive than a blocking alert if possible)
-            console.log("Datencheck: Family ID " + cleanId + " applied to form.");
         } else {
-            alert("<?= \Fisharebest\Webtrees\I18N::translate('Could not find family input field. Please enter ID {ID} manually.') ?>".replace('{ID}', cleanId));
+            alert("<?= \Fisharebest\Webtrees\I18N::translate('Family input field not found. Please enter ID {ID} manually.') ?>".replace('{ID}', cleanId));
         }
     };
 
-    // Comparison Modal Functions
-    window.datencheckShowComparison = (currentXref, duplicateXref) => {
-        // Create modal if it doesn't exist
+    window.datencheckFillPerson = (xref) => {
+        const cleanId = xref.replace(/@/g, '');
+        const selectors = [
+            'input[name="indi"]', 'input[name="xref"]', 'input[name="indi1"]', 'input[name="indi2"]',
+            'input[name="p1"]', 'input[name="p2"]', 'input[name="child"]',
+            'input[name*="INDI"]', 'input[id*="INDI"]', 'input[id*="HUSB"]', 'input[id*="WIFE"]',
+            'input[id*="FATH"]', 'input[id*="MOTH"]', 'input[name*="XREF"]',
+            'input.indi-search'
+        ];
+        
+        let found = false;
+        for (const selector of selectors) {
+            const el = document.querySelector(selector);
+            if (el && (el.type === 'text' || el.type === 'hidden' || el.tagName === 'INPUT')) {
+                el.value = cleanId;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                el.dispatchEvent(new Event('input', { bubbles: true })); 
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            alert("<?= \Fisharebest\Webtrees\I18N::translate('Person input field not found. Please enter ID {ID} manually.') ?>".replace('{ID}', cleanId));
+        }
+    };
+
+    // Helper to ensure modal exists and return it
+    function ensureModal() {
         let modal = document.getElementById("datencheck-comparison-modal");
         if (!modal) {
             modal = document.createElement("div");
@@ -277,52 +392,81 @@ document.addEventListener("DOMContentLoaded", function() {
             modal.innerHTML = "<div class='modal-dialog modal-xl'>" +
                 "<div class='modal-content'>" +
                     "<div class='modal-header'>" +
-                        "<h5 class='modal-title'><?= \Fisharebest\Webtrees\I18N::translate('Person Comparison') ?></h5>" +
+                        "<h5 class='modal-title' id='datencheck-modal-title'><?= \Fisharebest\Webtrees\I18N::translate('Comparison') ?></h5>" +
                         "<button type='button' class='btn-close' data-bs-dismiss='modal'></button>" +
                     "</div>" +
                     "<div class='modal-body'>" +
                         "<div class='row'>" +
                             "<div class='col-md-6'>" +
-                                "<h6 class='text-primary'><?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?></h6>" +
-                                "<div id='comparison-current' class='border rounded p-3'>" +
+                                "<h6 class='text-primary' id='datencheck-modal-left-label'><?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?></h6>" +
+                                "<div id='comparison-current' class='border rounded p-3' style='min-height: 100px;'>" +
                                     "<div class='text-center text-muted py-4'>" +
                                         "<div class='spinner-border spinner-border-sm' role='status'></div>" +
-                                        "<?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
+                                        " <?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
                                     "</div>" +
                                 "</div>" +
                             "</div>" +
                             "<div class='col-md-6'>" +
-                                "<h6 class='text-warning'><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?></h6>" +
-                                "<div id='comparison-duplicate' class='border rounded p-3'>" +
+                                "<h6 class='text-warning' id='datencheck-modal-right-label'><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?></h6>" +
+                                "<div id='comparison-duplicate' class='border rounded p-3' style='min-height: 100px;'>" +
                                     "<div class='text-center text-muted py-4'>" +
                                         "<div class='spinner-border spinner-border-sm' role='status'></div>" +
-                                        "<?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
+                                        " <?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?>" +
                                     "</div>" +
                                 "</div>" +
                             "</div>" +
                         "</div>" +
                     "</div>" +
-                    "<div class='modal-footer'>" +
-                        "<a href='#' id='comparison-open-btn' target='_blank' class='btn btn-outline-primary me-auto'><?= \Fisharebest\Webtrees\I18N::translate('Open in new window ↗️') ?></a>" +
-                        "<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'><?= \Fisharebest\Webtrees\I18N::translate('Close') ?></button>" +
+                    "<div class='modal-footer d-flex justify-content-between'>" +
+                        "<a href='#' id='comparison-open-btn' target='_blank' class='btn btn-outline-primary'><?= \Fisharebest\Webtrees\I18N::translate('Open in new window ↗️') ?></a>" +
+                        "<div>" +
+                            "<button type='button' id='comparison-use-person-btn' class='btn btn-success' style='display:none;' onclick='window.datencheckFillPerson(this.dataset.xref)'>👤 <?= \Fisharebest\Webtrees\I18N::translate('Use this person') ?></button>" +
+                            "<button type='button' id='comparison-use-family-btn' class='btn btn-danger ms-1' style='display:none;' onclick='window.datencheckJoinFamily(this.dataset.fam)'>👨‍👩‍👧‍👦 <?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>" +
+                            "<button type='button' class='btn btn-secondary ms-1' data-bs-dismiss='modal'><?= \Fisharebest\Webtrees\I18N::translate('Close') ?></button>" +
+                        "</div>" +
                     "</div>" +
                 "</div>" +
             "</div>";
             document.body.appendChild(modal);
         }
+        return modal;
+    }
 
-        // Setup open button
+    // Comparison Modal Functions
+    window.datencheckShowComparison = (currentXref, duplicateXref) => {
+        const modal = ensureModal();
+        
+        // Reset and set title
+        document.getElementById("datencheck-modal-title").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Person Comparison') ?>";
+        document.getElementById("datencheck-modal-left-label").className = "text-primary";
+        document.getElementById("datencheck-modal-left-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?>";
+        document.getElementById("datencheck-modal-right-label").className = "text-warning";
+        document.getElementById("datencheck-modal-right-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?>";
+        
+        const loadingHtml = "<div class='text-center text-muted py-4'><div class='spinner-border spinner-border-sm' role='status'></div> <?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?></div>";
+        document.getElementById("comparison-current").innerHTML = loadingHtml;
+        document.getElementById("comparison-duplicate").innerHTML = loadingHtml;
+
+        // Header IDs
+        document.getElementById("datencheck-modal-left-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?>";
+        document.getElementById("datencheck-modal-right-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?> " + (duplicateXref ? "[" + duplicateXref + "]" : "");
+
         const openBtn = document.getElementById("comparison-open-btn");
         if (openBtn) {
             openBtn.href = "<?= $individual_url ?>".replace("I1", duplicateXref);
+            openBtn.style.display = "inline-block";
         }
+        
+        // Reset Use buttons
+        document.getElementById("comparison-use-person-btn").style.display = "none";
+        document.getElementById("comparison-use-family-btn").style.display = "none";
 
-        const fetchDuplicate = fetch("<?= $details_url ?>?xref=" + encodeURIComponent(duplicateXref)).then(r => r.json());
+        const fetchDuplicate = fetch(("<?= $details_url ?>".includes("?") ? "<?= $details_url ?>&xref=" : "<?= $details_url ?>?xref=") + encodeURIComponent(duplicateXref)).then(r => r.json());
         
         // Handle Current Side: Fetch if XREF exists, otherwise use form data
         let fetchCurrent;
         if (currentXref && currentXref !== "NEW") {
-            fetchCurrent = fetch("<?= $details_url ?>?xref=" + encodeURIComponent(currentXref)).then(r => r.json());
+            fetchCurrent = fetch(("<?= $details_url ?>".includes("?") ? "<?= $details_url ?>&xref=" : "<?= $details_url ?>?xref=") + encodeURIComponent(currentXref)).then(r => r.json());
         } else {
             // "Mock" the data from the form
             fetchCurrent = Promise.resolve(getFormDataAsDetails());
@@ -331,6 +475,13 @@ document.addEventListener("DOMContentLoaded", function() {
         // Fetch data for both persons
         Promise.all([fetchCurrent, fetchDuplicate]).then(([currentData, duplicateData]) => {
             populateComparison(currentData, duplicateData);
+            
+            // Show use-person button
+            const useBtn = document.getElementById("comparison-use-person-btn");
+            if (useBtn && duplicateData.xref) {
+                useBtn.dataset.xref = duplicateData.xref;
+                useBtn.style.display = "inline-block";
+            }
         }).catch(err => {
             console.error("Datencheck: Comparison fetch failed", err);
             document.getElementById("comparison-current").innerHTML = "<div class='alert alert-danger'><?= \Fisharebest\Webtrees\I18N::translate('Error loading') ?></div>";
@@ -342,16 +493,615 @@ document.addEventListener("DOMContentLoaded", function() {
         bsModal.show();
     };
 
+    window.datencheckShowFamilyComparison = (famId) => {
+        const modal = ensureModal();
+        
+        // Use proper connector for URL
+        const connector = "<?= $family_details_url ?>".includes("?") ? "&" : "?";
+        const url = "<?= $family_details_url ?>" + connector + "fam=" + encodeURIComponent(famId);
+
+        // UI Setup
+        document.getElementById("datencheck-modal-title").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Family Comparison') ?>";
+        document.getElementById("datencheck-modal-left-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Current Form Data') ?>";
+        document.getElementById("datencheck-modal-right-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Existing Family') ?>";
+        
+        const loadingHtml = "<div class='text-center text-muted py-4'><div class='spinner-border spinner-border-sm' role='status'></div> <?= \Fisharebest\Webtrees\I18N::translate('Loading data...') ?></div>";
+        document.getElementById("comparison-current").innerHTML = loadingHtml;
+        document.getElementById("comparison-duplicate").innerHTML = loadingHtml;
+        
+        // Hide "Open in new window" for families for now
+        document.getElementById("comparison-open-btn").style.display = "none";
+        document.getElementById("comparison-use-person-btn").style.display = "none";
+        document.getElementById("comparison-use-family-btn").style.display = "none";
+
+        const currentData = getFamilyFormData();
+        
+        // Show Family IDs in Headers
+        document.getElementById("datencheck-modal-left-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Current Entry') ?> " + (currentData.famXref ? "[" + currentData.famXref + "]" : "[NEW]");
+        document.getElementById("datencheck-modal-right-label").innerText = "<?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicate') ?> [" + famId + "]";
+
+        document.getElementById("comparison-current").innerHTML = formatFamilyDetails(currentData);
+        updateComparisonNames(currentData);
+
+        fetch(url)
+            .then(r => r.json())
+            .then(duplicateData => {
+                document.getElementById("comparison-duplicate").innerHTML = formatFamilyDetails(duplicateData);
+                
+                // Show use-family button
+                const useBtn = document.getElementById("comparison-use-family-btn");
+                if (useBtn && famId) {
+                    useBtn.dataset.fam = famId;
+                    useBtn.style.display = "inline-block";
+                }
+            })
+            .catch(err => {
+                console.error("Datencheck: Family comparison failed", err);
+                document.getElementById("comparison-duplicate").innerHTML = "<div class='alert alert-danger'><?= \Fisharebest\Webtrees\I18N::translate('Error loading') ?></div>";
+            });
+
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    };
+
+    function getFamilyFormData() {
+        // Try various common IDs for husband and wife in webtrees forms
+        const husbInput = document.getElementById("HUSB") || document.querySelector('input[name="husb"]') || document.querySelector('input[name="indi1"]');
+        const wifeInput = document.getElementById("WIFE") || document.querySelector('input[name="wife"]') || document.querySelector('input[name="indi2"]');
+        
+        let husbXref = isXref(husbInput?.value) ? husbInput.value.replace(/@/g, '') : "";
+        let wifeXref = isXref(wifeInput?.value) ? wifeInput.value.replace(/@/g, '') : "";
+        let childXref = "";
+        let famXref = "";
+
+        const findName = (role) => {
+            // Check for search descriptors webtrees uses, specific to the role
+            const container = document.querySelector('.indi-search[data-role="' + role + '"]')?.closest('.row, .form-group, td') ||
+                             document.querySelector('[id*="' + role + '"]')?.closest('.row, .form-group, td');
+            
+            if (container) {
+                const nameEl = container.querySelector('.name, .full-name, .text-muted:not(small)') || 
+                               container.querySelector('span:not(.btn-group):not(.indi-search)');
+                
+                let text = nameEl ? nameEl.innerText : container.innerText;
+                // Clean up technical labels and search buttons
+                text = text.replace(/Select|Clear|Suchen|Löschen|Alter der .+|Hinzufügen/gi, "").split('(')[0].trim();
+                text = text.replace(/^(Ehefrau|Ehemann|Husband|Wife|Mutter|Vater|Mother|Father|Elternteil):\s*/i, "");
+                if (text.toLowerCase().includes("alter der")) return "";
+                return text.length > 1 ? text : "";
+            }
+            return "";
+        };
+
+        const currentUrl = decodeURIComponent(window.location.href);
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Find ALL strings that look like Xrefs (X123, I123, F123)
+        const allXrefs = [...new Set(currentUrl.match(/[IXF]\d+/g) || [])];
+        console.log("Datencheck Debug: All URL Xrefs found:", allXrefs);
+
+        // Identify the "Main" individual of the current page path
+        const mainIndiMatch = currentUrl.match(/\/individual\/([IXF]\d+)/) || 
+                             currentUrl.match(/[?&](?:xref|id|indiv)=([IXF]\d+)/);
+        const mainPerson = mainIndiMatch ? mainIndiMatch[1] : null;
+        
+        allXrefs.forEach(xref => {
+            const clean = xref.replace(/@/g, '');
+            if (clean === mainPerson) {
+                childXref = clean;
+            } else if (!famXref && (clean.startsWith('F') || allXrefs.length > 1)) {
+                // If it's NOT the main person and there are multiple IDs, 
+                // the other one is highly likely the family context (even if it starts with X)
+                famXref = clean;
+            }
+        });
+
+        // Special case: if we only found ONE ID and it's not the main person, 
+        // it might be the family (e.g. X14)
+        if (!famXref && allXrefs.length === 1 && allXrefs[0] !== mainPerson) {
+            famXref = allXrefs[0];
+        } else if (!childXref && mainPerson) {
+            childXref = mainPerson;
+        }
+
+        // Final sanity check: swap if misidentified
+        if (childXref && childXref.startsWith('F') && !famXref) {
+            famXref = childXref;
+            childXref = "";
+        }
+
+        console.log("Datencheck Debug: Context IDs - Child:", childXref, "Family:", famXref, "Main:", mainPerson);
+
+        let husbName = findName("HUSB");
+        let wifeName = findName("WIFE");
+
+        // Current form names (GIVN / SURN) being entered right now
+        const formGiven = document.querySelector('[id*="GIVN"]')?.value || "";
+        const formSurname = document.querySelector('[id*="SURN"]')?.value || "";
+        const formFullName = (formGiven || formSurname) ? (formGiven + " /" + formSurname + "/").trim() : "";
+
+        const formBirth = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
+        const formDeath = document.querySelector('[id*="DEAT"][id*="DATE"]')?.value || "";
+        const formBirthPlac = document.querySelector('[id*="BIRT"][id*="PLAC"]')?.value || "";
+        const formDeathPlac = document.querySelector('[id*="DEAT"][id*="PLAC"]')?.value || "";
+        
+        // Extract years for summary
+        const getYear = (d) => {
+            if (!d) return "";
+            const match = d.match(/\d{4}/);
+            return match ? match[0] : "?";
+        };
+        const formDates = (getYear(formBirth) || getYear(formDeath)) ? (getYear(formBirth) || "?") + " - " + (getYear(formDeath) || "?") : "";
+        const formDetails = { birth: { date: formBirth, place: formBirthPlac }, death: { date: formDeath, place: formDeathPlac } };
+
+        // Determine sex: check form input, then URL
+        let sexInput = document.querySelector('select[id*="SEX"], input[name*="SEX"]:checked')?.value || "";
+        if (!sexInput) {
+            const urlSex = new URLSearchParams(window.location.search).get('sex');
+            if (urlSex) sexInput = urlSex.toUpperCase();
+        }
+        // If we are on an "Add Mother" or "Add Wife" page, sex is implicitly F
+        if (!sexInput) {
+            if (window.location.href.includes("mother") || window.location.href.includes("wife") || document.title.toLowerCase().includes("mutter") || document.title.toLowerCase().includes("ehefrau")) {
+                sexInput = "F";
+            } else if (window.location.href.includes("father") || window.location.href.includes("husband") || document.title.toLowerCase().includes("vater") || document.title.toLowerCase().includes("ehemann")) {
+                sexInput = "M";
+            }
+        }
+        
+        let husbDates = "";
+        let wifeDates = "";
+        let dataUpdateHusb = null;
+        let dataUpdateWife = null;
+
+        // If we have a form name, it belongs to the person with the matching sex
+        if (formFullName) {
+            if (sexInput === "M") { 
+                husbName = formFullName; 
+                husbDates = formDates; 
+                husbXref = "NEW"; 
+                dataUpdateHusb = formDetails;
+            } else if (sexInput === "F") { 
+                wifeName = formFullName; 
+                wifeDates = formDates; 
+                wifeXref = "NEW"; 
+                dataUpdateWife = formDetails;
+            }
+        }
+
+        // Fallback: if adding to an existing person (e.g. "Add a wife to Hans Meier")
+        if (!husbName && husbXref) husbName = husbXref;
+        if (!wifeName && wifeXref) wifeName = wifeXref;
+
+        const getMarrValue = (subtag) => {
+            const pattern = subtag.toUpperCase();
+            const altPattern = (subtag === "PLAC" || subtag === "PLACE") ? ["PLAC", "PLACE", "ORT", "LIEU"] : ["DATE", "DATUM", "TAG", "MONAT", "JAHR"];
+            
+            // 1. Spezifische webtrees 2.2.x Familien-Felder (höchste Priorität)
+            const prefId = `f_marr_${subtag.toLowerCase()}`;
+            const prefEl = document.getElementById(prefId) || document.querySelector(`[name="${prefId}"]`);
+            if (prefEl && prefEl.value) return prefEl.value;
+
+            const translatedMarr = "<?= \Fisharebest\Webtrees\I18N::translate('Marriage') ?>";
+            const translatedMarrLower = translatedMarr.toLowerCase();
+            
+            // 2. Suche in webtrees Fact-Containern (tr-MARR etc.)
+            const factContainers = document.querySelectorAll('.wt-fact-container, .fact-item, .tr-MARR, .tr-MAR_, .tr-MAR_TAG, .fact-MARR');
+            for (let container of factContainers) {
+                const header = (container.innerText || "").toLowerCase();
+                // Prüfe auf Heirats-Begriffe in verschiedenen Sprachen
+                if (header.includes(translatedMarrLower) || header.match(/heirat|marriage|mariage|matrimonio|brak|trouwen|hochzeit|vermä|ehesch/i)) {
+                    // Suche gezielt nach dem passenden Input innerhalb dieses Containers
+                    const inputs = container.querySelectorAll('input, select, textarea');
+                    for (let input of inputs) {
+                        const searchStr = (input.id + " " + input.name).toUpperCase();
+                        if (altPattern.some(p => searchStr.includes(p)) && input.value) return input.value;
+                    }
+                    // Schlechtester Fall: Einfach den ersten Input im Container nehmen
+                    if (inputs.length > 0 && inputs[0].value && !inputs[0].id.includes('SOUR')) return inputs[0].value;
+                }
+            }
+
+            // 3. Globaler Scan aller Inputs nach MARR
+            const allInputs = document.querySelectorAll('input, select, textarea');
+            for (let input of allInputs) {
+                const search = (input.id + " " + input.name + " " + (input.placeholder || "")).toUpperCase();
+                if (search.includes("MARR") || search.includes("MARRIAGE") || search.includes("HEIRAT")) {
+                    if (altPattern.some(p => search.includes(p)) && input.value) return input.value;
+                }
+            }
+
+            // 4. Letzter Versuch: Suche nach Labels im DOM und nimm benachbarte Inputs
+            const labels = document.querySelectorAll('label, span, th, td');
+            for (let label of labels) {
+                const text = (label.innerText || "").toLowerCase();
+                if (text.includes(translatedMarrLower) || text.match(/heirat|marriage|hochzeit/i)) {
+                    const parent = label.closest('tr, .form-group, .row, .wt-fact-container, div');
+                    if (parent) {
+                        const input = parent.querySelector('input') || parent.querySelector('select');
+                        if (input && input.value) return input.value;
+                    }
+                }
+            }
+            
+            return "";
+        };
+
+        const marrDate = getMarrValue("DATE");
+        const marrPlace = getMarrValue("PLAC");
+
+        // If we are adding a parent to a child, find the child
+        let children = [];
+
+        const getFieldValue = (name) => {
+            let val = urlParams.get(name);
+            if (isXref(val)) return val.replace(/@/g, '');
+            
+            const el = document.querySelector('input[name="' + name + '"]') ||
+                      document.querySelector('input[id="' + name + '"]') ||
+                      document.querySelector('input[id*="' + name.toUpperCase() + '"]') ||
+                      document.getElementById(name);
+            
+            val = el?.value || "";
+            return isXref(val) ? val.replace(/@/g, '') : "";
+        };
+
+        if (!childXref) {
+            childXref = getFieldValue('parent_of') || 
+                         getFieldValue('child') || 
+                         getFieldValue('child_id') || 
+                         getFieldValue('indi_id') ||
+                         getFieldValue('spawn_indi') || 
+                         getFieldValue('p1') || 
+                         getFieldValue('p2') ||
+                         getFieldValue('spawn_id');
+        }
+
+        if (!famXref) {
+            famXref = getFieldValue('fam') || 
+                      getFieldValue('f') || 
+                      getFieldValue('fam_id') || 
+                      getFieldValue('family_id') || 
+                      getFieldValue('fid') || 
+                      getFieldValue('f_id');
+        }
+
+        // Deep Scan fallback for data-xref / data-fid
+        if (!childXref) {
+            const xrefEl = document.querySelector('[data-xref]');
+            if (xrefEl && isXref(xrefEl.dataset.xref)) childXref = xrefEl.dataset.xref.replace(/@/g, '');
+        }
+        if (!famXref) {
+            const fidEl = document.querySelector('[data-fid]') || document.querySelector('[data-family-id]');
+            if (fidEl && isXref(fidEl.dataset.fid || fidEl.dataset.familyId)) famXref = (fidEl.dataset.fid || fidEl.dataset.familyId).replace(/@/g, '');
+        }
+
+        // Contextual IDs from form fields (often webtrees uses parent1/parent2)
+        const p1 = getFieldValue('parent1') || getFieldValue('husb') || getFieldValue('indi1');
+        const p2 = getFieldValue('parent2') || getFieldValue('wife') || getFieldValue('indi2');
+        
+        if (isXref(p1) && (!husbXref || husbXref === "NEW" || husbXref === "")) husbXref = p1.replace(/@/g, '');
+        if (isXref(p2) && (!wifeXref || wifeXref === "NEW" || wifeXref === "")) wifeXref = p2.replace(/@/g, '');
+
+        if (!childXref || !isXref(childXref)) {
+            for (const [key, value] of urlParams.entries()) {
+                const cleanVal = value.replace(/@/g, '');
+                if (isXref(cleanVal) && cleanVal !== husbXref && cleanVal !== wifeXref && !cleanVal.startsWith('F')) {
+                    childXref = cleanVal;
+                    break;
+                }
+            }
+        }
+        if (!famXref || !isXref(famXref)) {
+            for (const [key, value] of urlParams.entries()) {
+                const cleanVal = value.replace(/@/g, '');
+                // Relax F prefix if key is definitely family related
+                if (isXref(cleanVal) && (cleanVal.startsWith('F') || key === 'f' || key === 'fam' || key === 'fid')) {
+                    famXref = cleanVal;
+                    break;
+                }
+            }
+        }
+
+        
+        console.log("Datencheck Debug: Role Assessment - Husband:", husbXref, "Wife:", wifeXref, "Child:", childXref, "Family:", famXref);
+
+        if (childXref && childXref.match(/^[IXF]\d+$/)) {
+            children.push({ xref: childXref, name: "...", dates: "" });
+        }
+
+        const result = {
+            husband: { xref: husbXref || "NEW", name: husbName || "---", dates: husbDates },
+            wife: { xref: wifeXref || "NEW", name: wifeName || "---", dates: wifeDates },
+            marriage: { date: marrDate, place: marrPlace },
+            famXref: famXref,
+            children: children 
+        };
+
+        if (dataUpdateHusb) Object.assign(result.husband, dataUpdateHusb);
+        if (dataUpdateWife) Object.assign(result.wife, dataUpdateWife);
+
+        return result;
+    }
+
+    function formatPerson(p) {
+        if (!p || (!p.name && !p.xref)) return "---";
+        
+        const shortPlace = (pl) => {
+            if (!pl) return "";
+            return pl.split(',')[0].trim();
+        };
+
+        let res = (p.name || "---").replace(/\//g, "");
+        if (p.dates) res += " <small class='text-muted'>(" + p.dates + ")</small>";
+        
+        let sublines = [];
+        if (p.birth?.place) sublines.push("* " + shortPlace(p.birth.place));
+        if (p.death?.place) sublines.push("† " + shortPlace(p.death.place));
+        
+        if (sublines.length > 0) {
+            res += "<br><small class='text-muted' style='font-size:0.8rem; line-height: 1.1; display: inline-block;'>" + sublines.join("<br>") + "</small>";
+        }
+        
+        res += " <small class='text-secondary'>[" + p.xref + "]</small>";
+        return res;
+    }
+
+    function updateComparisonNames(data) {
+        let container = document.getElementById("comparison-current");
+        if (!container) return;
+        
+        console.log("Datencheck: updateComparisonNames starting for", data);
+
+        const fetchAndShow = (xref, type, childXref = null) => {
+            if (!isXref(xref) || xref === "NEW") return;
+            console.log("Datencheck: Fetching details for " + type + " (" + xref + ")");
+            
+            fetch("<?= $details_url ?>".includes("?") ? "<?= $details_url ?>&xref=" + xref : "<?= $details_url ?>?xref=" + xref)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.error && d.error.includes("nicht gefunden")) {
+                        console.log("Datencheck: Individual " + xref + " not found, checking if it is a family...");
+                        if (!data.famXref) {
+                            data.famXref = xref;
+                            updateComparisonNames(data);
+                        }
+                        return;
+                    }
+                    
+                    console.log("Datencheck: Success labels for " + xref, d);
+                    if (type === 'child' && childXref) {
+                        const li = container.querySelector("li[data-xref='" + d.xref + "']");
+                        if (li) {
+                            li.innerHTML = formatPerson(d);
+                        }
+                    } else if (type === 'husband' || type === 'wife') {
+                        // Find the specific container for husband or wife
+                        const divs = container.querySelectorAll("div.mb-2, div.mb-0");
+                        for (let div of divs) {
+                            const label = div.querySelector('strong')?.innerText || "";
+                            if ((type === 'husband' && (label.includes("Husband") || label.includes("Ehemann"))) ||
+                                (type === 'wife' && (label.includes("Wife") || label.includes("Ehefrau")))) {
+                                div.innerHTML = "<strong>" + label + "</strong><br>" + formatPerson(d);
+                                break;
+                            }
+                        }
+                    }
+                }).catch(e => console.error("Datencheck: Fetch failed for " + xref, e));
+        };
+
+        const fetchFullIndividualMetadata = (xref) => {
+            if (!isXref(xref) || xref === "NEW" || data._metadataFetched === xref) return;
+            data._metadataFetched = xref; 
+            
+            console.log("Datencheck: Proactively fetching metadata for " + xref);
+            fetch("<?= $details_url ?>".includes("?") ? "<?= $details_url ?>&xref=" + xref : "<?= $details_url ?>?xref=" + xref)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.error) return;
+                    let changed = false;
+                    
+                    if (d.parents && d.parents.length > 0) {
+                        console.log("Datencheck: Found " + d.parents.length + " parents via child " + xref);
+                        if (!isXref(data.husband.xref) || data.husband.xref === 'NEW') {
+                            if (d.parents[0].xref !== data.wife.xref) {
+                                Object.assign(data.husband, d.parents[0]);
+                                changed = true;
+                            }
+                        }
+                        if (d.parents.length > 1 && (!isXref(data.wife.xref) || data.wife.xref === 'NEW')) {
+                            if (d.parents[1].xref !== data.husband.xref) {
+                                Object.assign(data.wife, d.parents[1]);
+                                changed = true;
+                            }
+                        }
+                    } else if (d.families && d.families.length > 0) {
+                        console.log("Datencheck: Found " + d.families.length + " families via spouse " + xref);
+                        const fam = d.families[0];
+                        if (fam.husband && (!isXref(data.husband.xref) || data.husband.xref === 'NEW')) {
+                            if (fam.husband.xref !== data.wife.xref) {
+                                Object.assign(data.husband, fam.husband);
+                                changed = true;
+                            }
+                        }
+                        if (fam.wife && (!isXref(data.wife.xref) || data.wife.xref === 'NEW')) {
+                            if (fam.wife.xref !== data.husband.xref) {
+                                Object.assign(data.wife, fam.wife);
+                                changed = true;
+                            }
+                        }
+                        if (fam.children && fam.children.length > 0) {
+                            fam.children.forEach(c => {
+                                if (!data.children.find(dc => dc.xref === c.xref)) {
+                                    data.children.push(c);
+                                    changed = true;
+                                }
+                            });
+                        }
+                    }
+                    
+                    if (changed) {
+                        // Prevent cross-talk: if husband and wife became same, and we have family, trust family
+                        if (data.husband.xref === data.wife.xref && isXref(data.husband.xref)) {
+                             // This usually happens if d.parents only had one item or metadata was circular
+                        }
+                        container.innerHTML = formatFamilyDetails(data);
+                        updateComparisonNames(data);
+                    }
+                });
+        };
+
+        // If we have a family XREF, fetch children
+        if (data.famXref && data._famFetched !== data.famXref) {
+            data._famFetched = data.famXref;
+            console.log("Datencheck: Fetching family members for " + data.famXref);
+            const connector = "<?= $family_details_url ?>".includes("?") ? "&" : "?";
+            fetch("<?= $family_details_url ?>" + connector + "fam=" + encodeURIComponent(data.famXref))
+                .then(r => r.json())
+                .then(famData => {
+                    if (famData.error) return;
+                    console.log("Datencheck: Family members received for " + data.famXref, famData);
+                    let changed = false;
+                    
+                    // Trust family structure ALWAYS over heuristics
+                    if (famData.husband) {
+                        Object.assign(data.husband, famData.husband);
+                        changed = true;
+                    }
+                    if (famData.wife) {
+                        Object.assign(data.wife, famData.wife);
+                        changed = true;
+                    }
+                    if (famData.marriage) {
+                        console.log("Datencheck: Merging marriage data", {current: data.marriage, server: famData.marriage});
+                        // Prioritize form data (already in 'data') over server data
+                        // Only fill in if the form data was empty
+                        if (!data.marriage.date && famData.marriage.date) {
+                            console.log("Datencheck: Updating date from server: " + famData.marriage.date);
+                            data.marriage.date = famData.marriage.date;
+                            changed = true;
+                        }
+                        if (!data.marriage.place && famData.marriage.place) {
+                            console.log("Datencheck: Updating place from server: " + famData.marriage.place);
+                            data.marriage.place = famData.marriage.place;
+                            changed = true;
+                        }
+                    }
+                    if (famData.children && famData.children.length > 0) {
+                        famData.children.forEach(c => {
+                            if (!data.children.find(dc => dc.xref === c.xref)) {
+                                data.children.push(c);
+                                changed = true;
+                            }
+                        });
+                    }
+                    
+                    if (changed) {
+                        container.innerHTML = formatFamilyDetails(data);
+                        updateComparisonNames(data);
+                    }
+                });
+        }
+
+        // Auto-lookup if spouses are missing
+        const husbEmpty = !isXref(data.husband.xref) || data.husband.xref === 'NEW';
+        const wifeEmpty = !isXref(data.wife.xref) || data.wife.xref === 'NEW';
+        
+        if (husbEmpty && wifeEmpty && data.children.length > 0) {
+            fetchFullIndividualMetadata(data.children[0].xref);
+        } else if (husbEmpty || wifeEmpty) {
+            const anyXref = isXref(data.husband.xref) ? data.husband.xref : (isXref(data.wife.xref) ? data.wife.xref : null);
+            if (anyXref && anyXref !== 'NEW') fetchFullIndividualMetadata(anyXref);
+        }
+
+        // Fetch labels for known individuals that need them
+        if (isXref(data.husband.xref) && data.husband.xref !== 'NEW' && (!data.husband.name || data.husband.name === '---' || data.husband.name === data.husband.xref)) fetchAndShow(data.husband.xref, 'husband');
+        if (isXref(data.wife.xref) && data.wife.xref !== 'NEW' && (!data.wife.name || data.wife.name === '---' || data.wife.name === data.wife.xref)) fetchAndShow(data.wife.xref, 'wife');
+        data.children.forEach(c => {
+            if (c.name === "...") fetchAndShow(c.xref, 'child', c.xref);
+        });
+    }
+
+    function formatFamilyDetails(data) {
+        let html = "<div class='family-details'>";
+        
+        // Oberer Bereich: Eltern links, Heirat rechts
+        html += "<div class='d-flex justify-content-between align-items-start border-bottom pb-2 mb-2' style='min-height: 80px;'>";
+        
+        // Linke Seite: Eheleute
+        html += "<div style='flex: 1;'>";
+        html += "<div class='mb-2'><strong><?= \Fisharebest\Webtrees\I18N::translate('Husband:') ?></strong><br>" + formatPerson(data.husband) + "</div>";
+        html += "<div class='mb-0'><strong><?= \Fisharebest\Webtrees\I18N::translate('Wife:') ?></strong><br>" + formatPerson(data.wife) + "</div>";
+        html += "</div>";
+        
+        // Rechte Seite: Heirat (wie in Skizze)
+        if (data.marriage && (data.marriage.date || data.marriage.place)) {
+            html += "<div class='text-end ps-3 pt-1' style='min-width: 140px; border-left: 1px solid #eee;'>";
+            html += "<div class='text-primary fw-bold' style='font-size: 1.1rem; margin-bottom: 2px;'>∞ " + "<?= \Fisharebest\Webtrees\I18N::translate('Marriage') ?>" + "</div>";
+            if (data.marriage.date) {
+                html += "<div class='small fw-bold'>" + data.marriage.date + "</div>";
+            }
+            if (data.marriage.place) {
+                const shortMarrPlace = data.marriage.place.split(',')[0].trim();
+                html += "<div class='text-muted small' style='line-height: 1.2;'>" + shortMarrPlace + "</div>";
+            }
+            html += "</div>";
+        } else {
+            // Platzhalter für Heirat, falls nichts bekannt ist, um das Layout stabil zu halten
+            html += "<div class='text-end ps-3 pt-1 text-muted small' style='min-width: 140px; opacity: 0.5;'>";
+            html += "<em><?= \Fisharebest\Webtrees\I18N::translate('No marriage data') ?></em>";
+            html += "</div>";
+        }
+        
+        html += "</div>"; // Ende d-flex
+
+        // Kinder Bereich
+        html += "<div class='mt-2'><strong><?= \Fisharebest\Webtrees\I18N::translate('Children:') ?></strong><ul class='list-unstyled shadow-none p-0 mt-1' style='margin-left: 0;'>";
+        if (data.children && data.children.length > 0) {
+            data.children.forEach(c => {
+                html += "<li data-xref='" + c.xref + "' class='border-bottom py-1'>" + formatPerson(c) + "</li>";
+            });
+        } else {
+            html += "<li class='text-muted italic py-1'><em><?= \Fisharebest\Webtrees\I18N::translate('None') ?></em></li>";
+        }
+        html += "</ul></div></div>";
+        return html;
+    }
+
     function getFormDataAsDetails() {
+        const getVal = (factType, subtag) => {
+            const pattern = subtag.toUpperCase();
+            const translatedLabel = factType === 'BIRT' ? 
+                                    "<?= \Fisharebest\Webtrees\I18N::translate('Birth') ?>" : 
+                                    "<?= \Fisharebest\Webtrees\I18N::translate('Death') ?>";
+            
+            // 1. Suche Fact-Container (z.B. Geburt/Death)
+            const containers = document.querySelectorAll('.wt-fact-container, .fact-item, .tr-' + factType);
+            for (let c of containers) {
+                const text = c.innerText || "";
+                if (text.includes(translatedLabel) || text.match(new RegExp(factType === 'BIRT' ? 'Geburt|Birth|Naissance' : 'Tod|Death|Décès', 'i'))) {
+                    const input = c.querySelector(`input[id*="${pattern}"], input[name*="${pattern}"]`);
+                    if (input) return input.value;
+                }
+            }
+            // 2. Fallback: Direkte Suche nach Kombination
+            return document.querySelector(`[id*="${factType}"][id*="${pattern}"]`)?.value || 
+                   document.querySelector(`input[name*="${factType}"][name*="${pattern}"]`)?.value || 
+                   document.querySelector(`[id*="${pattern}"]`)?.value || "";
+        };
+
         const given = document.querySelector('[id*="GIVN"]')?.value || "";
         const surname = document.querySelector('[id*="SURN"]')?.value || "";
-        const birthDate = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
-        const deathDate = document.querySelector('[id*="DEAT"][id*="DATE"]')?.value || "";
+        
+        const birthDate = getVal("BIRT", "DATE");
+        const birthPlace = getVal("BIRT", "PLAC") || getVal("BIRT", "PLACE");
+        const deathDate = getVal("DEAT", "DATE");
+        const deathPlace = getVal("DEAT", "PLAC") || getVal("DEAT", "PLACE");
 
         return {
-            name: given + " /" + surname + "/",
-            birth: { date: birthDate, place: "" },
-            death: { date: deathDate, place: "" },
+            name: (given + " /" + surname + "/").trim(),
+            birth: { date: birthDate, place: birthPlace },
+            death: { date: deathDate, place: deathPlace },
             parents: [],
             families: [],
             xref: "NEW"
@@ -376,7 +1126,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Birth
         html += "<div class='mb-3' data-field='birth'><strong><?= \Fisharebest\Webtrees\I18N::translate('Birth:') ?></strong><br>";
-        if (data.birth.date || data.birth.place) {
+        if (data.birth && (data.birth.date || data.birth.place)) {
             if (data.birth.date) html += data.birth.date + "<br>";
             if (data.birth.place) html += "<small class='text-muted'>" + data.birth.place + "</small>";
         } else {
@@ -386,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Death
         html += "<div class='mb-3' data-field='death'><strong><?= \Fisharebest\Webtrees\I18N::translate('Death:') ?></strong><br>";
-        if (data.death.date || data.death.place) {
+        if (data.death && (data.death.date || data.death.place)) {
             if (data.death.date) html += data.death.date + "<br>";
             if (data.death.place) html += "<small class='text-muted'>" + data.death.place + "</small>";
         } else {

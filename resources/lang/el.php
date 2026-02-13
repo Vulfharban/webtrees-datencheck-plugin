@@ -222,4 +222,19 @@ return [
     'Show warnings for imprecise dates' => 'Εμφάνιση προειδοποιήσεων για ασαφείς ημερομηνίες',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Εάν απενεργοποιηθεί, οι συγκρούσεις που προκαλούνται από έλλειψη ημέρας/μήνα (π.χ. "1855" έναντι "Μάιος 1855") θα αγνοηθούν.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Βρέθηκαν πάρα πολλά προβλήματα. Εμφάνιση μόνο των πρώτων %s. Χρησιμοποιήστε την Εξαγωγή CSV για την πλήρη λίστα.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Σύγκριση οικογενειών',
+    'Current Form Data' => 'Τρέχοντα δεδομένα φόρμας',
+    'Existing Family' => 'Υπάρχουσα οικογένεια',
+    'Use this person' => 'Χρήση ατόμου',
+    'Marriage' => 'Γάμος',
+    'None' => 'Κανένα',
+    'Biological Plausibility' => 'Βιολογική αληθοφάνεια',
+    'Temporal Plausibility' => 'Χρονική αληθοφάνεια',
+    'Marriage Plausibility' => 'Αληθοφάνεια γάμου',
+    'Missing Data' => 'Ελλιπή δεδομένα',
+    'Geographic Plausibility' => 'Γεωγραφική αληθοφάνεια',
+    'Name Consistency' => 'Συνέπεια ονομάτων',
+    'Source Quality' => 'Ποιότητα πηγών',
 ];

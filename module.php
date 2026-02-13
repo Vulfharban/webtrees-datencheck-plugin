@@ -105,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.3.1';
+        return '1.3.3';
     }
 
     public function getVersion(): string
@@ -221,7 +221,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             return '';
         }
 
-        if ($tree === null) {
+        if ($tree === null || !Auth::isEditor($tree)) {
             return '';
         }
 
@@ -246,6 +246,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $details_url = route('module', [
             'module' => $this->name(),
             'action' => 'PersonDetails',
+            'tree'   => $tree->name(),
+        ]);
+
+        $fam_details_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'FamilyDetails',
             'tree'   => $tree->name(),
         ]);
 
@@ -277,6 +283,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             'sibling_url'    => $sibling_url,
             'family_url'     => $family_url,
             'details_url'    => $details_url,
+            'family_details_url' => $fam_details_url,
             'validation_url' => $validation_url,
             'add_task_url'   => $add_task_url,
             'ignore_error_url' => $ignore_error_url,
@@ -286,6 +293,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function getMenu(Tree $tree): ?Menu
     {
+        if (!Auth::isModerator($tree)) {
+            return null;
+        }
+
         $id   = 'menu-datencheck';
         $file = __DIR__ . '/resources/images/datencheck_icon.png';
         $icon = '<i class="menu-icon fa fa-check-double"></i>'; // Fallback
@@ -366,7 +377,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 return $this->getAdminIgnoredAction($request);
             case 'PersonDetails':
                 return $this->getPersonDetailsAction($request);
-                case 'Admin':
+            case 'FamilyDetails':
+                return $this->getFamilyDetailsAction($request);
+            case 'Admin':
                 case 'Config':
                     return $this->getAdminAction($request);
                 case 'BatchAnalysis':
@@ -432,9 +445,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $tree = $this->getTree($request);
             $params = $request->getQueryParams();
             
-            if ($tree === null) {
-                 return response(json_encode(['error' => 'Tree not found']))
-                    ->withHeader('Content-Type', 'application/json');
+            if ($tree === null || !Auth::isEditor($tree)) {
+                 throw new HttpAccessDeniedException();
             }
 
             $xref = $params['xref'] ?? '';
@@ -474,16 +486,28 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     {
         try {
             $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
             $params = $request->getQueryParams();
 
             $given = $params['given_name'] ?? '';
             $surname = $params['surname'] ?? '';
             $birth = $params['birth_date'] ?? '';
+            $death = $params['death_date'] ?? '';
+            $baptism = $params['baptism_date'] ?? '';
+            $sex = $params['sex'] ?? '';
+
+            $marriedSurname = $params['married_surname'] ?? '';
 
             $fuzzyDiffHighAge = (int)$this->getSetting('fuzzy_diff_high_age', '6');
             $fuzzyDiffDefault = (int)$this->getSetting('fuzzy_diff_default', '2');
 
-            $data = InteractionService::runInteractiveCheck($tree, $given, $surname, $birth, $fuzzyDiffHighAge, $fuzzyDiffDefault);
+            $data = InteractionService::runInteractiveCheck(
+                $tree, $given, $surname, $birth,
+                $fuzzyDiffHighAge, $fuzzyDiffDefault,
+                $death, $baptism, $sex, $marriedSurname
+            );
 
             return response(json_encode($data))
                 ->withHeader('Content-Type', 'application/json');
@@ -500,6 +524,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getCheckFamilyAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = $this->getTree($request);
+        if ($tree === null || !Auth::isEditor($tree)) {
+            throw new HttpAccessDeniedException();
+        }
         $params = $request->getQueryParams();
 
         $husb = $params['husb'] ?? '';
@@ -517,6 +544,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function getAdminAction(ServerRequestInterface $request): ResponseInterface
     {
+        $tree = $this->getTree($request);
+        if (!($tree && Auth::isModerator($tree)) && !Auth::isAdmin()) {
+            throw new HttpAccessDeniedException();
+        }
+        
         // Load view from module directory
         $view_file = __DIR__ . '/resources/views/modules/datencheck/admin.phtml';
         
@@ -569,6 +601,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         }
         $breadcrumb_links[$modules_all_url] = \Fisharebest\Webtrees\I18N::translate('Modules');
         $breadcrumb_links[''] = $title;
+
+        // Simple variables for backward compatibility in view
+        $i18n_control_panel = \Fisharebest\Webtrees\I18N::translate('Control panel');
+        $i18n_modules = \Fisharebest\Webtrees\I18N::translate('Modules');
+        $i18n_save = \Fisharebest\Webtrees\I18N::translate('save');
+        $i18n_cancel = \Fisharebest\Webtrees\I18N::translate('cancel');
 
         // Prepare tree list for dropdown (DB-Based fallback to be safe)
         $trees_list = [];
@@ -676,6 +714,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getCheckSiblingAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = $this->getTree($request);
+        if ($tree === null || !Auth::isEditor($tree)) {
+            throw new HttpAccessDeniedException();
+        }
         $params = $request->getQueryParams();
 
         $husb = $params['husb'] ?? '';
@@ -684,8 +725,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $surname = $params['child_surname'] ?? '';
         $birth = $params['child_birth'] ?? '';
 
-        $fuzzyDiffHighAge = (int)$this->getPreference('fuzzy_diff_high_age', '6');
-        $fuzzyDiffDefault = (int)$this->getPreference('fuzzy_diff_default', '2');
+        $fuzzyDiffHighAge = (int)$this->getSetting('fuzzy_diff_high_age', '6');
+        $fuzzyDiffDefault = (int)$this->getSetting('fuzzy_diff_default', '2');
 
         $data = InteractionService::runSiblingCheck($tree, $husb, $wife, $given, $surname, $birth, $fuzzyDiffHighAge, $fuzzyDiffDefault);
 
@@ -700,6 +741,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     public function getPersonDetailsAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = $this->getTree($request);
+        if ($tree === null || !Auth::isEditor($tree)) {
+            throw new HttpAccessDeniedException();
+        }
         $params = $request->getQueryParams();
 
         $xref = $params['xref'] ?? '';
@@ -720,10 +764,39 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      * @param ServerRequestInterface $request
      * @return ResponseInterface
      */
+    public function getFamilyDetailsAction(ServerRequestInterface $request): ResponseInterface
+    {
+        $tree = $this->getTree($request);
+        if ($tree === null || !Auth::isEditor($tree)) {
+            throw new HttpAccessDeniedException();
+        }
+        $params = $request->getQueryParams();
+
+        $famId = $params['fam'] ?? '';
+
+        if (empty($famId)) {
+            return response(json_encode(['error' => 'Missing fam parameter']))
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+
+        $data = InteractionService::getFamilyInfo($tree, $famId);
+
+        return response(json_encode($data))
+            ->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
     public function getAddTaskAction(ServerRequestInterface $request): ResponseInterface
     {
         try {
             $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
             $params = $request->getQueryParams();
 
             $xref  = $params['xref'] ?? '';
@@ -753,6 +826,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     {
         try {
             $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isModerator($tree)) {
+                throw new HttpAccessDeniedException();
+            }
             $params = $request->getQueryParams();
 
             $xref  = $params['xref'] ?? '';
@@ -855,6 +931,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             set_time_limit(120);
             
             $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isModerator($tree)) {
+                throw new HttpAccessDeniedException();
+            }
             $params = $request->getQueryParams();
 
             if (!$tree) {

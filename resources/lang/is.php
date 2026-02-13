@@ -274,4 +274,20 @@ return [
     'Show warnings for imprecise dates' => 'Sýna viðvaranir fyrir ónákvæmar dagsetningar',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ef þetta er óvirkt verður litið framhjá misræmi vegna vöntunar á degi/mánuði (t.d. "1855" á móti "maí 1855").',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Of mörg vandamál fundust. Sýni aðeins fyrstu %s. Vinsamlegast notaðu CSV útflutning fyrir allan listann.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Samanburður fjölskyldna',
+    'Current Form Data' => 'Núverandi eyðublaðsgögn',
+    'Existing Family' => 'Fjölskylda þegar til',
+    'Use this person' => 'Nota þennan einstakling',
+    'Your tree is clean.' => 'Stambókin er hrein.',
+    'Marriage' => 'Hjónaband',
+    'None' => 'Ekkert',
+    'Biological Plausibility' => 'Líffræðileg líkindi',
+    'Temporal Plausibility' => 'Tímaleg líkindi',
+    'Marriage Plausibility' => 'Líkind í hjónabandi',
+    'Missing Data' => 'Gögn vantar',
+    'Geographic Plausibility' => 'Landfræðileg líkindi',
+    'Name Consistency' => 'Samkvæmni nafna',
+    'Source Quality' => 'Gæði heimilda',
 ];

@@ -274,4 +274,19 @@ return [
     'Show warnings for imprecise dates' => 'Afișează avertismente pentru date imprecise',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Dacă este dezactivat, conflictele cauzate de lipsa zilei/lunii (ex. "1855" vs "mai 1855") vor fi ignorate.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Prea multe probleme găsite. Se afișează doar primele %s. Vă rugăm să utilizați Exportul CSV pentru lista completă.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Comparare familii',
+    'Current Form Data' => 'Date actuale formular',
+    'Existing Family' => 'Familie existentă',
+    'Use this person' => 'Folosește persoana',
+    'Marriage' => 'Căsătorie',
+    'None' => 'Niciunul',
+    'Biological Plausibility' => 'Plauzibilitate biologică',
+    'Temporal Plausibility' => 'Plauzibilitate temporală',
+    'Marriage Plausibility' => 'Plauzibilitate căsătorie',
+    'Missing Data' => 'Date lipsă',
+    'Geographic Plausibility' => 'Plauzibilitate geografică',
+    'Name Consistency' => 'Consistența numelor',
+    'Source Quality' => 'Calitatea surselor',
 ];

@@ -274,4 +274,19 @@ return [
     'Show warnings for imprecise dates' => 'Figyelmeztetések megjelenítése a pontatlan dátumoknál',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ha le van tiltva, a hiányzó nap/hónap által okozott konfliktusok (pl. "1855" vs "1855. május") figyelmen kívül maradnak.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Túl sok probléma található. Csak az első %s jelenik meg. Kérjük, használja a CSV exportálást a teljes listához.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Család összehasonlítása',
+    'Current Form Data' => 'Jelenlegi űrlapadatok',
+    'Existing Family' => 'Létező család',
+    'Use this person' => 'Használja a személyt',
+    'Marriage' => 'Házasság',
+    'None' => 'Nincs',
+    'Biological Plausibility' => 'Biológiai ésszerűség',
+    'Temporal Plausibility' => 'Időbeli ésszerűség',
+    'Marriage Plausibility' => 'Házassági ésszerűség',
+    'Missing Data' => 'Hiányzó adatok',
+    'Geographic Plausibility' => 'Földrajzi ésszerűség',
+    'Name Consistency' => 'Névkonzisztencia',
+    'Source Quality' => 'Forrásminőség',
 ];

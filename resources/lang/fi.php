@@ -222,4 +222,19 @@ return [
     'Show warnings for imprecise dates' => 'Näytä varoitukset epätarkoista päivämääristä',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Jos poissa käytöstä, puuttuvasta päivästä/kuukaudesta aiheutuvat ristiriidat (esim. "1855" vs "toukokuu 1855") ohitetaan.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Liian monta ongelmaa löytyi. Näytetään vain ensimmäiset %s. Käytä CSV-vientiä nähdäksesi koko listan.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Perhevertailu',
+    'Current Form Data' => 'Nykyiset lomaketiedot',
+    'Existing Family' => 'Olemassa oleva perhe',
+    'Use this person' => 'Käytä henkilöä',
+    'Marriage' => 'Avioliitto',
+    'None' => 'Ei mitään',
+    'Biological Plausibility' => 'Biologinen uskottavuus',
+    'Temporal Plausibility' => 'Ajallinen uskottavuus',
+    'Marriage Plausibility' => 'Avioliiton uskottavuus',
+    'Missing Data' => 'Puuttuvat tiedot',
+    'Geographic Plausibility' => 'Maantieteellinen uskottavuus',
+    'Name Consistency' => 'Nimien johdonmukaisuus',
+    'Source Quality' => 'Lähteet',
 ];

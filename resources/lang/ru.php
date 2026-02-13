@@ -231,4 +231,18 @@ return [
     'Show warnings for imprecise dates' => 'Показывать предупреждения для неточных дат',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Если отключено, конфликты, вызванные отсутствием дня/месяца (например, "1855" против "May 1855"), будут игнорироваться.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Найдено слишком много проблем. Показаны только первые %s. Используйте экспорт в CSV для получения полного списка.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Сравнение семей',
+    'Current Form Data' => 'Текущие данные формы',
+    'Existing Family' => 'Существующая семья',
+    'Use this person' => 'Использовать это лицо',
+    'None' => 'Нет',
+    'Biological Plausibility' => 'Биологическая правдоподобность',
+    'Temporal Plausibility' => 'Временная правдоподобность',
+    'Marriage Plausibility' => 'Правдоподобность брака',
+    'Geographic Plausibility' => 'Географическая правдоподобность',
+    'Name Consistency' => 'Согласованность имен',
+    'Source Quality' => 'Качество источников',
+    'No marriage data' => 'Нет данных о браке',
 ];

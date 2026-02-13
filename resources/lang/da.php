@@ -240,4 +240,18 @@ return [
     'Show warnings for imprecise dates' => 'Vis advarsler for upræcise datoer',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Hvis deaktiveret, vil konflikter forårsaget af manglende dag/måned (f.eks. "1855" mod "maj 1855") blive ignoreret.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'For mange problemer fundet. Viser kun de første %s. Brug venligst CSV-eksport for den fulde liste.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Familie-sammenligning',
+    'Current Form Data' => 'Nuværende formulardata',
+    'Existing Family' => 'Eksisterende familie',
+    'Use this person' => 'Brug personen',
+    'None' => 'Ingen',
+    'Biological Plausibility' => 'Biologisk plausibilitet',
+    'Temporal Plausibility' => 'Tidsmæssig plausibilitet',
+    'Marriage Plausibility' => 'Ægteskabelig plausibilitet',
+    'Geographic Plausibility' => 'Geografisk plausibilitet',
+    'Name Consistency' => 'Navnekonsistens',
+    'Source Quality' => 'Kildekvalitet',
+    'No marriage data' => 'Ingen vielsesdata',
 ];

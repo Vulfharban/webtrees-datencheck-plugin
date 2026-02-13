@@ -222,4 +222,20 @@ return [
     'Show warnings for imprecise dates' => 'Mostrar avisos para datas imprecisas',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Se desativado, os conflitos causados pela falta de dia/mês (ex: "1855" vs "maio 1855") serão ignorados.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Muitos problemas encontrados. Mostrando apenas os primeiros %s. Use a exportação CSV para a lista completa.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Comparação de famílias',
+    'Current Form Data' => 'Dados atuais do formulário',
+    'Existing Family' => 'Família existente',
+    'Use this person' => 'Usar esta pessoa',
+    'Marriage' => 'Casamento',
+    'None' => 'Nenhum',
+    'Biological Plausibility' => 'Plausibilidade biológica',
+    'Temporal Plausibility' => 'Plausibilidade temporal',
+    'Marriage Plausibility' => 'Plausibilidade de casamento',
+    'Missing Data' => 'Dados faltantes',
+    'Geographic Plausibility' => 'Plausibilidade geográfica',
+    'Name Consistency' => 'Consistência de nomes',
+    'Source Quality' => 'Qualidade das fontes',
+    'No marriage data' => 'Sem dados de casamento',
 ];

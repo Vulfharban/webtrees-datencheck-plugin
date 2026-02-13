@@ -270,4 +270,19 @@ return [
     'Show warnings for imprecise dates' => 'Zobrazovať varovania pre nepresné dátumy',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ak je zakázané, konflikty spôsobené chýbajúcim dňom/mesiacom (napr. "1855" vs "máj 1855") budú ignorované.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Našlo sa príliš veľa problémov. Zobrazuje sa iba prvých %s. Pre úplný zoznam použite export do CSV.',
+
+    // Automated UI translations
+    'Family Comparison' => 'Porovnanie rodín',
+    'Current Form Data' => 'Aktuálne údaje formulára',
+    'Existing Family' => 'Existujúca rodina',
+    'Use this person' => 'Použiť túto osobu',
+    'Marriage' => 'Sobáš',
+    'None' => 'Žiadne',
+    'Biological Plausibility' => 'Biologická vierohodnosť',
+    'Temporal Plausibility' => 'Časová vierohodnosť',
+    'Marriage Plausibility' => 'Vierohodnosť manželstva',
+    'Missing Data' => 'Chýbajúce údaje',
+    'Geographic Plausibility' => 'Geografická vierohodnosť',
+    'Name Consistency' => 'Konzistencia mien',
+    'Source Quality' => 'Kvalita zdrojov',
 ];
