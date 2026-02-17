@@ -221,6 +221,10 @@ return [
     'Show warnings for imprecise dates' => 'Vis advarsler for upresise datoer',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Hvis deaktivert, vil konflikter forårsaket av manglende dag/måned (f.eks. "1855" mot "mai 1855") bli ignorert.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'For mange problemer funnet. Viser bare de første %s. Vennligst bruk CSV-eksport for den fullstendige listen.',
+    'A given name was entered, but the gender is not specified.' => 'Et fornavn er oppgitt, men kjønn er ikke spesifisert.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Fornavnet "%s" er vanligvis %s, men du har valgt %s.',
+    'male' => 'mannlig',
+    'female' => 'kvinnelig',
 
     // Automated UI translations
     'Family Comparison' => 'Familiesammenligning',

@@ -73,7 +73,12 @@ class ValidationService
         return $module->getPreference($key, $default);
     }
 
-    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child', string $overrideGiven = '', string $overrideSurname = '', string $overrideBap = '', array $filters = []): array
+    public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child',        string $overrideGiven = '', 
+        string $overrideSurname = '', 
+        string $overrideBap = '', 
+        array $filters = [],
+        string $overrideSex = ''
+    ): array
     {
         $issues = [];
         $debug = [];
@@ -104,7 +109,7 @@ class ValidationService
         }
 
         // 2. Temporal plausibility checks
-        if ($person && (!$useFilters || in_array('temporal', $filters))) {
+        if (!$useFilters || in_array('temporal', $filters)) {
             $issue = Validators\TemporalValidator::checkBirthAfterDeath($person, $overrideBirth, $overrideDeath, $overrideBurial);
             if ($issue) $issues[] = $issue;
 
@@ -116,6 +121,12 @@ class ValidationService
 
             $issue = Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
             if ($issue) $issues[] = $issue;
+
+            // NEW: Check for future dates
+            foreach (['BIRT' => $overrideBirth, 'DEAT' => $overrideDeath, 'CHR' => $overrideBap, 'BURI' => $overrideBurial, 'MARR' => $marrOverride] as $tag => $override) {
+                $issue = Validators\TemporalValidator::checkFutureDate($person, $tag, $override);
+                if ($issue) $issues[] = $issue;
+            }
         }
 
         // 3. Marriage plausibility checks
@@ -129,30 +140,37 @@ class ValidationService
 
         // 4. Optional / Category-based checks
         if ($module) {
-            // Missing Data
-            if (in_array('missing_data', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1')) {
-                $issues = array_merge($issues, self::checkMissingData($person));
+            if ($person) {
+                // Missing Data
+                if (in_array('missing_data', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1')) {
+                    $issues = array_merge($issues, self::checkMissingData($person));
+                }
+
+                // Geographic
+                if (in_array('geographic', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1')) {
+                    $issues = array_merge($issues, self::checkGeographicPlausibility($person));
+                }
+
+                // Sources
+                if (in_array('sources', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_source_checks', '0') === '1')) {
+                    $issues = array_merge($issues, self::checkSourceQuality($person));
+                }
+
+                // Date Format (Month Names)
+                if (in_array('date_format', $filters) || !$useFilters) {
+                    $issues = array_merge($issues, self::checkInvalidMonths($person));
+                }
             }
 
-            // Geographic
-            if (in_array('geographic', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1')) {
-                $issues = array_merge($issues, self::checkGeographicPlausibility($person));
-            }
-
-            // Names
+            // Names (handles null person via overrides)
             if (in_array('names', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_name_checks', '0') === '1')) {
                 $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
             }
+        }
 
-            // Sources
-            if (in_array('sources', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_source_checks', '0') === '1')) {
-                $issues = array_merge($issues, self::checkSourceQuality($person));
-            }
-
-            // Date Format (Month Names)
-            if (in_array('date_format', $filters) || !$useFilters) {
-                $issues = array_merge($issues, self::checkInvalidMonths($person));
-            }
+        // 5. Gender check
+        if (!$useFilters || in_array('names', $filters)) {
+            $issues = array_merge($issues, self::checkGenderInteractive($person, $overrideGiven, $overrideSex));
         }
 
         // FILTER: Remove imprecise warnings if disabled
@@ -174,6 +192,14 @@ class ValidationService
             // Re-index array
             $issues = array_values($issues);
         }
+
+        // ENRICH: Add labels to all issues
+        foreach ($issues as &$issue) {
+            if (isset($issue['code']) && !isset($issue['label'])) {
+                $issue['label'] = ValidationConstants::getLabel($issue['code']);
+            }
+        }
+        unset($issue); // Clean up reference
 
         $debug = array_merge($debug, [
             'person' => $person ? $person->fullName() : 'New Individual',
@@ -200,7 +226,7 @@ class ValidationService
     /**
      * Format date for display (e.g. 01.05.1980 or just 1980 if day/month missing)
      */
-    private static function formatDate(?Individual $person, string $tag, string $override = ''): string
+    public static function formatDate(?Individual $person, string $tag, string $override = ''): string
     {
         if ($override) {
             return $override;
@@ -643,6 +669,10 @@ class ValidationService
         $mYear = self::parseYearOnly($marrDate);
         if ($mYear === null) return $issues;
 
+        // NEW: Check for future marriage date
+        $issue = Validators\TemporalValidator::checkFutureDate($person, 'MARR', $marrDate);
+        if ($issue) $issues[] = $issue;
+
         $registry = \Fisharebest\Webtrees\Registry::individualFactory();
         $husb = $husbXref ? $registry->make($husbXref, $tree) : null;
         $wife = $wifeXref ? $registry->make($wifeXref, $tree) : null;
@@ -764,6 +794,12 @@ class ValidationService
             ];
         }
 
+        // Check for future marriage date
+        $futureIssue = Validators\TemporalValidator::checkFutureDate($person, 'MARR', $marrDate);
+        if ($futureIssue) {
+            $issues[] = $futureIssue;
+        }
+
         return $issues;
     }
 
@@ -819,6 +855,12 @@ class ValidationService
         usort($marriageDates, function($a, $b) {
             return $a['year'] <=> $b['year'];
         });
+
+        // Check for future marriage dates in existing data
+        foreach ($marriageDates as $mDate) {
+            $issue = Validators\TemporalValidator::checkFutureDate($person, 'MARR');
+            if ($issue) $issues[] = $issue;
+        }
 
         // Check for overlaps (simple check: marriage before previous spouse's death)
         for ($i = 1; $i < count($marriageDates); $i++) {
@@ -927,12 +969,6 @@ class ValidationService
         return $issues;
     }
 
-    /**
-     * Check geographic plausibility
-     *
-     * @param Individual|null $person
-     * @return array
-     */
     /**
      * Check geographic plausibility (Distance and Travel Speed)
      *
@@ -1065,6 +1101,55 @@ class ValidationService
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return $earthRadius * $c;
+    }
+
+    /**
+     * Check gender consistency for interactive forms (e.g., add new individual)
+     *
+     * @param Individual|null $person
+     * @param string $overrideGiven
+     * @param string $overrideSex
+     * @return array
+     */
+    private static function checkGenderInteractive(?Individual $person, string $overrideGiven, string $overrideSex): array
+    {
+        $issues = [];
+        $sex = $overrideSex;
+        
+        // If no override, use person's sex
+        if (empty($sex) && $person) {
+            $sex = $person->sex();
+        }
+
+        if (empty($overrideGiven)) return $issues;
+
+        // 1. Missing gender check
+        if ($sex !== 'M' && $sex !== 'F') {
+            $issues[] = [
+                'code' => 'MISSING_GENDER',
+                'severity' => 'warning',
+                'message' => \Fisharebest\Webtrees\I18N::translate('A given name was entered, but the gender is not specified.'),
+                'tag' => 'SEX'
+            ];
+            return $issues;
+        }
+
+        // 2. Name-Gender mismatch check
+        $suggestedGender = NameHelper::getGenderByNames($overrideGiven, $overrideSurname);
+        if ($suggestedGender && $suggestedGender !== $sex) {
+            $issues[] = [
+                'code' => 'GENDER_NAME_MISMATCH',
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('The given name "%s" is usually %s, but you selected %s.', 
+                    $overrideGiven . ($overrideSurname ? ' ' . $overrideSurname : ''), 
+                    $suggestedGender === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female'),
+                    $sex === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female')
+                ),
+                'tag' => 'SEX'
+            ];
+        }
+
+        return $issues;
     }
 
     /**
@@ -1967,9 +2052,11 @@ class ValidationService
      * @param Individual $person
      * @return array
      */
-    private static function checkInvalidMonths(Individual $person): array
+    private static function checkInvalidMonths(?Individual $person): array
     {
         $issues = [];
+        if (!$person) return $issues;
+
         $facts = $person->facts(['BIRT', 'CHR', 'DEAT', 'BURI']);
 
         foreach ($facts as $fact) {

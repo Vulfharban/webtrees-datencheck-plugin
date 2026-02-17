@@ -200,6 +200,10 @@ return [
     'Taufe' => 'Baptism',
     'Tod' => 'Death',
     'Bestattung' => 'Burial',
+    'Birth' => 'Birth',
+    'Death' => 'Death',
+    'Baptism' => 'Baptism',
+    'Burial' => 'Burial',
 
     'Complete data' => 'Complete data',
     'Marriage count' => 'Marriage count',
@@ -277,6 +281,8 @@ return [
     'Duplicate child (sibling)' => 'Duplicate child (sibling)',
     'Sibling spacing too small' => 'Sibling spacing too small',
     'Baptism unusually late' => 'Baptism unusually late',
+    'Check date' => 'Check date',
+    'The date for %s (%s) is in the future.' => 'The date for %s (%s) is in the future.',
     'These settings are saved for your user account.' => 'These settings are saved for your user account.',
     
     'Settings saved successfully.' => 'Settings saved successfully.',
@@ -300,4 +306,10 @@ return [
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.',
     'No marriage data' => 'No marriage data',
+    'A given name was entered, but the gender is not specified.' => 'A given name was entered, but the gender is not specified.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'The given name "%s" is usually %s, but you selected %s.',
+    'male' => 'male',
+    'female' => 'female',
+    'Gender not specified' => 'Gender not specified',
+    'Name does not match gender' => 'Name does not match gender',
 ];

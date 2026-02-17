@@ -274,6 +274,10 @@ return [
     'Show warnings for imprecise dates' => 'Sýna viðvaranir fyrir ónákvæmar dagsetningar',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ef þetta er óvirkt verður litið framhjá misræmi vegna vöntunar á degi/mánuði (t.d. "1855" á móti "maí 1855").',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Of mörg vandamál fundust. Sýni aðeins fyrstu %s. Vinsamlegast notaðu CSV útflutning fyrir allan listann.',
+    'A given name was entered, but the gender is not specified.' => 'Fornafn var slegið inn en kyn er ekki tilgreint.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Fornafnið "%s" er venjulega %s, en þú valdir %s.',
+    'male' => 'karlkyns',
+    'female' => 'kvenkyns',
 
     // Automated UI translations
     'Family Comparison' => 'Samanburður fjölskyldna',

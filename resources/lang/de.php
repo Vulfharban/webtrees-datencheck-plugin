@@ -202,6 +202,10 @@ return [
     'Taufe' => 'Taufe',
     'Tod' => 'Tod',
     'Bestattung' => 'Bestattung',
+    'Birth' => 'Geburt',
+    'Death' => 'Tod',
+    'Baptism' => 'Taufe',
+    'Burial' => 'Bestattung',
 
     'Complete data' => 'Daten vervollständigen',
     'Marriage count' => 'Anzahl Ehen',
@@ -278,6 +282,8 @@ return [
     'Duplicate child (sibling)' => 'Doppeltes Kind (Geschwister)',
     'Sibling spacing too small' => 'Abstand zu Geschwister zu klein',
     'Baptism unusually late' => 'Taufe ungewöhnlich spät',
+    'Check date' => 'Datum prüfen',
+    'The date for %s (%s) is in the future.' => 'Das Datum für %s (%s) liegt in der Zukunft.',
     
     'Settings saved successfully.' => 'Einstellungen erfolgreich gespeichert.',
     'These settings are saved for your user account.' => 'Diese Einstellungen werden für dein Benutzerkonto gespeichert.',
@@ -300,5 +306,11 @@ return [
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Falls deaktiviert, werden Konflikte, die nur durch fehlende Tages-/Monatsangaben entstehen (z. B. "1855" vs. "Mai 1855"), ignoriert.',
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Der Nachname "%s" enthält anscheinend ein Vorsatzwort "%s". In webtrees sollte dies im Feld "Präfix" eingetragen werden.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Zu viele Probleme gefunden. Es werden nur die ersten %s angezeigt. Bitte nutzen Sie den CSV-Export für die vollständige Liste.',
+    'A given name was entered, but the gender is not specified.' => 'Ein Vorname wurde eingegeben, aber das Geschlecht ist nicht ausgewählt.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Der Vorname "%s" ist normalerweise %s, du hast aber %s ausgewählt.',
+    'male' => 'männlich',
+    'female' => 'weiblich',
+    'Gender not specified' => 'Geschlecht nicht angegeben',
+    'Name does not match gender' => 'Vorname passt nicht zum Geschlecht',
     'No marriage data' => 'Keine Heiratsdaten',
 ];

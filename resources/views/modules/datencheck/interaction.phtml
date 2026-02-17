@@ -1379,12 +1379,10 @@ document.addEventListener("DOMContentLoaded", function() {
     // Validation check for data plausibility
     const checkValidation = () => {
         const context = getContext();
-        if (!context.xref && !context.husb && !context.wife && !context.fam) {
-            return;
-        }
+        const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
+        
 
         const getVal = (keywords) => {
-            const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
             const matches = allElements.filter(el => {
                 const id = (el.id || "").toUpperCase();
                 const name = (el.name || "").toUpperCase();
@@ -1401,27 +1399,68 @@ document.addEventListener("DOMContentLoaded", function() {
             return d;
         };
 
+        const getSex = () => {
+            // Search for webtrees-specific radio buttons
+            const checkedRadios = allElements.filter(el => el.type === 'radio' && el.checked);
+            
+            // Strategy A: Fields containing SEX or GEND (standard)
+            let found = checkedRadios.find(el => /SEX|GEND/i.test(el.name) || /SEX|GEND/i.test(el.id));
+            
+            // Strategy B: Any radio with value M/F/U (fallback)
+            if (!found) {
+                found = checkedRadios.find(el => el.value === 'M' || el.value === 'F' || el.value === 'U');
+            }
+
+            // Strategy C: Select fields
+            if (!found) {
+                found = allElements.find(el => el.tagName === 'SELECT' && (/SEX|GEND/i.test(el.name) || /SEX|GEND/i.test(el.id)));
+            }
+
+            if (found) {
+                return found.value;
+            }
+            return "";
+        };
+
         const getNames = (keywords) => {
-            const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
-            return allElements
+            const values = allElements
                 .filter(el => {
                     const id = (el.id || "").toUpperCase();
                     const name = (el.name || "").toUpperCase();
+                    const type = (el.type || "").toLowerCase();
+                    
+                    if (type === 'hidden' || type === 'submit' || type === 'button') return false;
+                    if (id.includes("FILE") || name.includes("FILE") || id.includes("TREE") || name.includes("TREE")) return false;
+                    if (el.offsetParent === null) return false; // Skip invisible fields
+
                     const matchesKeyword = keywords.some(k => id.includes(k) || name.includes(k));
-                    const isExclusion = id.includes("DATE") || name.includes("DATE") || 
-                                       id.includes("PLAC") || name.includes("PLAC");
+                    const isExclusion = (id.includes("DATE") || name.includes("DATE") || 
+                                       id.includes("PLAC") || name.includes("PLAC") ||
+                                       id.includes("SEX") || name.includes("SEX") ||
+                                       id.includes("GEND") || name.includes("GEND") ||
+                                       id.includes("XREF") || name.includes("XREF") ||
+                                       id.includes("NOTE") || name.includes("NOTE"));
                     return matchesKeyword && !isExclusion;
                 })
-                .map(el => (el.value || "").trim())
-                .filter(val => val.length > 0);
+                .map(el => (el.value || "").replace(/\//g, "").trim()) // Remove slashes commonly used in GEDCOM fields
+                .filter(val => val.length > 0 && val.toUpperCase() !== 'Y' && val.length < 50);
+            
+            // Deduplicate
+            return [...new Set(values)];
         };
 
         const birth = getBestDate(['BIRT', 'BIRTH'], ['CHR', 'BAPM', 'BAPTISM']);
         const baptism = getVal(['CHR', 'BAPM', 'BAPTISM']);
         const death = getBestDate(['DEAT', 'DEATH'], ['BURI', 'BURIAL', 'CREM']);
         const burial = getVal(['BURI', 'BURIAL', 'CREM']);
-        const givens = getNames(['GIVN', 'GIVEN']);
-        const surnames = getNames(['SURN', 'SURNAME']);
+        const givens = getNames(['GIVN', 'GIVEN', 'NAME']);
+        const surnames = getNames(['SURN', 'SURNAME', 'NAME']);
+        const currentSex = getSex();
+
+        if (!context.xref && !context.husb && !context.wife && !context.fam && givens.length === 0 && surnames.length === 0) {
+            return;
+        }
+
         const url = "<?= $validation_url ?>" + 
             "?given_name=" + encodeURIComponent(givens.join('|')) + 
             "&surname=" + encodeURIComponent(surnames.join('|')) + 
@@ -1429,16 +1468,23 @@ document.addEventListener("DOMContentLoaded", function() {
             "&baptism_date=" + encodeURIComponent(baptism) +
             "&death_date=" + encodeURIComponent(death) +
             "&burial_date=" + encodeURIComponent(burial) +
-            "&xref=" + encodeURIComponent(context.xref) +
-            "&husb=" + encodeURIComponent(context.husb) +
-            "&wife=" + encodeURIComponent(context.wife) +
-            "&fam=" + encodeURIComponent(context.fam) +
-            "&marr_date=" + encodeURIComponent(context.marr) +
-            "&rel_type=" + encodeURIComponent(context.rel_type);
+            "&xref=" + encodeURIComponent(context.xref || "") +
+            "&husb=" + encodeURIComponent(context.husb || "") +
+            "&wife=" + encodeURIComponent(context.wife || "") +
+            "&fam=" + encodeURIComponent(context.fam || "") +
+            "&marr_date=" + encodeURIComponent(context.marr || "") +
+            "&rel_type=" + encodeURIComponent(context.rel_type || "child") +
+            "&sex=" + encodeURIComponent(currentSex);
 
         fetch(url)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error("Server error: " + response.status);
+                return response.json();
+            })
             .then(data => {
+                if (data.error) {
+                    return;
+                }
                 let container = document.getElementById("datencheck-validation-container");
                 if (!container) {
                     container = document.createElement("div");
@@ -1602,36 +1648,34 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const handleInput = (e) => {
-        const id = e.target.id || "";
-        if (id.includes("GIVN") || id.includes("SURN") || id.includes("BIRT") || id.includes("DEAT") || id.includes("BURI") || id.includes("DATE") || id.includes("AGE")) {
-           if (e.target.closest('[id*="GIVN"], [id*="SURN"], [id*="DATE"]')) {
+        const id = (e.target.id || "").toUpperCase();
+        const name = (e.target.name || "").toUpperCase();
+        if (id.includes("GIVN") || name.includes("GIVN") || id.includes("SURN") || name.includes("SURN")) {
             clearTimeout(personTimeout);
             personTimeout = setTimeout(() => checkDuplicate(e), 500);
         }
-    
-            clearTimeout(siblingTimeout);
-            siblingTimeout = setTimeout(checkSibling, 400);
-
-            if (id.includes("DATE") || id.includes("AGE") || id.includes("BIRT") || id.includes("DEAT") || id.includes("BURI") || id.includes("GIVN") || id.includes("SURN")) {
-                clearTimeout(validationTimeout);
-                validationTimeout = setTimeout(checkValidation, 800);
-            }
-        }
     };
 
-    document.addEventListener("input", handleInput);
-    document.addEventListener("change", (e) => {
-        const id = e.target.id || "";
+    document.addEventListener("input", (e) => {
         handleInput(e);
-        if (id.includes("HUSB") || id.includes("WIFE") || id.includes("FAM")) {
-            clearTimeout(familyTimeout);
-            familyTimeout = setTimeout(checkFamily, 300);
-            
+        
+        const tagName = e.target.tagName;
+        if (tagName === "INPUT" || tagName === "SELECT" || tagName === "TEXTAREA") {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(checkValidation, 1500);
+        }
+    });
+    document.addEventListener("change", (e) => {
+        const tagName = e.target.tagName;
+        if (tagName === "INPUT" || tagName === "SELECT" || tagName === "TEXTAREA") {
             clearTimeout(siblingTimeout);
             siblingTimeout = setTimeout(checkSibling, 400);
 
+            clearTimeout(familyTimeout);
+            familyTimeout = setTimeout(checkFamily, 300);
+
             clearTimeout(validationTimeout);
-            validationTimeout = setTimeout(checkValidation, 800);
+            validationTimeout = setTimeout(checkValidation, 500);
         }
     });
 });

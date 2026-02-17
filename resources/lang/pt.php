@@ -222,7 +222,10 @@ return [
     'Show warnings for imprecise dates' => 'Mostrar avisos para datas imprecisas',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Se desativado, os conflitos causados pela falta de dia/mês (ex: "1855" vs "maio 1855") serão ignorados.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Muitos problemas encontrados. Mostrando apenas os primeiros %s. Use a exportação CSV para a lista completa.',
-
+    'A given name was entered, but the gender is not specified.' => 'Um nome próprio foi introduzido, mas o sexo não está especificado.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'O nome próprio "%s" é habitualmente %s, mas selecionou %s.',
+    'male' => 'masculino',
+    'female' => 'feminino',
     // Automated UI translations
     'Family Comparison' => 'Comparação de famílias',
     'Current Form Data' => 'Dados atuais do formulário',

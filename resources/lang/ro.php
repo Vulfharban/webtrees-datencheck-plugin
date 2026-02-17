@@ -273,7 +273,11 @@ return [
     'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nume de lună non-standard găsit în %s: "%s". Se aștepta standardul GEDCOM (ex. JAN, FEB).',
     'Show warnings for imprecise dates' => 'Afișează avertismente pentru date imprecise',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Dacă este dezactivat, conflictele cauzate de lipsa zilei/lunii (ex. "1855" vs "mai 1855") vor fi ignorate.',
-    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Prea multe probleme găsite. Se afișează doar primele %s. Vă rugăm să utilizați Exportul CSV pentru lista completă.',
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Au fost găsite prea multe probleme. Se afișează doar primele %s. Vă rugăm să utilizați exportul CSV pentru lista completă.',
+    'A given name was entered, but the gender is not specified.' => 'A fost introdus un prenume, dar sexul nu este specificat.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Prenumele "%s" este de obicei %s, dar ați selectat %s.',
+    'male' => 'masculin',
+    'female' => 'feminin',
 
     // Automated UI translations
     'Family Comparison' => 'Comparare familii',

@@ -239,8 +239,11 @@ return [
     'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Ikke-standardiseret månedsnavn fundet i %s: "%s". GEDCOM-standard forventes (f.eks. JAN, FEB).',
     'Show warnings for imprecise dates' => 'Vis advarsler for upræcise datoer',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Hvis deaktiveret, vil konflikter forårsaget af manglende dag/måned (f.eks. "1855" mod "maj 1855") blive ignoreret.',
-    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'For mange problemer fundet. Viser kun de første %s. Brug venligst CSV-eksport for den fulde liste.',
-
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Der er fundet for mange problemer. Viser kun de første %s. Brug venligst CSV-eksport for den fulde liste.',
+    'A given name was entered, but the gender is not specified.' => 'Der er indtastet et fornavn, men kønnet er ikke angivet.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Fornavnet "%s" er normalt %s, men du har valgt %s.',
+    'male' => 'mand',
+    'female' => 'kvinde',
     // Automated UI translations
     'Family Comparison' => 'Familie-sammenligning',
     'Current Form Data' => 'Nuværende formulardata',

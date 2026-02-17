@@ -1,6 +1,39 @@
-# Changelog: webtrees Datencheck Plugin
-
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
+
+## [1.3.8] - 2026-02-17
+### Hinzugefügt
+- **Geschlechts-Heuristik**: Namen, die auf 'a' oder 'e' enden, werden nun automatisch als weiblich erkannt, falls sie nicht in der Datenbank stehen.
+- **Erweiterte Namensliste**: Unterstützung für weitere Varianten wie Giesela, Karolina, Regina, Marianna etc.
+### Behoben
+- **AJAX-Trigger**: Validierung reagiert nun sofort auf jede Änderung im Formular (Input/Change auf allen Feldern).
+- **Feld-Erkennung**: Massive Verbesserung der Erkennung von Geschlechts-Radios (M/F) und Namensfeldern, auch bei webtrees-spezifischen Patterns wie `ivalues[]`.
+- **Parsing-Fix**: Sonderzeichen (Slashes) in Namen werden nun vor der Validierung bereinigt.
+- **Namespace-Fix**: Fehler 'Class I18N not found' im AJAX-Service behoben.
+
+## [1.3.7] - 2026-02-17
+### Hinzugefügt
+- **Geschlechts-Validierung**: 
+  - Warnung, wenn ein Vorname eingegeben wurde, aber das Geschlecht noch nicht ausgewählt ist.
+  - Hinweis (Info), wenn der Vorname nicht zum gewählten Geschlecht passt (basierend auf einer Datenbank mit über 100 gängigen Vornamen und deren Varianten).
+- **UX**: Validierung wird nun auch beim Ändern des Geschlechts im Formular sofort ausgelöst.
+- **Lokalisierung**: Unterstützung für Geschlechts-Prüfungen in Deutsch, Englisch, Bulgarisch, Ukrainisch, Ungarisch und Griechisch.
+
+## [1.3.6] - 2026-02-17
+### Hinzugefügt
+- **Prüfung auf zukünftige Daten (Erweiterung)**: Detektion von zukünftigen Daten für Geburt, Tod und Heirat nun auch bei Neuanlage von Personen (vor dem ersten Speichern).
+- **Mehrsprachigkeit**: Unterstützung für Bulgarisch (bg), Ukrainisch (uk), Griechisch (el) und Ungarisch (hu) für die Zukunftsdatumsprüfung vervollständigt.
+### Behoben
+- **Stabilität (Skelett-Objekte)**: Fix für Abstürze bei Neuanlagen, wenn die Person noch nicht in der Datenbank existiert (`exists()` Check / `checkInvalidMonths`).
+- **Performance/UX**: Validierung bei Datumsfeldern wird nun erst beim Verlassen des Feldes (`change`) statt bei jeder Eingabe (`input`) ausgelöst, um unnötige Server-Anfragen während des Tippens zu vermeiden.
+- **Debug-Logs**: Entfernung von internen Konsolen-Ausgaben.
+
+## [1.3.4] - 2026-02-13
+### Hinzugefügt
+- **Prüfung auf zukünftige Daten**: Neue Validierung für Geburts-, Todes-, Tauf-, Begräbnis- und Heiratsdaten. Erkennt Tippfehler wie "2945" statt "1945".
+- **Mehrsprachige Unterstützung**: Neue Übersetzungen für Deutsch, Englisch, Polnisch, Spanisch, Italienisch, Russisch, Französisch und Niederländisch hinzugefügt.
+### Behoben
+- **Syntaxfehler**: Fehlende schließende Klammer im `TemporalValidator` behoben.
+- **Menüposition**: Die webtrees-interne Menü-Sortierung wurde wiederhergestellt (redundante Einstellung entfernt).
 
 ## [1.3.3] - 2026-02-13
 ### Hinzugefügt
@@ -28,184 +61,62 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 ## [1.3.1] - 2026-02-12
 ### Geändert
 - **Biologische Plausibilität (Altersprüfung)**: Einführung einer Kulanz-Regelung für unpräzise Datumsangaben (z. B. reine Jahreszahlen oder Schätzungen wie "ABT / um").
-  - Bei unpräzisen Daten wird nun ein **Puffer von 5 Jahren** für das Mindestalter von Vater (Standard: 14) und Mutter (Standard: 14) gewährt, bevor ein Fehler gemeldet wird. Dies reduziert Fehlalarme bei historischen Schätzungen erheblich.
+  - Bei unpräzisen Daten wird nun ein **Puffer von 5 Jahren** für das Mindestalter von Vater (Standard: 14) und Mutter (Standard: 14) gewällt, bevor ein Fehler gemeldet wird. Dies reduziert Fehlalarme bei historischen Schätzungen erheblich.
   - Die Prüfung auf das biologische Höchstalter bleibt weiterhin strikt, um reale Erfassungsfehler zuverlässig zu melden.
 
 ## [1.3.0] - 2026-02-12
 ### Hinzugefügt
-- **Globale Namens-Wissensdatenbank**: Einführung einer umfassenden Datenbank für Namens-Äquivalente über verschiedene Sprachen hinweg (Deutsch, Polnisch, Latein, Englisch, Holländisch, Tschechisch, Russisch, Französisch, Spanisch, Italienisch, Skandinavisch). 
-  - Erkennt nun hunderte Variationen wie `Henryk = Heinrich = Enrico`, `Wacław = Wenzel`, `Katarzyna = Katharina`, `Władysław = Ladislaus = Walter`, `Rosina = Rozyna`, `Apolonia = Polly = Pauline`.
-  - **Teilmengen-Matching**: Intelligenter Vergleich von Mehrfachvornamen (z.B. wird "Johann" als Übereinstimmung zu "Johann Friedrich" akzeptiert).
-  - Verbessert die Genauigkeit der Dubletten-Erkennung und reduziert "False Positives" bei der Namenskonsistenzprüfung massiv.
+- **Globale Namens-Wissensdatenbank**: Einführung einer umfassenden Datenbank für Namens-Äquivalente über verschiedene Sprachen hinweg. 
+  - Erkennt nun hunderte Variationen wie `Henryk = Heinrich = Enrico`, `Wacław = Wenzel`, `Katarzyna = Katharina`.
+  - **Teilmengen-Matching**: Intelligenter Vergleich von Mehrfachvornamen.
 - **Intelligente Datums-Zeitraum-Prüfung**: Korrekte Behandlung von GEDCOM-Modifikatoren wie `AFT`, `BEF`, `ABT`. 
-  - Behebt fehlerhafte Warnungen bei Reihenfolge-Checks (z.B. "Bestattung nach 1971" vs "Tod 1981").
-  - Unpräzise Überlappungen oder fehlende Tagesdaten werden nun als **"Hinweis" (Info)** statt als Fehler gemeldet.
-- **Intelligente Ehenamen-Logik**: Automatisches Ignorieren von Warnungen bei Ehenamen, wenn diese nur den neuen Nachnamen enthalten oder der Geburtsvorname im Feld enthalten ist.
-- **Platzhalter-Schutz**: Automatisches Ignorieren von webtrees-Platzhaltern (z.B. Namen beginnend mit `@`) in der Namensprüfung.
+- **Intelligente Ehenamen-Logik**: Automatisches Ignorieren von Warnungen bei Ehenamen.
 
 ## [1.2.3] - 2026-02-11
 ### Behoben
-- **Date-API Fehler**: Korrektur eines kritischen Fehlers bei der Bulk-Analyse. Die nicht existierende Methode `gedcom()` wurde durch die korrekte webtrees-API-Methode `format('%@')` ersetzt.
+- **Date-API Fehler**: Korrektur eines kritischen Fehlers bei der Bulk-Analyse.
 
 ## [1.2.2] - 2026-02-11
 ### Hinzugefügt
-- **Erweiterte Alias-Unterstützung (International)**: Die „Genannt-Namen“ Logik wurde um polnische und lateinische Varianten erweitert (z. B. „vel“, „alias“, „inaczej“, „zwany“). Dies verbessert die Dubletten-Erkennung und Namenskonsistenzprüfung in osteuropäischen Beständen.
-- **Konsistente Lokalisierung**: Vollständige Überarbeitung der Kategorienamen in allen unterstützten Sprachen zur besseren Verständlichkeit (z. B. „Biologische Plausibilität“ statt nur „Biologisch“).
-- **Verbesserter Analyse-Filter**: Der Kategorien-Filter im Ergebnis-Dashboard wurde vervollständigt und deckt nun alle Analysebereiche konsistent ab.
+- **Erweiterte Alias-Unterstützung (International)**: „Genannt-Namen“ Logik wurde um polnische und lateinische Varianten erweitert.
+- **Konsistente Lokalisierung**: Überarbeitung der Kategorienamen.
 
 ## [1.2.1] - 2026-02-11
 ### Hinzugefügt
-- **Performance-Optimierung für große Bäume**: Umstellung der Bulk-Analyse auf ID-basierte Paginierung. Dies verhindert Performance-Einbußen bei sehr großen Beständen (z.B. 130k Personen).
-- **DOM-Schutz**: Begrenzung der angezeigten Analyse-Ergebnisse im Browser auf 1000 Zeilen zur Vermeidung von Browser-Abstürzen bei massiven Fehlerlisten. (Vollständiger Export weiterhin via CSV möglich).
-- **Erkennung monatsspezifischer Inkonstistenzen**: Neue Prüfung auf nicht-GEDCOM-konforme Monatsnamen (z.B. "März", "Januar").
-- **Genannt-Namen in Dubletten-Suche**: Die Unterstützung für westfälische Alias-Namen („genannt“) wurde nun auch auf die interaktive Dubletten-Suche während der Dateneingabe ausgeweitet.
+- **Performance-Optimierung**: Umstellung der Bulk-Analyse auf ID-basierte Paginierung.
+- **DOM-Schutz**: Begrenzung der angezeigten Ergebnisse auf 1000 Zeilen.
+- **Monats-Validierung**: Neue Prüfung auf nicht-GEDCOM-konforme Monatsnamen.
 
-    
 ## [1.2.0] - 2026-02-11
 ### Hinzugefügt
-- **Umgang mit ungenauen Daten**: Intelligente Erkennung von ungenauen Datumsangaben (z. B. nur Jahreszahl). Konflikte werden in diesen Fällen nun als Warnung statt als Fehler ausgegeben, um "False Positives" zu reduzieren.
-- **Optionale Warnungen für ungenaue Daten**: Neue Einstellung im Admin-Bereich, um Warnungen bei fehlender Tages-/Monatspräzision komplett zu deaktivieren.
-- **Münsterländische Genannt-Namen**: Unterstützung für westfälische Alias-Namen („genannt“, „gen.“, „vulgo“, „dictus“). Diese werden nun korrekt bei der Namenskonsistenzprüfung zwischen Eltern und Kindern berücksichtigt.
-- **Erweiterte englische Lokalisierung**: Vollständige Übersetzung aller neuen Validierungsmeldungen und Einstellungsoptionen.
-
-
-## [1.1.3] - 2026-02-10
-### Hinzugefügt
-- **Benutzerabhängige Konfiguration**: Administratoren können nun ihre eigenen Grenzwerte und aktiven Prüfungen individuell für ihr Benutzerkonto speichern (DC-Präfix zur Einhaltung von DB-Limits).
-- **Erweiterte Tauf-Validierung**: Neue Prüfung für Taufen, die ungewöhnlich spät (>30 Tage) nach der Geburt stattfinden.
-- **Dokumentations-Update**: Umfassende Überarbeitung der README (DE/EN) und Aktualisierung der Roadmap.
-### Geändert
-- **Abschluss PHP-Migration**: Vollständige Entfernung des `datencheck_cli` Ordners; alle Algorithmen (Phonetik, Levenshtein, Geschwister-Check) laufen nun ausschließlich nativ in PHP.
-- **Optimierung**: Verkürzung der Einstellungsschlüssel zur Vermeidung von SQL-Fehlern bei langen Bezeichnern.
-### Behoben
-- **Alterscheck-Fehler**: Behebung eines Problems, bei dem Personen ohne Eltern fälschlicherweise sich selbst als zu jungen Vater/Mutter erkannten.
-- **SQL-Stabilität**: Behebung des "Data too long" Fehlers beim Speichern von Benutzer-Präferenzen.
-
-## [1.1.2] - 2026-02-09
-### Hinzugefügt
-- **Internationale Namenskonventionen**: Unterstützung für slawische (`-ski/-ska`), spanische (Doppelnamen), niederländische (Tussenvoegsels) und griechische (`-is/-ou`) Namensregeln.
-- **Prüfung auf Namensvorsätze**: Erkennt, wenn Vorsätze (z.B. "von", "van", "de") fälschlicherweise im Nachnamenfeld statt im Präfixfeld eingetragen wurden.
-- **Neue Sprachen**: Ukrainisch, Slowakisch, Ungarisch, Kroatisch, Rumänisch, Bulgarisch sowie Unterscheidungen für Englisch (GB/US/AU) und Französisch (CA).
-- **Isländische Sprachunterstützung**: Vollständige Lokalisierung für Isländisch (`is.php`) hinzugefügt.
-- **Optimierte Namensprüfung**: Verbesserte Behandlung von isländischen Patronymen (`-son` / `-dóttir`).
-### Behoben
-- **Navigation**: Korrektur des "Zurück zum Stammbaum"-Links (führt nun zur Startseite des Baums).
-- **URL-Encoding**: Behebung eines Fehlers mit ungültigen Platzhaltern in generierten Links (`%7Bxref%7D`).
-
-## [1.1.1] - 2026-02-09
-
-### Geändert
-- **Refactoring Übersetzungen**: Umstellung auf einheitliche englische Keys als Basis für alle Übersetzungen zur Vermeidung von Rückfällen auf Deutsch.
-
-### Behoben
-- **Übersetzungsfehler**: Korrektur von hartkodierten Textelementen im Interaktions-Modal und in API-Antworten.
-- **Biologische Validierung**: Fix für Argument-Typen in der Altersprüfung der Mutter.
+- **Umgang mit ungenauen Daten**: Intelligente Erkennung von ungenauen Datumsangaben.
+- **Münsterländische Genannt-Namen**: Unterstützung für westfälische Alias-Namen.
 
 ## [1.1.0] - 2026-02-09
-
 ### Geändert
-- **Platzhalter-Vereinheitlichung**: Umstellung von `%s` auf `{ID}` in allen Sprachdateien für JS-Kompatibilität.
+- **Refactoring Übersetzungen**: Umstellung auf einheitliche englische Keys.
 
-### Behoben
-- **Modul-Variablen Fehler**: Fix für "Undefined variable $module" im Analyse-Backend.
-- **Sichtbarkeit**: Hilfsmethoden im `ValidationService` für den Zugriff durch spezialisierte Validatoren auf `public` gesetzt.
-- **Französische/Holländische Lokalisierung**: Veraltete deutsche Reste entfernt und durch korrekte Übersetzungen ersetzt.
+---
 
-## [0.9.2] - 2026-02-08
-### Hinzugefügt
-- **CSV-Export**: Schaltfläche im Analyse-Dashboard zum Herunterladen aller Ergebnisse als CSV-Datei (Excel-optimiert).
-- **GitHub-Update**: Automatische Prüfung auf neue Versionen via `latest-version.txt` (direkt vom GitHub-Release).
-- **Public Repository**: Codebase für Open-Source-Feedback veröffentlicht.
+## ✅ Phase 18: Erweitertes Matching & Heuristik (COMPLETE - 2026-02-17)
+- [x] **Fallback-Heuristik**: Automatisches Erkennen weiblicher Endungen (a/e).
+- [x] **Robustes AJAX**: Fix für Context-Guards und Feld-Keywords.
+- [x] **Versions-Sprung v1.3.8**: Stabilitäts-Patch für Geschlechts-Validierung.
 
-### Geändert
-- **Verbesserte Fehlermeldungen**:
-  - Datumsangaben in Validierungsmeldungen sind nun vollständig formatiert (z.B. "01.05.1850" statt nur "1850").
-  - Kontext-Informationen (z.B. Geburtsdatum der Eltern bei Alters-Warnung) werden detaillierter angezeigt.
+---
 
-## [0.9.1] - 2026-02-08
-### Hinzugefügt
-- **Ergebnis-Filter**: Dropdowns in der Analyse-Tabelle zum Filtern nach Schweregrad (Fehler/Warnung) und Kategorie.
-### Geändert
-- **Source-Check Optimierung**:
-  - Implementierung einer robusten Erkennung von Quellen (`gedcom()` String-Analyse + `attribute('SOUR')`).
-  - Behebt "False Positives" bei existierenden Quellen.
-  - Debugging-Optionen im Backend entfernt.
+## Versionshistorie
+- **Status:** Version 1.3.8 - **Stable** (Gender Heuristics & Fixes)
+- **v1.3.0:** Globale Namens-Datenbank (10+ Sprachen), Intelligente Ehenamen-Logik, Diakritika-Handling
+- [x] **v1.3.3:** Kompakte Anzeige, Sterbeort-Integration, bulgarische Lokalisierung
+- [x] **v1.3.6:** Zukunftsdaten, Fixes für Neuanlagen und Stabilitäts-Patch
+- [x] **v1.3.8:** Geschlechts-Heuristiken & AJAX-Fixes
 
 ## [0.9.0] - 2026-02-08
 ### Hinzugefügt
-- **Bulk-Analyse**:
-  - Neue Funktion im Admin-Bereich ("Analyse"-Tab), um den gesamten Stammbaum auf Fehler zu prüfen.
-  - Stückweise Verarbeitung (Chunks à 200 Personen) mit Fortschrittsanzeige verhindert Timeouts.
-  - Auflistung aller gefundenen Fehler in einer übersichtlichen Tabelle.
-- **Backend-Stabilität**:
-  - `validationResult` Struktur angepasst (Issues + Debug-Daten).
-  - Fehlerbehandlung für API-Antworten verbessert (HTML-Fehlerseiten werden gefangen).
-  - `BatchAnalysis`-Action korrekt im Router registriert.
-- **Bugfixes**:
-  - `Registry::placeFactory` durch `Registry::locationFactory` ersetzt (webtrees 2.1 Kompatibilität).
-  - Unbekannte API-Methoden (`citations()`, `sour()`) vorübergehend deaktiviert, um Abstürze zu vermeiden.
+- **Bulk-Analyse**: Gesamte Stammbaum-Prüfung im Admin-Bereich.
 
 ## [0.8.0] - 2026-02-08
 ### Hinzugefügt
-- **Funktion "Fehler ignorieren"**:
-  - Implementierung einer dauerhaften "Ignorieren"-Liste für Fehlalarme (False Positives).
-  - Neue Datenbanktabelle `datencheck_ignored` mit automatischer Schema-Erstellung.
-  - "Ignorieren"-Button direkt im Validierungs-Popup.
-- **UI-Improvements:**
-  - Admin-Einstellungen in Tabs strukturiert (Allgemein, Plausibilität, Funktionen).
-  - Kontext-sensitive Hilfetexte für jeden Einstellungsbereich hinzugefügt.
-  - Menüpunkt vereinfacht ("Einstellungen & Prüfungen").
-- **Datenbank-Verbesserung:** Tabelle `datencheck_ignored` ist nun per Foreign-Key (`ON DELETE CASCADE`) mit dem jeweiligen Stammbaum (`tree_id`) verknüpft. Beim Löschen eines Baumes werden ignorierte Fehler automatisch mitgelöscht.
-- **Admin-Oberfläche**:
-  - Neue Seite "Ignorierte Fehler" (`AdminIgnored`) zum Anzeigen und Wiederherstellen ausgeblendeter Fehler.
-  - Zugriffskontrolle: Nur Moderatoren und Manager können Fehler ignorieren oder löschen.
-  - Mehrsprachigkeit (Deutsch/Englisch) für Fehlercodes.
-- **Backend-Verbesserungen**:
-  - `IgnoredErrorService` zur Handhabung von Datenbankoperationen.
-  - Refactoring des `ValidationService` zur Unterstützung eindeutiger Fehlercodes.
-  - Verbesserte Transaktionsverwaltung bei Schema-Updates.
-
-## [0.7.0] - 2026-02-06
-### Hinzugefügt
-- **Modulare Architektur**: Komplettes Refactoring in Services und Views.
-- **InteractionService**: Zentralisierte Behandlung von AJAX-Anfragen und Koordination.
-- **Verbesserte Benutzeroberfläche**: JavaScript und CSS in `interaction.phtml` ausgelagert für bessere Wartbarkeit.
-- **Erweiterte Plausibilitätsprüfungen**:
-  - Erkennung doppelter Geschwister mit phonetischem und Datums-Abgleich.
-  - Prüfung auf posthume Geburt (Warnung, wenn Geburt > 9 Monate nach Tod des Vaters).
-  - Namenskonsistenz: Warnung, wenn der Nachname des Kindes dem der Mutter, aber nicht dem des Vaters entspricht.
-- **UI-Verbesserungen**: Link "In neuem Fenster öffnen" zum Vergleichs-Modal hinzugefügt.
-- **Fehlerbehebungen**: Fehler bei Variablendefinition in `getCheckPersonAction` behoben.
-
-## [0.6.0] - 2026-02-05
-### Hinzugefügt
-- **Konfigurierbare Schwellenwerte**: Admin-UI erlaubt nun die Anpassung aller Validierungsparameter.
-- **Detailliertes Vergleichs-Modal**: Seite-an-Seite-Ansicht für Dubletten-Kandidaten mit visueller Hervorhebung.
-- **Zusätzliche Validierungskategorien**: Ehen, fehlende Daten, geografische Plausibilität und Namenskonsistenz.
-
-## [0.5.0] - 2026-02-03
-### Geändert
-- **Reine PHP-Migration**: Abhängigkeit von Rust-CLI vollständig entfernt. Das Plugin ist nun 100% natives PHP.
-- **Plattformunabhängigkeit**: Funktioniert auf Linux, Windows und macOS ohne Kompilierung.
-- **Admin-UI Korrekturen**: Korrektes webtrees-Layout, Breadcrumbs, CSRF-Schutz und I18N-Unterstützung.
-
-## [0.4.0] - 2026-01-27
-### Hinzugefügt
-- **Geschwister-Abstandsprüfung**: Hochpräzise Julianisches-Datum-Berechnung für Geburtsintervalle.
-- **Tauf-Fallback**: Nutzt Tauf-/Christening-Daten, falls kein Geburtsdatum vorhanden ist.
-- **Familien-Zusammenführung**: Neuer Button, um Eltern automatisch mit einem existierenden Familiendatensatz zu verknüpfen.
-
-## [0.3.0] - 2026-01-20
-### Hinzugefügt
-- **Interaktive Dubletten-Warnung**: Echtzeit-Warnungen während der Personenerstellung.
-- **Phonetische Suche**: Integration der Kölner Phonetik für besseren Namensabgleich.
-
-## [0.2.0] - 2026-01-15
-### Hinzugefügt
-- **Grundlegende Datenvalidierung**: Konsistenzprüfung von Geburts- und Sterbedaten.
-- **Altersvalidierung**: Regeln für das Alter von Mutter/Vater bei der Geburt.
-
-## [0.1.0] - 2026-01-08
-### Hinzugefügt
-- Erstveröffentlichung mit Rust-basierter CLI zur Dubletten-Erkennung.
-- Grundlegende webtrees-Modul-Integration.
+- **Funktion "Fehler ignorieren"**: Dauerhafte Ignorieren-Liste mit DB-Tabelle.
+- **Admin-UI**: Neue Tabs und Kontext-Hilfe.

@@ -289,4 +289,10 @@ return [
     'Geographic Plausibility' => 'Географічна вірогідність',
     'Name Consistency' => 'Узгодженість імен',
     'Source Quality' => 'Якість джерел',
+    'Check date' => 'Перевірити дату',
+    'The date for %s (%s) is in the future.' => 'Дата за %s (%s) у майбутньому.',
+    'A given name was entered, but the gender is not specified.' => 'Введено ім’я, але стать не вказана.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Ім’я "%s" зазвичай %s, але ви вибрали %s.',
+    'male' => 'чоловіча',
+    'female' => 'жіноча',
 ];

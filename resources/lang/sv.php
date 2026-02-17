@@ -220,8 +220,11 @@ return [
     'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Icke-standardiserat månadsnamn hittat i %s: "%s". GEDCOM-standard förväntas (t.ex. JAN, FEB).',
     'Show warnings for imprecise dates' => 'Visa varningar för oprecisa datum',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Om inaktiverat kommer konflikter orsakade av saknad dag/månad (t.ex. "1855" mot "maj 1855") att ignoreras.',
-    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'För många problem hittades. Visar endast de första %s. Använd CSV-export för den fullständiga listan.',
-
+    'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'För många problem hittades. Visar endast de första %s. Använd CSV-export för hela listan.',
+    'A given name was entered, but the gender is not specified.' => 'Ett förnamn har angetts, men kön har inte specificerats.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Förnamnet "%s" är vanligtvis %s, men du har valt %s.',
+    'male' => 'manligt',
+    'female' => 'kvinnligt',
     // Automated UI translations
     'Family Comparison' => 'Familjejämförelse',
     'Current Form Data' => 'Nuvarande formulärdata',

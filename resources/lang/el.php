@@ -237,4 +237,10 @@ return [
     'Geographic Plausibility' => 'Γεωγραφική αληθοφάνεια',
     'Name Consistency' => 'Συνέπεια ονομάτων',
     'Source Quality' => 'Ποιότητα πηγών',
+    'Check date' => 'Έλεγχος ημερομηνίας',
+    'The date for %s (%s) is in the future.' => 'Η ημερομηνία για %s (%s) είναι στο μέλλον.',
+    'A given name was entered, but the gender is not specified.' => 'Εισήχθη ένα μικρό όνομα, αλλά το φύλο δεν έχει καθοριστεί.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Το όνομα "%s" είναι συνήθως %s, αλλά επιλέξατε %s.',
+    'male' => 'αρσενικό',
+    'female' => 'θηλυκό',
 ];

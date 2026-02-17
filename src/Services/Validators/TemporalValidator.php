@@ -3,6 +3,7 @@
 namespace Wolfrum\Datencheck\Services\Validators;
 
 use Fisharebest\Webtrees\Individual;
+use Fisharebest\ExtCalendar\GregorianCalendar;
 use Wolfrum\Datencheck\Services\ValidationService;
 
 class TemporalValidator extends AbstractValidator
@@ -180,6 +181,49 @@ class TemporalValidator extends AbstractValidator
                     'message' => self::translate('Death/Burial dates are imprecise. Exact dates are missing.'),
                 ];
             }
+        }
+
+    }
+
+    /**
+     * Check if a date is in the future (e.g. 2945 vs 1945)
+     */
+    public static function checkFutureDate(?Individual $person, string $tag, string $overrideDate = ''): ?array
+    {
+        $dateMinJD = ValidationService::getEffectiveJD($person, $tag, $overrideDate);
+        if (!$dateMinJD) return null;
+
+        // Current date JD
+        $now = new \DateTime();
+        $currentJD = gregoriantojd((int)$now->format('n'), (int)$now->format('j'), (int)$now->format('Y'));
+
+        // Debug logging
+        error_log("Datencheck Debug: Tag=$tag, DateJD=$dateMinJD, CurrentJD=$currentJD, Diff=" . ($dateMinJD - $currentJD));
+
+        if ($dateMinJD > $currentJD) {
+            $year = ValidationService::getYearFromJD($dateMinJD);
+            
+            $labels = [
+                'BIRT' => self::translate('Birth'),
+                'DEAT' => self::translate('Death'),
+                'CHR'  => self::translate('Baptism'),
+                'BURI' => self::translate('Burial'),
+                'MARR' => self::translate('Marriage'),
+            ];
+            
+            $label = $labels[$tag] ?? $tag;
+
+            return [
+                'code' => 'FUTURE_DATE_' . $tag,
+                'type' => 'temporal_impossibility',
+                'label' => self::translate('Check date'),
+                'severity' => 'error',
+                'message' => self::translate(
+                    'The date for %s (%s) is in the future.',
+                    $label,
+                    ValidationService::formatDate($person, $tag, $overrideDate) ?: $year
+                ),
+            ];
         }
 
         return null;

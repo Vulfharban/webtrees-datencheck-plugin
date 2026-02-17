@@ -270,6 +270,10 @@ return [
     'Show warnings for imprecise dates' => 'Zobrazovať varovania pre nepresné dátumy',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ak je zakázané, konflikty spôsobené chýbajúcim dňom/mesiacom (napr. "1855" vs "máj 1855") budú ignorované.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Našlo sa príliš veľa problémov. Zobrazuje sa iba prvých %s. Pre úplný zoznam použite export do CSV.',
+    'A given name was entered, but the gender is not specified.' => 'Bolo zadané krstné meno, ale nie je určené pohlavie.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Krstné meno "%s" je zvyčajne %s, ale vybrali ste %s.',
+    'male' => 'mužské',
+    'female' => 'ženské',
 
     // Automated UI translations
     'Family Comparison' => 'Porovnanie rodín',

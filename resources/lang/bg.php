@@ -290,4 +290,10 @@ return [
     'The surname "%s" appears to contain a prefix "%s". In webtrees, this should be entered in the "Prefix" field.' => 'Фамилията "%s" изглежда съдържа префикс "%s". В webtrees това трябва да бъде въведено в полето "Префикс".',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Открити са твърде много проблеми. Показват се само първите %s. Моля, използвайте CSV експорт за пълния списък.',
     'No marriage data' => 'Няма данни за брак',
+    'Check date' => 'Проверка на дата',
+    'The date for %s (%s) is in the future.' => 'Датата за %s (%s) е в бъдещето.',
+    'A given name was entered, but the gender is not specified.' => 'Въведено е име, но полът не е посочен.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Името "%s" обикновено е %s, но вие сте избрали %s.',
+    'male' => 'мъжки',
+    'female' => 'женски',
 ];

@@ -16,7 +16,7 @@ abstract class AbstractValidator
      */
     protected static function translate(string $string, ...$args): string
     {
-        return I18N::translate($string, ...$args);
+        return \Fisharebest\Webtrees\I18N::translate($string, ...$args);
     }
 
     /**

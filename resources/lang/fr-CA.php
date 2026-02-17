@@ -275,4 +275,8 @@ return [
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Si désactivé, les conflits causés par l\'absence de jour/mois (ex. "1855" vs "Mai 1855") seront ignorés.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Trop de problèmes trouvés. Affichage des %s premiers seulement. Veuillez utiliser l\'exportation CSV pour la liste complète.',
     'No marriage data' => 'Aucune donnée de mariage',
+    'A given name was entered, but the gender is not specified.' => 'Un prénom a été saisi, mais le sexe n\'est pas spécifié.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Le prénom "%s" est habituellement %s, mais vous avez sélectionné %s.',
+    'male' => 'masculin',
+    'female' => 'féminin',
 ];

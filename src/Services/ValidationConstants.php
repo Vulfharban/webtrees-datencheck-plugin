@@ -40,6 +40,8 @@ class ValidationConstants
         'DUPLICATE_SIBLING'             => 'Doppeltes Kind (Geschwister)',
         'SIBLING_TOO_CLOSE'             => 'Abstand zu Geschwister zu klein',
         'BAPTISM_DELAYED'               => 'Taufe ungewöhnlich spät',
+        'MISSING_GENDER'                => 'Geschlecht nicht ausgewählt',
+        'GENDER_NAME_MISMATCH'          => 'Vorname passt nicht zum Geschlecht',
     ];
 
     private static array $labels_en = [
@@ -78,6 +80,8 @@ class ValidationConstants
         'DUPLICATE_SIBLING'             => 'Duplicate child (sibling)',
         'SIBLING_TOO_CLOSE'             => 'Sibling spacing too small',
         'BAPTISM_DELAYED'               => 'Baptism unusually late',
+        'MISSING_GENDER'                => 'Gender not specified',
+        'GENDER_NAME_MISMATCH'          => 'Name does not match gender',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string

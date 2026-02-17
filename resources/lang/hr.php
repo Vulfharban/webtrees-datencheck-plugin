@@ -274,6 +274,10 @@ return [
     'Show warnings for imprecise dates' => 'Prikaži upozorenja za neprecizne datume',
     'If disabled, conflicts caused by missing day/month (e.g. "1855" vs "May 1855") will be ignored.' => 'Ako je onemogućeno, sukobi uzrokovani nedostatkom dana/mjeseca (npr. "1855" naspram "svibanj 1855") bit će zanemareni.',
     'Too many issues found. Showing only the first %s. Please use CSV Export for the full list.' => 'Pronađeno previše problema. Prikazuje se samo prvih %s. Molimo koristite CSV izvoz za puni popis.',
+    'A given name was entered, but the gender is not specified.' => 'Unešeno je ime, ali spol nije naveden.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'Ime "%s" je obično %s, ali ste odabrali %s.',
+    'male' => 'muški',
+    'female' => 'ženski',
 
     // Automated UI translations
     'Family Comparison' => 'Usporedba obitelji',

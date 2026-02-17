@@ -27,6 +27,10 @@ Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeit
     *   Prüft auf fehlende Nachnamen oder Unstimmigkeiten zwischen Kindern und Vätern.
     *   **Alias- & Genannt-Namen:** Unterstützung für westfälische Genannt-Namen ("gen.", "vulgo"), polnische/lateinische Aliase ("vel", "alias") und weitere Namensvarianten.
     *   **Internationale Regeln:** Unterstützung für skandinavische Patronymika (-sen/-datter), slawische Endungen (-ski/-ska), spanische Doppelnamen und niederländische Tussenvoegsels.
+*   **Geschlechts-Validierung:**
+    *   **Pflichtfeld-Prüfung:** Warnung, wenn ein Vorname eingegeben wurde, aber das Geschlecht noch nicht ausgewählt ist.
+    *   **Namens-Abgleich & Heuristik:** Erkennt Unstimmigkeiten zwischen Vorname und gewähltem Geschlecht (z.B. "Hans" als weiblich) mittels einer umfangreichen integrierten Datenbank.
+    *   **Intelligente Erkennung:** Erkennt typisch weibliche Namensendungen (wie 'a' oder 'e') automatisch, auch wenn der Name nicht in der Datenbank steht.
 
 ### 📊 Analyse-Dashboard & Reporting
 Behalten Sie den Überblick über die Datenqualität Ihres gesamten Stammbaums.
@@ -91,6 +95,10 @@ Comprehensive rules to identify biological and logical inconsistencies.
     *   Checks for missing surnames or inconsistencies between children and fathers.
     *   **Alias & Alias Names:** Support for German "Genannt-Namen" ("gen.", "vulgo"), Polish/Latin aliases ("vel", "alias"), and other naming variants.
     *   **International Conventions:** Support for Scandinavian patronymics (-sen/-datter), Slavic gendered endings (-ski/-ska), Spanish double surnames, and Dutch "tussenvoegsels".
+*   **Gender Validation:**
+    *   **Required Field Check:** Warning when a given name is entered but the gender is not yet specified.
+    *   **Name-Gender Matching:** Detects inconsistencies between given names and selected gender (e.g., "Hans" marked as female) using a large built-in database.
+    *   **Intelligent Heuristics:** Automatically recognizes typically female name endings (like 'a' or 'e') even if the name is not in the database.
 
 ### 📊 Analysis Dashboard & Reporting
 Maintain an overview of the data quality of your entire family tree.

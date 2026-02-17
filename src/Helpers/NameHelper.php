@@ -289,6 +289,45 @@ class NameHelper
         ['Rose Mary', 'Rosemarie'],
     ];
 
+    /**
+     * Map of names to their typical gender.
+     */
+    private static array $knownGenders = [
+        // Male
+        'Abraham' => 'M', 'Adam' => 'M', 'Adrian' => 'M', 'Alexander' => 'M', 'Alois' => 'M',
+        'Andreas' => 'M', 'Anton' => 'M', 'Arnold' => 'M', 'August' => 'M', 'Bartholomäus' => 'M',
+        'Benedikt' => 'M', 'Bernhard' => 'M', 'Bruno' => 'M', 'Caspar' => 'M', 'Christian' => 'M',
+        'Christoph' => 'M', 'Clemens' => 'M', 'David' => 'M', 'Dennis' => 'M', 'Dominik' => 'M',
+        'Eduard' => 'M', 'Emil' => 'M', 'Emanuel' => 'M', 'Erich' => 'M', 'Ernst' => 'M',
+        'Eugen' => 'M', 'Fabian' => 'M', 'Ferdinand' => 'M', 'Franz' => 'M', 'Friedrich' => 'M',
+        'Gabriel' => 'M', 'Georg' => 'M', 'Gerhard' => 'M', 'Gottfried' => 'M', 'Gottlieb' => 'M',
+        'Gregor' => 'M', 'Hans' => 'M', 'Heinrich' => 'M', 'Herbert' => 'M', 'Hermann' => 'M',
+        'Hubert' => 'M', 'Hugo' => 'M', 'Ignaz' => 'M', 'Isaac' => 'M', 'Jakob' => 'M',
+        'Joachim' => 'M', 'Johann' => 'M', 'Johannes' => 'M', 'Josef' => 'M', 'Julian' => 'M',
+        'Julius' => 'M', 'Karl' => 'M', 'Konrad' => 'M', 'Ladislaus' => 'M', 'Lorenz' => 'M',
+        'Leo' => 'M', 'Leopold' => 'M', 'Ludwig' => 'M', 'Lukas' => 'M', 'Markus' => 'M',
+        'Martin' => 'M', 'Matthias' => 'M', 'Michael' => 'M', 'Moritz' => 'M', 'Maximilian' => 'M',
+        'Nikolaus' => 'M', 'Olaf' => 'M', 'Oskar' => 'M', 'Otto' => 'M', 'Patrick' => 'M',
+        'Paul' => 'M', 'Peter' => 'M', 'Philipp' => 'M', 'Raimund' => 'M', 'Richard' => 'M',
+        'Robert' => 'M', 'Roger' => 'M', 'Roland' => 'M', 'Rudolf' => 'M', 'Samuel' => 'M',
+        'Sebastian' => 'M', 'Siegmund' => 'M', 'Simon' => 'M', 'Stefan' => 'M', 'Stephan' => 'M',
+        'Thaddäus' => 'M', 'Theodor' => 'M', 'Thomas' => 'M', 'Thor' => 'M', 'Timothy' => 'M',
+        'Urban' => 'M', 'Valentin' => 'M', 'Viktor' => 'M', 'Vinzenz' => 'M', 'Walter' => 'M',
+        'Wenzel' => 'M', 'Wilhelm' => 'M', 'Xaver' => 'M',
+        
+        'Agathe' => 'F', 'Agnes' => 'F', 'Alice' => 'F', 'Amalie' => 'F', 'Angela' => 'F',
+        'Anna' => 'F', 'Anne' => 'F', 'Apolonia' => 'F', 'Barbara' => 'F', 'Beate' => 'F', 'Birgitta' => 'F',
+        'Brigitte' => 'F', 'Charlotte' => 'F', 'Christina' => 'F', 'Christine' => 'F',
+        'Clara' => 'F', 'Dolores' => 'F', 'Dorothea' => 'F', 'Elisabeth' => 'F', 'Genevieve' => 'F',
+        'Gertrud' => 'F', 'Gisela' => 'F', 'Giesela' => 'F', 'Hedwig' => 'F', 'Helena' => 'F', 'Hanna' => 'F', 'Hannah' => 'F',
+        'Judith' => 'F', 'Justine' => 'F', 'Katharina' => 'F', 'Karolina' => 'F', 'Karoline' => 'F',
+        'Louise' => 'F', 'Lucia' => 'F', 'Magdalena' => 'F', 'Margarethe' => 'F', 'Margaretha' => 'F',
+        'Martha' => 'F', 'Maria' => 'F', 'Marianna' => 'F', 'Ottilie' => 'F', 'Regina' => 'F',
+        'Rosemary' => 'F', 'Rosina' => 'F', 'Salome' => 'F', 'Sophia' => 'F', 'Sophie' => 'F', 
+        'Theresa' => 'F', 'Therese' => 'F', 'Ursula' => 'F', 'Zofia' => 'F'
+    ];
+
+    private static ?array $normalizedGenderMap = null;
     private static ?array $normalizedMap = null;
 
     /**
@@ -373,6 +412,94 @@ class NameHelper
             }
         }
         return self::$normalizedMap;
+    }
+
+    public static function getGenderByNames(string $givens, string $surnames = ''): ?string
+    {
+        $givenWords = preg_split('/[\s,\-\|\\\\\/]+/', $givens, -1, PREG_SPLIT_NO_EMPTY);
+        if (empty($givenWords) && empty($surnames)) return null;
+
+        $map = self::getNormalizedGenderMap();
+        
+        // 1. Check given names against database
+        foreach ($givenWords as $word) {
+            $norm = self::normalize($word);
+            if (isset($map[$norm])) {
+                return $map[$norm];
+            }
+        }
+
+        // 2. Heuristics for Surnames (International Patterns)
+        if (!empty($surnames)) {
+            $surnameWords = preg_split('/[\s,\-\|\\\\\/]+/', $surnames, -1, PREG_SPLIT_NO_EMPTY);
+            foreach ($surnameWords as $word) {
+                $clean = mb_strtolower(trim($word), 'UTF-8');
+                
+                // Polish: -ska (F), -ski (M)
+                if (str_ends_with($clean, 'ska')) return 'F';
+                if (str_ends_with($clean, 'ski')) return 'M';
+
+                // Russian/Bulgarian: -eva, -ova, -ina (F) vs -ev, -ov, -in (M)
+                if (preg_match('/(eva|ova|ina|aya)$/u', $clean)) return 'F';
+                if (preg_match('/(ev|ov|in|iy)$/u', $clean)) return 'M';
+
+                // Scandinavian: -datter, -dotter (F) vs -sen, -son (M)
+                if (str_ends_with($clean, 'datter') || str_ends_with($clean, 'dotter')) return 'F';
+                if (str_ends_with($clean, 'sen') || str_ends_with($clean, 'son') || str_ends_with($clean, 'sson')) return 'M';
+
+                // Lithuanian: -ienė, -ytė, -atė (F) vs -as, -is, -us (M)
+                if (preg_match('/(iene|yte|ate|ute)$/u', $clean)) return 'F';
+            }
+        }
+
+        // 3. Heuristic for Given Names (Fallback)
+        foreach ($givenWords as $word) {
+            $clean = mb_strtolower(trim($word), 'UTF-8');
+            if (mb_strlen($clean) < 3) continue;
+            
+            $lastChar = mb_substr($clean, -1);
+            // In many languages (German, Latin, Slavic), 'a' is a strong indicator for female
+            if ($lastChar === 'a') {
+                return 'F';
+            }
+            // 'e' is common for female in German/French, but also male in some languages.
+            // We keep it as a weak indicator if no other info is found.
+            if ($lastChar === 'e') {
+                return 'F';
+            }
+        }
+
+        return null;
+    }
+
+    private static function getNormalizedGenderMap(): array
+    {
+        if (self::$normalizedGenderMap === null) {
+            self::$normalizedGenderMap = [];
+            
+            // 1. Load basic genders
+            foreach (self::$knownGenders as $name => $gender) {
+                self::$normalizedGenderMap[self::normalize($name)] = $gender;
+            }
+
+            // 2. Expand via equivalents
+            $map = self::getNormalizedMap();
+            foreach ($map as $normName => $groupIds) {
+                if (isset(self::$normalizedGenderMap[$normName])) continue;
+                
+                foreach ($groupIds as $groupId) {
+                    $group = self::$equivalents[$groupId];
+                    foreach ($group as $alias) {
+                        $normAlias = self::normalize($alias);
+                        if (isset(self::$normalizedGenderMap[$normAlias])) {
+                            self::$normalizedGenderMap[$normName] = self::$normalizedGenderMap[$normAlias];
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+        return self::$normalizedGenderMap;
     }
 
     private static function normalize(string $name): string

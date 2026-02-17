@@ -80,7 +80,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         }
     }
 
-    private int $menu_order = 0;
+    private int $menu_order = 99;
     private int $footer_order = 0;
 
     public function title(): string
@@ -105,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.3.3';
+        return '1.3.8';
     }
 
     public function getVersion(): string
@@ -185,7 +185,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function getMenuOrder(): int
     {
-        return 99;
+        return $this->menu_order;
     }
 
     public function defaultMenuOrder(): int
@@ -453,7 +453,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $person = null;
 
             if (!empty($xref)) {
-                $person = Registry::individualFactory()->make($xref, $tree);
+                $p = Registry::individualFactory()->make($xref, $tree);
+                if ($p && DB::table('individuals')->where('i_id', $xref)->where('i_file', $tree->id())->exists()) {
+                    $person = $p;
+                }
             }
 
             $birth = $params['birth_date'] ?? '';
@@ -467,8 +470,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $given = $params['given_name'] ?? '';
             $surname = $params['surname'] ?? '';
             $bap = $params['baptism_date'] ?? '';
+            $sex = strtoupper(trim($params['sex'] ?? ''));
 
-            $result = ValidationService::validatePerson($person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree, $marrFormatted, $relType, $given, $surname, $bap);
+            $result = ValidationService::validatePerson($person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree, $marrFormatted, $relType, $given, $surname, $bap, [], $sex);
 
             return response(json_encode($result))
                 ->withHeader('Content-Type', 'application/json');

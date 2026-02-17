@@ -289,4 +289,10 @@ return [
     'Geographic Plausibility' => 'Földrajzi ésszerűség',
     'Name Consistency' => 'Névkonzisztencia',
     'Source Quality' => 'Forrásminőség',
+    'Check date' => 'Dátum ellenőrzése',
+    'The date for %s (%s) is in the future.' => 'A(z) %s dátuma (%s) a jövőben van.',
+    'A given name was entered, but the gender is not specified.' => 'Keresztnév megadva, de a nem nincs kiválasztва.',
+    'The given name "%s" is usually %s, but you selected %s.' => 'A(z) "%s" keresztnév általában %s, de Ön %s nemet választott.',
+    'male' => 'férfi',
+    'female' => 'női',
 ];
