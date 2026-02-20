@@ -3,7 +3,7 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 ## [1.3.10] - 2026-02-20
 ### Hinzugefügt
 - **Menü-Icon Option**: Das Modul-Icon im Hauptmenü kann nun in den Einstellungen deaktiviert werden.
-- **Default-Einstellung**: Das Icon ist nun standardmäßig **deaktiviert**, um Layout-Probleme mit bestimmten Themes (z. B. webtrees primer theme) zu vermeiden.
+- **Einstellung**: Das Icon ist standardmäßig **aktiviert**, kann aber bei Layout-Problemen (z. B. webtrees primer theme) manuell ausgeschaltet werden.
 ### Behoben
 - **Server-Error (TypeError)**: Fix für einen kritischen Fehler in `checkBurialBeforeDeath()`, bei dem unter bestimmten Bedingungen kein Rückgabewert geliefert wurde (Return value must be of type ?array, none returned).
 

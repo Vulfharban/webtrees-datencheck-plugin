@@ -301,8 +301,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $file = __DIR__ . '/resources/images/datencheck_icon.png';
         $icon = '<i class="menu-icon fas fa-check-double"></i>'; // Fallback
         
-        // Only show icon if enabled in settings (default: disabled)
-        $show_icon = $this->getSetting('enable_menu_icon', '0') === '1';
+        // Only show icon if enabled in settings (default: enabled)
+        $show_icon = $this->getSetting('enable_menu_icon', '1') === '1';
 
         if ($show_icon && file_exists($file)) {
             $data   = file_get_contents($file);
