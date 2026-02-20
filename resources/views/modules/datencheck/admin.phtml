@@ -88,6 +88,30 @@
                     </div>
                 </div>
             </div>
+
+            <div class="row mb-3 mt-4">
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label">
+                        <?= \Fisharebest\Webtrees\I18N::translate('User Interface') ?>
+                    </label>
+                    <div class="col-sm-9">
+                        <div class="form-check">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                id="enable_menu_icon" 
+                                name="enable_menu_icon" 
+                                value="1"
+                                <?= $module->getSetting('enable_menu_icon', '0') === '1' ? 'checked' : '' ?>
+                            >
+                            <label class="form-check-label" for="enable_menu_icon">
+                                <strong><?= \Fisharebest\Webtrees\I18N::translate('Show menu icon') ?></strong><br>
+                                <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('If enabled, the module logo will be displayed in the main menu. Disable this if it breaks your theme layout.') ?></small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="alert alert-info mt-4">
                 <h4><i class="fa fa-info-circle"></i> <?= \Fisharebest\Webtrees\I18N::translate('Help: General') ?></h4>
