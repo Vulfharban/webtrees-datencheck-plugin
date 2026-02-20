@@ -1,5 +1,9 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.3.9] - 2026-02-20
+### Behoben
+- **Server-Error (TypeError)**: Fix für einen kritischen Fehler in `checkBurialBeforeDeath()`, bei dem unter bestimmten Bedingungen kein Rückgabewert geliefert wurde (Return value must be of type ?array, none returned). Betraf vor allem die Bulk-Analyse großer Stammbäume.
+
 ## [1.3.8] - 2026-02-17
 ### Hinzugefügt
 - **Geschlechts-Heuristik**: Namen, die auf 'a' oder 'e' enden, werden nun automatisch als weiblich erkannt, falls sie nicht in der Datenbank stehen.
@@ -27,7 +31,7 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 - **Performance/UX**: Validierung bei Datumsfeldern wird nun erst beim Verlassen des Feldes (`change`) statt bei jeder Eingabe (`input`) ausgelöst, um unnötige Server-Anfragen während des Tippens zu vermeiden.
 - **Debug-Logs**: Entfernung von internen Konsolen-Ausgaben.
 
-## [1.3.4] - 2026-02-13
+## [1.3.4] - 2026-02-17
 ### Hinzugefügt
 - **Prüfung auf zukünftige Daten**: Neue Validierung für Geburts-, Todes-, Tauf-, Begräbnis- und Heiratsdaten. Erkennt Tippfehler wie "2945" statt "1945".
 - **Mehrsprachige Unterstützung**: Neue Übersetzungen für Deutsch, Englisch, Polnisch, Spanisch, Italienisch, Russisch, Französisch und Niederländisch hinzugefügt.

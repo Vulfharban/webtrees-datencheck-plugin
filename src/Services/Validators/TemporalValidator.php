@@ -182,7 +182,8 @@ class TemporalValidator extends AbstractValidator
                 ];
             }
         }
-
+        
+        return null;
     }
 
     /**
