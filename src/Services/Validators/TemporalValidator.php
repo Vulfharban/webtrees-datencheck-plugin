@@ -90,29 +90,31 @@ class TemporalValidator extends AbstractValidator
         return null;
     }
 
-    /**
-     * Check if baptism is before birth
-     */
     public static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = '', string $overrideBap = ''): ?array
     {
         $birthMinJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
+        $birthMaxJD = ValidationService::getEffectiveMaxJD($person, 'BIRT', $overrideBirth);
         $bapMinJD = ValidationService::getEffectiveJD($person, 'CHR', $overrideBap);
         $bapMaxJD = ValidationService::getEffectiveMaxJD($person, 'CHR', $overrideBap);
 
         if (!$birthMinJD || !$bapMinJD) return null;
 
-        // Definitely impossible: Baptism range ends before birth range starts
+        // 1. Definitiv unmöglich: Taufe endet vor Geburtszeitraum
         if ($bapMaxJD < $birthMinJD) {
             return [
                 'code' => 'BAPTISM_BEFORE_BIRTH',
                 'type' => 'chronological_inconsistency',
                 'label' => self::translate('Check sequence'),
                 'severity' => 'error',
-                'message' => self::translate('Baptism is before birth.'),
+                'message' => self::translate(
+                    'Baptism (%s) is before birth (%s).',
+                    self::formatDate($person, 'CHR', $overrideBap),
+                    self::formatDate($person, 'BIRT', $overrideBirth)
+                ),
             ];
         }
 
-        // Potential conflict: Overlap or imprecise
+        // 2. Überschneidung / Ungenauigkeit: Taufe beginnt vor Geburt, endet aber danach/währenddessen
         if ($bapMinJD < $birthMinJD) {
             $birthPrecise = ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth);
             $bapPrecise = ValidationService::isPreciseDate($person, 'CHR', $overrideBap);
@@ -123,23 +125,49 @@ class TemporalValidator extends AbstractValidator
                     'type' => 'chronological_inconsistency',
                     'label' => self::translate('Check sequence'),
                     'severity' => 'info',
-                    'message' => self::translate('Birth/Baptism dates are imprecise. Exact dates are missing.'),
+                    'message' => self::translate(
+                        'Birth/Baptism dates are imprecise (%s / %s). Exact sequence unknown.',
+                        self::formatDate($person, 'BIRT', $overrideBirth),
+                        self::formatDate($person, 'CHR', $overrideBap)
+                    ),
                 ];
             }
         }
 
-        // Proximity check: Baptism should be close to birth (e.g. within 30 days for infant baptism)
-        if ($birthMinJD && $bapMinJD && $bapMinJD > $birthMinJD) {
-            $diff = $bapMinJD - $birthMinJD;
-            if ($diff > 30 && $diff < 3650) { // More than 30 days but less than 10 years
+        // 3. Definitiv zu langer Abstand: Taufe beginnt erst > 30 Tage nach ENDE des Geburtszeitraums
+        if ($birthMaxJD && $bapMinJD && $bapMinJD > $birthMaxJD + 30) {
+            $diff = $bapMinJD - $birthMaxJD;
+            if ($diff < 3650) { // Weniger als 10 Jahre
                 return [
                     'code' => 'BAPTISM_DELAYED',
                     'type' => 'chronological_inconsistency',
                     'label' => self::translate('Check sequence'),
                     'severity' => 'warning',
-                    'message' => self::translate('Baptism is unusually long after birth (%d days).', $diff),
+                    'message' => self::translate(
+                        'Baptism (%s) is unusually long after birth (%s). Gap: %d days.',
+                        self::formatDate($person, 'CHR', $overrideBap),
+                        self::formatDate($person, 'BIRT', $overrideBirth),
+                        $diff
+                    ),
                 ];
             }
+        }
+
+        // 4. HINWEIS: Taufe liegt weit nach Beginn, aber noch im Rahmen der Ungenauigkeit (z.B. nur Geburtsjahr bekannt)
+        if ($birthMinJD && $bapMinJD && $bapMinJD > $birthMinJD + 30) {
+             if (!ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth)) {
+                  return [
+                      'code' => 'BAPTISM_DELAY_POSSIBLE',
+                      'type' => 'chronological_inconsistency',
+                      'label' => self::translate('Check sequence'),
+                      'severity' => 'info',
+                      'message' => self::translate(
+                          'Birth date is imprecise (%s). Baptism was on %s. Birth likely occurred shortly before baptism.',
+                          self::formatDate($person, 'BIRT', $overrideBirth),
+                          self::formatDate($person, 'CHR', $overrideBap)
+                      ),
+                  ];
+             }
         }
 
         return null;
@@ -197,9 +225,6 @@ class TemporalValidator extends AbstractValidator
         // Current date JD
         $now = new \DateTime();
         $currentJD = gregoriantojd((int)$now->format('n'), (int)$now->format('j'), (int)$now->format('Y'));
-
-        // Debug logging
-        error_log("Datencheck Debug: Tag=$tag, DateJD=$dateMinJD, CurrentJD=$currentJD, Diff=" . ($dateMinJD - $currentJD));
 
         if ($dateMinJD > $currentJD) {
             $year = ValidationService::getYearFromJD($dateMinJD);

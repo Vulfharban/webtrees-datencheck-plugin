@@ -816,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let url = apiRouteBase.replace('TREE_PLACEHOLDER', treeName);
             const separator = url.includes('?') ? '&' : '?';
             
-            const response = await fetch(`${url}${separator}last_id=${lastId}&limit=100&total=${totalCountFromClient}&processed=${processed}&categories=${categories}`);
+            const response = await fetch(`${url}${separator}last_id=${lastId}&limit=50&total=${totalCountFromClient}&processed=${processed}&categories=${categories}`);
             
             if (!response.ok) {
                 const errorText = await response.text();

@@ -42,7 +42,7 @@ spl_autoload_register(static function (string $class): void {
     $file           = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
 
     if (file_exists($file)) {
-        require $file;
+        require_once $file;
     }
 });
 
@@ -105,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.3.11';
+        return '1.3.16';
     }
 
     public function getVersion(): string
@@ -950,9 +950,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                     ->withHeader('Content-Type', 'application/json');
             }
             
+            // Batch-Limit Einstellung, akt. 100er Schritte
             // Pagination using last ID for better performance on large tables
             $lastId = $params['last_id'] ?? '';
-            $limit  = (int) ($params['limit'] ?? 100); 
+            $limit  = (int) ($params['limit'] ?? 50); 
             
             $query = DB::table('individuals')
                 ->where('i_file', '=', $tree->id())

@@ -26,6 +26,15 @@ class ValidationService
     /** @var array|null Cache for ignored errors of the entire tree */
     private static $ignoredErrorsCache = null;
 
+    /** @var array Cache for current person's facts and JDs during validation */
+    private static $currentPersonCache = [
+        'xref' => '',
+        'facts' => [],
+        'jd_min' => [],
+        'jd_max' => [],
+        'gedcom' => []
+    ];
+
     /**
      * Pre-warms caches for specific individuals (batch operation).
      */
@@ -1013,20 +1022,26 @@ class ValidationService
             if ($issue) $issues[] = $issue;
         }
 
-        // Check for overlaps (simple check: marriage before previous spouse's death or divorce)
+        // Check for overlaps (marriage before previous spouse's death or divorce)
         for ($i = 1; $i < count($marriageDates); $i++) {
             $prevFamily = $marriageDates[$i - 1]['family'];
-            $currentMarriageYear = $marriageDates[$i]['year'];
+            $currentMarriageDateObj = $marriageDates[$i]['family']->getMarriageDate();
+            $currentMarriageMinJD = $currentMarriageDateObj->minimumJulianDay();
+            $currentMarriageMaxJD = $currentMarriageDateObj->maximumJulianDay();
 
             // End of previous marriage: either death of spouse or divorce
-            $marriageEndedYear = null;
+            $marriageEndedMinJD = null;
+            $marriageEndedMaxJD = null;
+            $marriageEndedDisplay = '';
             $endReason = '';
 
             // 1. Check for divorce
             $divorceFact = $prevFamily->facts(['DIV'])->first();
             $divorceDate = $divorceFact ? $divorceFact->date() : null;
             if ($divorceDate && $divorceDate->isOK()) {
-                $marriageEndedYear = $divorceDate->maximumDate()->year();
+                $marriageEndedMinJD = $divorceDate->minimumJulianDay();
+                $marriageEndedMaxJD = $divorceDate->maximumJulianDay();
+                $marriageEndedDisplay = $divorceDate->display();
                 $endReason = 'divorce';
             }
 
@@ -1038,16 +1053,19 @@ class ValidationService
             if ($prevSpouse) {
                 $prevSpouseDeath = $prevSpouse->getDeathDate();
                 if ($prevSpouseDeath->isOK()) {
-                    $deathYear = $prevSpouseDeath->maximumDate()->year();
+                    $deathMinJD = $prevSpouseDeath->minimumJulianDay();
+                    $deathMaxJD = $prevSpouseDeath->maximumJulianDay();
                     // If no divorce or death happened earlier than divorce
-                    if ($marriageEndedYear === null || $deathYear < $marriageEndedYear) {
-                        $marriageEndedYear = $deathYear;
+                    if ($marriageEndedMaxJD === null || $deathMaxJD < $marriageEndedMaxJD) {
+                        $marriageEndedMinJD = $deathMinJD;
+                        $marriageEndedMaxJD = $deathMaxJD;
+                        $marriageEndedDisplay = $prevSpouseDeath->display();
                         $endReason = 'death';
                     }
                 }
             }
 
-            if ($marriageEndedYear === null) {
+            if ($marriageEndedMaxJD === null) {
                 // Can't determine - might be overlapping
                 if ($prevSpouse) {
                     $issues[] = [
@@ -1056,34 +1074,45 @@ class ValidationService
                         'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
                         'severity' => 'warning',
                         'message' => \Fisharebest\Webtrees\I18N::translate(
-                            'Marriage (%d) possibly during existing marriage with "%s" (End of marriage unknown)',
-                            $currentMarriageYear,
+                            'Marriage (%s) possibly during existing marriage with "%s" (End of marriage unknown)',
+                            $currentMarriageDateObj->display(),
                             $prevSpouse->fullName()
                         ),
                         'details' => [
-                            'marriage_year' => $currentMarriageYear,
+                            'marriage_year' => $marriageDates[$i]['year'],
                             'previous_spouse' => $prevSpouse->fullName(),
                         ],
                     ];
                 }
             } else {
-                if ($currentMarriageYear < $marriageEndedYear) {
+                // Definite overlap: New marriage starts before previous one MUST have ended
+                // This is only an ERROR if currentMarriageMaxJD < marriageEndedMinJD? 
+                // No, Overlap is if M2 starts before M1 ends.
+                // M2_StartDate < M1_EndDate.
+                // Strictly impossible if M2_LatestStartDate < M1_EarliestEndDate.
+                
+                $isDefiniteError = ($currentMarriageMaxJD < $marriageEndedMinJD);
+                $isPotentialOverlap = ($currentMarriageMinJD < $marriageEndedMaxJD);
+
+                if ($isPotentialOverlap) {
+                    $isImprecise = (!self::isPreciseDate(null, 'MARR', $currentMarriageDateObj->display()) || !self::isPreciseDate($prevSpouse, $endReason === 'divorce' ? 'DIV' : 'DEAT'));
+                    
                     $issues[] = [
-                        'code' => 'MARRIAGE_OVERLAPPING',
+                        'code' => $isDefiniteError ? 'MARRIAGE_OVERLAPPING' : 'MARRIAGE_POSSIBLY_OVERLAPPING',
                         'type' => 'marriage_overlapping',
                         'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
-                        'severity' => 'error',
+                        'severity' => ($isDefiniteError && !$isImprecise) ? 'error' : 'warning',
                         'message' => \Fisharebest\Webtrees\I18N::translate(
-                            'Marriage (%d) before %s (%d) of previous marriage (%s)',
-                            $currentMarriageYear,
+                            'Marriage (%s) before %s (%s) of previous marriage (%s)',
+                            $currentMarriageDateObj->display(),
                             $endReason === 'divorce' ? \Fisharebest\Webtrees\I18N::translate('divorce') : \Fisharebest\Webtrees\I18N::translate('death of spouse'),
-                            $marriageEndedYear,
+                            $marriageEndedDisplay,
                             $prevSpouse ? $prevSpouse->fullName() : '?'
                         ),
                         'details' => [
-                            'marriage_year' => $currentMarriageYear,
+                            'marriage_date' => $currentMarriageDateObj->display(),
                             'previous_spouse' => $prevSpouse ? $prevSpouse->fullName() : null,
-                            'end_year' => $marriageEndedYear,
+                            'end_date' => $marriageEndedDisplay,
                             'reason' => $endReason
                         ],
                     ];
@@ -1788,29 +1817,40 @@ class ValidationService
 
         if (!$person) return null;
 
+        $xref = $person->xref();
+        if (self::$currentPersonCache['xref'] === $xref && isset(self::$currentPersonCache['jd_min'][$type])) {
+            return self::$currentPersonCache['jd_min'][$type];
+        }
+
         $date = null;
         switch($type) {
             case 'BIRT': $date = $person->getBirthDate(); break;
             case 'DEAT': $date = $person->getDeathDate(); break;
             case 'CHR': 
-                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $fact = self::getCachedFact($person, ['CHR', 'BAPM']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'BURI':
-                $fact = $person->facts(['BURI'])->first();
+                $fact = self::getCachedFact($person, ['BURI']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'MARR':
-                $fact = $person->facts(['MARR'])->first();
+                $fact = self::getCachedFact($person, ['MARR']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'DIV':
-                $fact = $person->facts(['DIV'])->first();
+                $fact = self::getCachedFact($person, ['DIV']);
                 $date = $fact ? $fact->date() : null;
                 break;
         }
 
-        return ($date && $date->isOK()) ? $date->minimumJulianDay() : null;
+        $jd = ($date && $date->isOK()) ? $date->minimumJulianDay() : null;
+        
+        if (self::$currentPersonCache['xref'] === $xref) {
+            self::$currentPersonCache['jd_min'][$type] = $jd;
+        }
+
+        return $jd;
     }
 
     /**
@@ -1828,29 +1868,40 @@ class ValidationService
 
         if (!$person) return null;
 
+        $xref = $person->xref();
+        if (self::$currentPersonCache['xref'] === $xref && isset(self::$currentPersonCache['jd_max'][$type])) {
+            return self::$currentPersonCache['jd_max'][$type];
+        }
+
         $date = null;
         switch($type) {
             case 'BIRT': $date = $person->getBirthDate(); break;
             case 'DEAT': $date = $person->getDeathDate(); break;
             case 'CHR': 
-                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $fact = self::getCachedFact($person, ['CHR', 'BAPM']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'BURI':
-                $fact = $person->facts(['BURI'])->first();
+                $fact = self::getCachedFact($person, ['BURI']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'MARR':
-                $fact = $person->facts(['MARR'])->first();
+                $fact = self::getCachedFact($person, ['MARR']);
                 $date = $fact ? $fact->date() : null;
                 break;
             case 'DIV':
-                $fact = $person->facts(['DIV'])->first();
+                $fact = self::getCachedFact($person, ['DIV']);
                 $date = $fact ? $fact->date() : null;
                 break;
         }
 
-        return ($date && $date->isOK()) ? $date->maximumJulianDay() : null;
+        $jd = ($date && $date->isOK()) ? $date->maximumJulianDay() : null;
+
+        if (self::$currentPersonCache['xref'] === $xref) {
+            self::$currentPersonCache['jd_max'][$type] = $jd;
+        }
+
+        return $jd;
     }
 
     /**
@@ -1900,36 +1951,79 @@ class ValidationService
             return '';
         }
 
+        $xref = $person->xref();
+        if (self::$currentPersonCache['xref'] !== $xref) {
+            self::clearPersonCache($xref);
+        }
+
+        if (isset(self::$currentPersonCache['gedcom'][$type])) {
+            return self::$currentPersonCache['gedcom'][$type];
+        }
+
         $fact = null;
         switch($type) {
             case 'BIRT': 
-                $fact = $person->facts(['BIRT'])->first();
+                $fact = self::getCachedFact($person, ['BIRT']);
                 break;
             case 'DEAT': 
-                $fact = $person->facts(['DEAT'])->first();
+                $fact = self::getCachedFact($person, ['DEAT']);
                 break;
             case 'CHR': 
-                $fact = $person->facts(['CHR', 'BAPM'])->first();
+                $fact = self::getCachedFact($person, ['CHR', 'BAPM']);
                 break;
             case 'BURI':
-                $fact = $person->facts(['BURI'])->first();
+                $fact = self::getCachedFact($person, ['BURI']);
                 break;
             case 'MARR':
-                $fact = $person->facts(['MARR'])->first();
+                $fact = self::getCachedFact($person, ['MARR']);
                 break;
         }
 
-        if (!$fact) {
-            return '';
+        $val = ($fact) ? $fact->value() : '';
+        
+        if (self::$currentPersonCache['xref'] === $xref) {
+            self::$currentPersonCache['gedcom'][$type] = $val;
         }
 
-        // Get the date value from the fact's GEDCOM
-        $gedcom = $fact->gedcom();
-        if (preg_match('/\n2 DATE (.+)/', $gedcom, $matches)) {
-            return trim($matches[1]);
+        return $val;
+    }
+
+    /**
+     * Internal helper to get cached facts for the current person
+     */
+    private static function getCachedFact(Individual $person, array $tags): ?object
+    {
+        $xref = $person->xref();
+        $cacheTag = implode('_', $tags);
+
+        if (self::$currentPersonCache['xref'] !== $xref) {
+            self::clearPersonCache($xref);
         }
 
-        return '';
+        if (!isset(self::$currentPersonCache['facts'][$cacheTag])) {
+            // Check if we are in webtrees environment, handle potential issues
+            try {
+                self::$currentPersonCache['facts'][$cacheTag] = $person->facts($tags)->first();
+            } catch (\Throwable $e) {
+                self::$currentPersonCache['facts'][$cacheTag] = null;
+            }
+        }
+
+        return self::$currentPersonCache['facts'][$cacheTag];
+    }
+
+    /**
+     * Clear and initialize cache for a specific person
+     */
+    private static function clearPersonCache(string $xref): void
+    {
+        self::$currentPersonCache = [
+            'xref' => $xref,
+            'facts' => [],
+            'jd_min' => [],
+            'jd_max' => [],
+            'gedcom' => []
+        ];
     }
 
     /**

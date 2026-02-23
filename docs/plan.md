@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.3.11 - **Stable** (Divorce Validation & Marriage Logic)
+**Status:** Version 1.3.12 - **Stable** (502 Fix & Improved Marriage Logic)
 
 ## Kernfunktionen
 

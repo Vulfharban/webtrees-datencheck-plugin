@@ -29,12 +29,17 @@
 - [x] **Ehe-Überlappung v2**: Berücksichtigung von Scheidungen zur Vermeidung von Fehlalarmen bei Wiederverheiratung.
 - [x] **Vollständige i18n**: Aktualisierung aller 26 Sprachdateien für Scheidungs-Features.
 
-## 🟦 Phase 20: Erweiterte Plausibilität & Heuristiken (Geplant)
+## 🛠️ Phase 20: Performance & Präzision (CURRENT)
+- [x] **502 Bad Gateway Fix**: Reduktion der Batch-Größe bei der Analyse (v1.3.12).
+- [x] **Präzisions-Awareness**: Korrekte Handhabung von ungenauen Daten (vor/nach/ca) bei Ehen.
+- [x] **UX-Meldungen**: Verwendung von Klartext-Daten in Validierungsnachrichten.
+
+## 🚀 Phase 21: Optimierung & Cleanup (NEXT)
 - [ ] **"Likely Dead"**: Optionale Warnung für Personen ohne Sterbedatum über 110J.
 - [ ] **Inzest-Check**: Optionale Prüfung auf Ehen zwischen nahen Verwandten.
 - [ ] **Generations-Check**: Statistische Prüfung auf Ausreißer (z.B. Elternteil zu jung/alt für Erstgeburt).
 
-## 🟦 Phase 21: UI-Komfort & Quellen-Qualität (Geplant)
+## 🟦 Phase 22: UI-Komfort & Quellen-Qualität (Geplant)
 - [ ] **Quick-Fix UI**: Buttons zur schnellen Korrektur (z.B. Vertauschen von Daten) direkt in der Analyse.
 - [ ] **Deep Source Check**: Optionale Prüfung der Quellenkonsistenz (Datum vs. Quellentext).
 - [ ] **Familien-Matching**: Dubletten-Suche auf Basis von Elternpaaren.
