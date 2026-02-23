@@ -123,7 +123,7 @@ class ValidationService
             if ($issue) $issues[] = $issue;
 
             // NEW: Check for future dates
-            foreach (['BIRT' => $overrideBirth, 'DEAT' => $overrideDeath, 'CHR' => $overrideBap, 'BURI' => $overrideBurial, 'MARR' => $marrOverride] as $tag => $override) {
+            foreach (['BIRT' => $overrideBirth, 'DEAT' => $overrideDeath, 'CHR' => $overrideBap, 'BURI' => $overrideBurial, 'MARR' => $marrOverride, 'DIV' => ''] as $tag => $override) {
                 $issue = Validators\TemporalValidator::checkFutureDate($person, $tag, $override);
                 if ($issue) $issues[] = $issue;
             }
@@ -479,6 +479,9 @@ class ValidationService
                     $issue['label'] = \Fisharebest\Webtrees\I18N::translate('Check marriage');
                     $issues[] = $issue;
                 }
+
+                // NEW: Check divorce timing
+                $issues = array_merge($issues, self::checkDivorceGeneric($person, $family, $overrideBirth, $overrideDeath, $overrideBurial));
             }
         }
 
@@ -606,6 +609,154 @@ class ValidationService
         }
 
         return null;
+    }
+
+    /**
+     * Check divorce plausibility (before birth, after death, before marriage)
+     *
+     * @param Individual $person
+     * @param Family $family
+     * @param string $overrideBirth
+     * @param string $overrideDeath
+     * @param string $overrideBurial
+     * @return array
+     */
+    private static function checkDivorceGeneric(Individual $person, Family $family, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = ''): array
+    {
+        $issues = [];
+        $divFact = $family->facts(['DIV'])->first();
+        if (!$divFact) return $issues;
+
+        $divorce = $divFact->date();
+        if (!$divorce->isOK()) return $issues;
+
+        $divorceJD = $divorce->minimumJulianDay();
+        $birthJD = self::getEffectiveJD($person, 'BIRT', $overrideBirth);
+        $deathJD = self::getEffectiveJD($person, 'DEAT', $overrideDeath);
+        $burialJD = self::getEffectiveJD($person, 'BURI', $overrideBurial);
+        $marriage = $family->getMarriageDate();
+
+        // Partner data
+        $partner = $family->husband() && $family->husband()->xref() !== $person->xref()
+            ? $family->husband()
+            : $family->wife();
+
+        $partnerBirthJD = $partner ? self::getEffectiveJD($partner, 'BIRT') : null;
+        $partnerDeathJD = $partner ? self::getEffectiveJD($partner, 'DEAT') : null;
+        $partnerBurialJD = $partner ? self::getEffectiveJD($partner, 'BURI') : null;
+
+        // 1. Divorce before birth (Self)
+        if ($birthJD && $divorceJD < $birthJD) {
+            $issues[] = [
+                'code' => 'DIVORCE_BEFORE_BIRTH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) before birth (%s) of "%s"',
+                    $divorce->display(),
+                    self::formatDate($person, 'BIRT', $overrideBirth) ?: self::getYearFromJD($birthJD),
+                    $person->fullName()
+                ),
+            ];
+        }
+
+        // 1b. Divorce before birth (Partner)
+        if ($partnerBirthJD && $divorceJD < $partnerBirthJD && $partner) {
+            $issues[] = [
+                'code' => 'DIVORCE_BEFORE_BIRTH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) before birth (%s) of partner "%s"',
+                    $divorce->display(),
+                    self::formatDate($partner, 'BIRT') ?: self::getYearFromJD($partnerBirthJD),
+                    $partner->fullName()
+                ),
+            ];
+        }
+
+        // 2. Divorce after death (Self)
+        if ($deathJD && $divorceJD > $deathJD) {
+            $issues[] = [
+                'code' => 'DIVORCE_AFTER_DEATH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) after death (%s) of "%s"',
+                    $divorce->display(),
+                    self::formatDate($person, 'DEAT', $overrideDeath) ?: self::getYearFromJD($deathJD),
+                    $person->fullName()
+                ),
+            ];
+        }
+
+        // 2b. Divorce after death (Partner)
+        if ($partnerDeathJD && $divorceJD > $partnerDeathJD && $partner) {
+            $issues[] = [
+                'code' => 'DIVORCE_AFTER_DEATH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) after death (%s) of partner "%s"',
+                    $divorce->display(),
+                    self::formatDate($partner, 'DEAT') ?: self::getYearFromJD($partnerDeathJD),
+                    $partner->fullName()
+                ),
+            ];
+        }
+
+        // 3. Divorce after burial (Self)
+        if ($burialJD && $divorceJD > $burialJD) {
+            $issues[] = [
+                'code' => 'DIVORCE_AFTER_DEATH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) after burial (%s) of "%s"',
+                    $divorce->display(),
+                    self::formatDate($person, 'BURI', $overrideBurial) ?: self::getYearFromJD($burialJD),
+                    $person->fullName()
+                ),
+            ];
+        }
+
+        // 3b. Divorce after burial (Partner)
+        if ($partnerBurialJD && $divorceJD > $partnerBurialJD && $partner) {
+            $issues[] = [
+                'code' => 'DIVORCE_AFTER_DEATH',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) after burial (%s) of partner "%s"',
+                    $divorce->display(),
+                    self::formatDate($partner, 'BURI') ?: self::getYearFromJD($partnerBurialJD),
+                    $partner->fullName()
+                ),
+            ];
+        }
+
+        // 4. Divorce before marriage
+        if ($marriage->isOK() && $divorceJD < $marriage->minimumJulianDay()) {
+            $issues[] = [
+                'code' => 'DIVORCE_BEFORE_MARRIAGE',
+                'type' => 'temporal_impossibility',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check divorce'),
+                'severity' => 'error',
+                'message' => \Fisharebest\Webtrees\I18N::translate(
+                    'Divorce (%s) before marriage (%s)',
+                    $divorce->display(),
+                    $marriage->display()
+                ),
+            ];
+        }
+
+        return $issues;
     }
 
     /**
@@ -862,29 +1013,50 @@ class ValidationService
             if ($issue) $issues[] = $issue;
         }
 
-        // Check for overlaps (simple check: marriage before previous spouse's death)
+        // Check for overlaps (simple check: marriage before previous spouse's death or divorce)
         for ($i = 1; $i < count($marriageDates); $i++) {
             $prevFamily = $marriageDates[$i - 1]['family'];
             $currentMarriageYear = $marriageDates[$i]['year'];
 
-            // Get the other spouse from previous family
+            // End of previous marriage: either death of spouse or divorce
+            $marriageEndedYear = null;
+            $endReason = '';
+
+            // 1. Check for divorce
+            $divorceFact = $prevFamily->facts(['DIV'])->first();
+            $divorceDate = $divorceFact ? $divorceFact->date() : null;
+            if ($divorceDate && $divorceDate->isOK()) {
+                $marriageEndedYear = $divorceDate->maximumDate()->year();
+                $endReason = 'divorce';
+            }
+
+            // 2. Check for death of spouse
             $prevSpouse = $prevFamily->husband() && $prevFamily->husband()->xref() !== $person->xref()
                 ? $prevFamily->husband()
                 : $prevFamily->wife();
 
             if ($prevSpouse) {
                 $prevSpouseDeath = $prevSpouse->getDeathDate();
+                if ($prevSpouseDeath->isOK()) {
+                    $deathYear = $prevSpouseDeath->maximumDate()->year();
+                    // If no divorce or death happened earlier than divorce
+                    if ($marriageEndedYear === null || $deathYear < $marriageEndedYear) {
+                        $marriageEndedYear = $deathYear;
+                        $endReason = 'death';
+                    }
+                }
+            }
 
-                // If previous spouse has no death date or died after current marriage
-                if (!$prevSpouseDeath->isOK()) {
-                    // Can't determine - might be overlapping
+            if ($marriageEndedYear === null) {
+                // Can't determine - might be overlapping
+                if ($prevSpouse) {
                     $issues[] = [
                         'code' => 'MARRIAGE_POSSIBLY_OVERLAPPING',
                         'type' => 'marriage_possibly_overlapping',
                         'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
                         'severity' => 'warning',
                         'message' => \Fisharebest\Webtrees\I18N::translate(
-                            'Marriage (%d) possibly during existing marriage with "%s" (Death date unknown)',
+                            'Marriage (%d) possibly during existing marriage with "%s" (End of marriage unknown)',
                             $currentMarriageYear,
                             $prevSpouse->fullName()
                         ),
@@ -893,27 +1065,28 @@ class ValidationService
                             'previous_spouse' => $prevSpouse->fullName(),
                         ],
                     ];
-                } else {
-                    $prevSpouseDeathYear = $prevSpouseDeath->maximumDate()->year();
-                    if ($currentMarriageYear < $prevSpouseDeathYear) {
-                        $issues[] = [
-                            'code' => 'MARRIAGE_OVERLAPPING',
-                            'type' => 'marriage_overlapping',
-                            'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
-                            'severity' => 'error',
-                            'message' => \Fisharebest\Webtrees\I18N::translate(
-                                'Marriage (%d) before death (%d) of previous spouse "%s"',
-                                $currentMarriageYear,
-                                $prevSpouseDeathYear,
-                                $prevSpouse->fullName()
-                            ),
-                            'details' => [
-                                'marriage_year' => $currentMarriageYear,
-                                'previous_spouse' => $prevSpouse->fullName(),
-                                'previous_spouse_death' => $prevSpouseDeathYear,
-                            ],
-                        ];
-                    }
+                }
+            } else {
+                if ($currentMarriageYear < $marriageEndedYear) {
+                    $issues[] = [
+                        'code' => 'MARRIAGE_OVERLAPPING',
+                        'type' => 'marriage_overlapping',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Date conflict'),
+                        'severity' => 'error',
+                        'message' => \Fisharebest\Webtrees\I18N::translate(
+                            'Marriage (%d) before %s (%d) of previous marriage (%s)',
+                            $currentMarriageYear,
+                            $endReason === 'divorce' ? \Fisharebest\Webtrees\I18N::translate('divorce') : \Fisharebest\Webtrees\I18N::translate('death of spouse'),
+                            $marriageEndedYear,
+                            $prevSpouse ? $prevSpouse->fullName() : '?'
+                        ),
+                        'details' => [
+                            'marriage_year' => $currentMarriageYear,
+                            'previous_spouse' => $prevSpouse ? $prevSpouse->fullName() : null,
+                            'end_year' => $marriageEndedYear,
+                            'reason' => $endReason
+                        ],
+                    ];
                 }
             }
         }
@@ -1631,6 +1804,10 @@ class ValidationService
                 $fact = $person->facts(['MARR'])->first();
                 $date = $fact ? $fact->date() : null;
                 break;
+            case 'DIV':
+                $fact = $person->facts(['DIV'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
         }
 
         return ($date && $date->isOK()) ? $date->minimumJulianDay() : null;
@@ -1665,6 +1842,10 @@ class ValidationService
                 break;
             case 'MARR':
                 $fact = $person->facts(['MARR'])->first();
+                $date = $fact ? $fact->date() : null;
+                break;
+            case 'DIV':
+                $fact = $person->facts(['DIV'])->first();
                 $date = $fact ? $fact->date() : null;
                 break;
         }

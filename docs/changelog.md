@@ -1,5 +1,10 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.3.11] - 2026-02-23
+### Hinzugefügt
+- **Scheidungs-Validierung**: Neue Prüfungen für Scheidungsdaten (Chronologie gegenüber Geburt, Tod und Heirat).
+- **Intelligente Ehedauer**: Scheidungen werden nun bei der Prüfung auf überschneidende Ehen berücksichtigt, um Fehlalarme bei Wiederverheiratung zu Lebenszeiten des Ex-Partners zu vermeiden.
+
 ## [1.3.10] - 2026-02-20
 ### Hinzugefügt
 - **Menü-Icon Option**: Das Modul-Icon im Hauptmenü kann nun in den Einstellungen deaktiviert werden.

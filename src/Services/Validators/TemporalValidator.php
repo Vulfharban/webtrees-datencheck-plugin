@@ -205,11 +205,12 @@ class TemporalValidator extends AbstractValidator
             $year = ValidationService::getYearFromJD($dateMinJD);
             
             $labels = [
-                'BIRT' => self::translate('Birth'),
-                'DEAT' => self::translate('Death'),
-                'CHR'  => self::translate('Baptism'),
-                'BURI' => self::translate('Burial'),
-                'MARR' => self::translate('Marriage'),
+                'BIRT' => \Fisharebest\Webtrees\I18N::translate('Birth'),
+                'DEAT' => \Fisharebest\Webtrees\I18N::translate('Death'),
+                'CHR'  => \Fisharebest\Webtrees\I18N::translate('Baptism'),
+                'BURI' => \Fisharebest\Webtrees\I18N::translate('Burial'),
+                'MARR' => \Fisharebest\Webtrees\I18N::translate('Marriage'),
+                'DIV'  => \Fisharebest\Webtrees\I18N::translate('Divorce'),
             ];
             
             $label = $labels[$tag] ?? $tag;
