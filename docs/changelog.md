@@ -1,5 +1,18 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.3.16] - 2026-02-23
+### Hinzugefügt
+- **Intelligente Tauf-Logik**: Zeiträume (z. B. nur Geburtsjahr bekannt) werden nun korrekt verglichen. Taufen im selben Jahr wie eine unpräzise Geburt führen nicht mehr zu Warnungen, sondern zu einem informativen Hinweis ("Info").
+- **Detaillierte Fehlermeldungen**: Validierungsmeldungen enthalten nun direkt die relevanten Datumsangaben für eine schnellere Überprüfung.
+### Behoben
+- **Performance-Boost (502 Fix)**: Einführung eines personenspezifischen Caches für Fakten und Julian Days. Reduziert die Datenbanklast bei der Bulk-Analyse um ca. 80%.
+- **Batch-Stabilität**: Batch-Größe für die Analyse im Admin-Bereich wurde auf 50 Personen optimiert, um Timeouts (502 Bad Gateway) auf Shared-Hosting-Servern zu verhindern.
+- **Fehlerbereinigung**: Interner Debug-Ballast und unnötige Log-Einträge entfernt.
+
+## [1.3.12] - 2026-02-23
+### Geändert
+- **Ehe-Überschneidungen**: Mathematisch präzise Berechnung von Überlappungen mittels Julian Day Ranges. Unterscheidung zwischen definitiven Fehlern und möglichen Konflikten bei ungenauen Daten.
+
 ## [1.3.11] - 2026-02-23
 ### Hinzugefügt
 - **Scheidungs-Validierung**: Neue Prüfungen für Scheidungsdaten (Chronologie gegenüber Geburt, Tod und Heirat).
@@ -118,11 +131,12 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 ---
 
 ## Versionshistorie
-- **Status:** Version 1.3.8 - **Stable** (Gender Heuristics & Fixes)
+- **Status:** Version 1.3.16 - **Stable** (Performance & Baptism Logic)
 - **v1.3.0:** Globale Namens-Datenbank (10+ Sprachen), Intelligente Ehenamen-Logik, Diakritika-Handling
-- [x] **v1.3.3:** Kompakte Anzeige, Sterbeort-Integration, bulgarische Lokalisierung
-- [x] **v1.3.6:** Zukunftsdaten, Fixes für Neuanlagen und Stabilitäts-Patch
 - [x] **v1.3.8:** Geschlechts-Heuristiken & AJAX-Fixes
+- [x] **v1.3.11:** Scheidungs-Validierung & Ehe-Plausibilität
+- [x] **v1.3.15:** Performance-Cache (502 Fix)
+- [x] **v1.3.16:** Intelligente Tauf-Logik & Perioden-Vergleich
 
 ## [0.9.0] - 2026-02-08
 ### Hinzugefügt
