@@ -49,7 +49,7 @@ return [
     'Parents Age:' => 'Alter der Eltern:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Warnt bei biologisch unwahrscheinlichem Alter bei der Geburt des Kindes.',
     'Sibling Spacing:' => 'Geschwisterabstand:',
-    'Warns if births are too close together (< 9 Monate).',
+    'Warns if births are too close together (< 9 months).' => 'Warnt, wenn Geburten zu nah beieinander liegen (< 9 Monate).',
     
     'Optional Checks' => 'Optionale Prüfungen',
     'Check missing data' => 'Fehlende Daten prüfen',
@@ -124,6 +124,7 @@ return [
     'No issues found!' => 'Keine Probleme gefunden!',
     'Your tree is clean.' => 'Dein Stammbaum ist sauber.',
     'Possible duplicates found:' => 'Mögliche Duplikate gefunden:',
+    'Possible duplicate sources found:' => 'Mögliche Duplikate bei Quellen gefunden:',
     'phonetically' => 'phonetisch',
     'Compare' => 'Vergleichen',
     'This person already exists as a child in this family:' => 'Diese Person existiert bereits als Kind in dieser Familie:',

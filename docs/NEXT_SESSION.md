@@ -1,19 +1,24 @@
-# Webtrees Datencheck Plugin - Projektstatus & Roadmap
+# Nächste Session - Webtrees Datencheck Plugin
 
-- **Aktuelle Version:** 1.3.12 (Stabil)
-- **Status:** 502-Fix (Batch-Größe), Fehlalarm-Reduktion (Ehen), robuste Datums-Logik.
+## Status Quo
+- **Version:** 1.5.1 (Stable)
+- **Letzte Änderungen:**
+  - Live-Archiv-Check (Repositories) hinzugefügt.
+  - Umfangreiches Keyword-Mapping (DE/EN) für 20+ Quellenkategorien.
+  - Berücksichtigung von Autoren (AUTH) beim Quellen-Abgleich.
+  - Feld-Erkennungs-Fix für Quellen in Modals und Neuanlagen.
 
-### 1. Performance & Stabilität (v1.3.12)
-*   **502 Bad Gateway Fix**: Batch-Größe der Kwalitätsanalyse von 100 auf 50 reduziert, um Timeouts auf Online-Servern zu vermeiden.
-*   **Intelligente Ehe-Logik**: Überlappungs-Checks berücksichtigen nun die Präzision (z.B. "vor 1888"). Fehlalarme bei ungenauen Daten werden unterdrückt (Downgrade auf Warnung/Info).
-*   **Verbesserte Fehlermeldungen**: Datumsangaben in Meldungen nutzen nun das Anzeigeformat (z.B. "vor 1888" statt nur "1888").
+## Offene Punkte / Nächste Schritte
+1. **"Likely Dead" Heuristik**:
+   - Implementierung der Logik für Personen ohne Sterbedatum, die über 110 Jahre alt wären.
+   - Einbeziehung "letzter Lebenszeichen" (z.B. Geburt eines Kindes, Zeuge bei Heirat) zur Verfeinerung.
+2. **Generations-Check**:
+   - Statistische Analyse auf Ausreißer (z.B. ungewöhnlich viele Kinder in kurzem Abstand über die gesamte Fruchtbarkeitsphase).
+3. **Quick-Fix UI**:
+   - Erste Experimente mit Buttons in der Analyse-Tabelle (z.B. "Als verstorben markieren").
+4. **Erweiterte Quellenprüfung**:
+   - Konsistenzprüfung: Passt der Quellentyp zum Fakt? (z.B. Geburtsurkunde für einen Tod-Fakt).
 
-### 2. Scheidungs-Validierung & i18n (v1.3.11)
-*   **Vollständige i18n**: Alle 26 Sprachen unterstützen nun die neuen Scheidungs-Features und Fehlermeldungen.
-*   **Labels & Messages**: Neue Labels für "Scheidung prüfen" und spezifische Meldungen für Partner-Ereignisse integriert.
-
-## 🚀 Ausblick & Nächste Schritte
-*   **"Likely Dead" Heuristik**: Implementierung eines optionalen Checks für Personen über 110 Jahre ohne Sterbedatum.
-*   **Inzest-Check**: Entwicklung einer optionalen Prüfung für Ehen zwischen nahen Verwandten.
-*   **Quick-Fix Integration**: Planung von UI-Elementen in der Analyse-Tabelle zur Schnellkorrektur.
-*   **Performance**: Lokales Caching von Validierungsergebnissen zur Reduzierung von Server-Anfragen.
+## Technische Notizen
+- Der Live-Quellen-Check nutzt `StringHelper::levenshteinDistance` und eine Übersetzungstabelle für Begriffe wie "Birth/Geburt".
+- Die AJAX-Validierung ist nun sehr stabil und deckt fast alle relevanten Felder ab.

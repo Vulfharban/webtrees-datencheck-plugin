@@ -7,6 +7,8 @@
  * @var string $family_details_url
  * @var string $validation_url
  * @var string $individual_url
+ * @var string $source_url
+ * @var string $repo_url
  */
 ?>
 <style>
@@ -69,8 +71,10 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let personTimeout = null;
-    let familyTimeout = null;
+    let familyTimeout;
+    let repoTimeout;
     let siblingTimeout = null;
+    let sourceTimeout = null;
     let validationTimeout = null;
     
     const isXref = (val) => {
@@ -316,6 +320,88 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(data => {
                 showFamilyWarning(data.data);
+            });
+    };
+
+    const checkSource = (e) => {
+        const titleEl = e?.target || 
+                      document.querySelector('[id*="SOUR"][id*="TITL"]') || 
+                      document.querySelector('[name*="SOUR"][name*="TITL"]') ||
+                      document.querySelector('[id*="TITL"]') ||
+                      document.querySelector('[id*="s_title"]') ||
+                      document.querySelector('[name*="s_title"]');
+        const title = titleEl?.value || "";
+
+        if (title.length < 3) return;
+
+        fetch("<?= $source_url ?>?title=" + encodeURIComponent(title))
+            .then(response => {
+                if (!response.ok) throw new Error("Server error: " + response.status);
+                return response.json();
+            })
+            .then(data => {
+                let sourceWarning = document.getElementById("datencheck-source-warning");
+                if (!sourceWarning) {
+                    sourceWarning = document.createElement("div");
+                    sourceWarning.id = "datencheck-source-warning";
+                    sourceWarning.className = "alert alert-warning mt-2";
+                    sourceWarning.style.display = "none";
+                    const target = titleEl?.closest(".card, .form-group, .row") || titleEl?.parentNode;
+                    if (target) target.parentNode.insertBefore(sourceWarning, target);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('Possible duplicate sources found:') ?></strong><ul class='list-unstyled'>";
+                    data.data.forEach(item => {
+                        let info = item.auth ? " [" + item.auth + "]" : "";
+                        html += "<li class='mb-1'>" + item.name2 + info + " (" + item.id2 + ")</li>";
+                    });
+                    html += "</ul>";
+                    sourceWarning.innerHTML = html;
+                    sourceWarning.style.display = "block";
+                } else {
+                    sourceWarning.style.display = "none";
+                }
+            })
+            .catch(err => {
+                console.error("Datencheck: Source check fetch error:", err);
+            });
+    };
+
+    const checkRepository = (e) => {
+        const nameEl = e?.target || 
+                      document.querySelector('[id*="REPO"][id*="NAME"]') || 
+                      document.querySelector('[name*="REPO"][name*="NAME"]') ||
+                      document.querySelector('[id*="r_name"]') ||
+                      document.querySelector('[name*="r_name"]');
+        const name = nameEl?.value || "";
+
+        if (name.length < 3) return;
+
+        fetch("<?= $repo_url ?>?name=" + encodeURIComponent(name))
+            .then(response => response.json())
+            .then(data => {
+                let repoWarning = document.getElementById("datencheck-repo-warning");
+                if (!repoWarning) {
+                    repoWarning = document.createElement("div");
+                    repoWarning.id = "datencheck-repo-warning";
+                    repoWarning.className = "alert alert-warning mt-2";
+                    repoWarning.style.display = "none";
+                    const target = nameEl?.closest(".card, .form-group, .row") || nameEl?.parentNode;
+                    if (target) target.parentNode.insertBefore(repoWarning, target);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    let html = "<strong><?= \Fisharebest\Webtrees\I18N::translate('Possible duplicate repositories found:') ?></strong><ul class='list-unstyled'>";
+                    data.data.forEach(item => {
+                        html += "<li class='mb-1'>" + item.name2 + " (" + item.id2 + ")</li>";
+                    });
+                    html += "</ul>";
+                    repoWarning.innerHTML = html;
+                    repoWarning.style.display = "block";
+                } else {
+                    repoWarning.style.display = "none";
+                }
             });
     };
 
@@ -1653,6 +1739,23 @@ document.addEventListener("DOMContentLoaded", function() {
         if (id.includes("GIVN") || name.includes("GIVN") || id.includes("SURN") || name.includes("SURN")) {
             clearTimeout(personTimeout);
             personTimeout = setTimeout(() => checkDuplicate(e), 500);
+        }
+        if ((id.includes("SOUR") || id.includes("S_TITLE") || name.includes("S_TITLE")) && (id.includes("TITL") || name.includes("TITL"))) {
+            clearTimeout(sourceTimeout);
+            sourceTimeout = setTimeout(() => checkSource(e), 500);
+        } else if (id === "S_TITLE" || name === "S_TITLE" || id === "TITL") {
+            // Very broad fallback for simple IDs
+            clearTimeout(sourceTimeout);
+            sourceTimeout = setTimeout(() => checkSource(e), 500);
+        }
+        if (id.includes("REPO") && id.includes("NAME")) {
+            clearTimeout(repoTimeout);
+            repoTimeout = setTimeout(() => checkRepository(e), 500);
+        }
+        if (id.includes("REPO") && id.includes("TITL")) {
+            // Some themes might use TITLE for repo name
+            clearTimeout(repoTimeout);
+            repoTimeout = setTimeout(() => checkRepository(e), 500);
         }
     };
 

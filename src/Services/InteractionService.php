@@ -40,6 +40,26 @@ class InteractionService
 
     /**
      * @param Tree   $tree
+     * @param string $title
+     * @return array
+     */
+    public static function runSourceCheck(Tree $tree, string $title): array
+    {
+        return DatabaseService::findDuplicateSource($tree, $title);
+    }
+
+    /**
+     * @param Tree   $tree
+     * @param string $name
+     * @return array
+     */
+    public static function runRepositoryCheck(Tree $tree, string $name): array
+    {
+        return DatabaseService::findDuplicateRepository($tree, $name);
+    }
+
+    /**
+     * @param Tree   $tree
      * @param string $given
      * @param string $surname
      * @param string $birth

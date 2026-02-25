@@ -124,6 +124,7 @@ return [
     'No issues found!' => 'No issues found!',
     'Your tree is clean.' => 'Your tree is clean.',
     'Possible duplicates found:' => 'Possible duplicates found:',
+    'Possible duplicate sources found:' => 'Possible duplicate sources found:',
     'phonetically' => 'phonetically',
     'Compare' => 'Compare',
     'This person already exists as a child in this family:' => 'This person already exists as a child in this family:',

@@ -462,6 +462,272 @@ class DatabaseService
     }
 
     /**
+     * Find potential duplicate sources based on title
+     *
+     * @param Tree   $tree
+     * @param string $title Source title
+     * @return array
+     */
+    public static function findDuplicateSource(Tree $tree, string $title): array
+    {
+        if (mb_strlen($title) < 3) {
+            return [
+                'check_type' => 'source_duplicate',
+                'description' => 'Title too short',
+                'data' => [],
+            ];
+        }
+
+        $treeId = (int)$tree->id();
+        $normalizedInput = self::normalizeSourceTitle($title);
+        
+        // Fetch all sources for this tree (usually sources are fewer than individuals, so we can filter in PHP if needed, 
+        // but let's try to be smart with SQL)
+        // We'll search for anything that shares some words or has a similar prefix
+        $words = array_filter(explode(' ', $normalizedInput), function($w) { return mb_strlen($w) > 2; });
+        
+        $query = DB::table('sources')
+            ->where('s_file', '=', $treeId);
+
+        if (!empty($words)) {
+            $query->where(function($q) use ($words) {
+                foreach ($words as $word) {
+                    $q->orWhere('s_gedcom', 'LIKE', '%TITL%' . $word . '%');
+                }
+            });
+        } else {
+            $query->where('s_gedcom', 'LIKE', '%TITL%' . $title . '%');
+        }
+
+        $rows = $query->select(['s_id', 's_gedcom'])->get();
+        
+        $matches = [];
+        $seenXrefs = [];
+
+        foreach ($rows as $row) {
+            $gedcom = $row->s_gedcom;
+            $candTitle = '';
+            $candAuth = '';
+            $candPubl = '';
+            
+            // Extract title from GEDCOM (1 TITL)
+            if (preg_match('/^1 TITL (.+)$/m', $gedcom, $titleMatch)) {
+                $candTitle = trim($titleMatch[1]);
+            }
+            // Extract Author (1 AUTH)
+            if (preg_match('/^1 AUTH (.+)$/m', $gedcom, $authMatch)) {
+                $candAuth = trim($authMatch[1]);
+            }
+            // Extract Publisher (1 PUBL)
+            if (preg_match('/^1 PUBL (.+)$/m', $gedcom, $publMatch)) {
+                $candPubl = trim($publMatch[1]);
+            }
+            
+            if (empty($candTitle)) {
+                continue;
+            }
+
+            $normalizedCand = self::normalizeSourceTitle($candTitle);
+            
+            // Check for direct match after normalization
+            $isMatch = ($normalizedInput === $normalizedCand);
+            
+            // Check for translation match
+            if (!$isMatch) {
+                $isMatch = self::isSourceTranslationMatch($normalizedInput, $normalizedCand);
+            }
+            
+            // Check for fuzzy match
+            if (!$isMatch) {
+                $distance = StringHelper::levenshteinDistance($normalizedInput, $normalizedCand);
+                if ($distance <= 2 || ($distance <= 4 && mb_strlen($normalizedInput) > 10)) {
+                    $isMatch = true;
+                }
+            }
+
+            if ($isMatch) {
+                $label = $candTitle;
+                if ($candAuth) $label .= " [" . $candAuth . "]";
+                
+                $matches[] = [
+                    'id2' => $row->s_id,
+                    'name2' => $label,
+                    'auth' => $candAuth,
+                    'publ' => $candPubl
+                ];
+                $seenXrefs[] = $row->s_id;
+            }
+        }
+
+        return [
+            'check_type' => 'source_duplicate',
+            'description' => 'Found ' . count($matches) . ' potential duplicate sources',
+            'data' => $matches,
+        ];
+    }
+
+    /**
+     * Normalize source title for comparison
+     *
+     * @param string $title
+     * @return string
+     */
+    private static function normalizeSourceTitle(string $title): string
+    {
+        // Lowercase
+        $title = mb_strtolower($title);
+        // Remove punctuation (comma, dot, semicolon, colon)
+        $title = str_replace([',', '.', ';', ':', '(', ')', '[', ']', '-', '_'], ' ', $title);
+        // Remove extra spaces
+        $title = preg_replace('/\s+/', ' ', $title);
+        return trim($title);
+    }
+
+    /**
+     * Check if two source titles are likely matches, considering translations and word order
+     *
+     * @param string $t1 Normalized title 1
+     * @param string $t2 Normalized title 2
+     * @return bool
+     */
+    private static function isSourceTranslationMatch(string $t1, string $t2): bool
+    {
+        $map = [
+            'birth' => ['geburt', 'geboren', 'birt', 'geburtsregister'],
+            'death' => ['tod', 'sterbe', 'sterben', 'gestorben', 'deat', 'sterberegister'],
+            'marriage' => ['heirat', 'ehe', 'marr', 'trauung', 'heiratsregister'],
+            'baptism' => ['taufe', 'getauft', 'bapm', 'chr', 'chri', 'christening', 'taufregister'],
+            'burial' => ['bestattung', 'beerdigung', 'buri'],
+            'register' => ['buch', 'register', 'reg', 'kirchenbuch'],
+            'church' => ['kirche', 'kirchen', 'church'],
+            'churchbook' => ['kirchenbuch', 'kb', 'curchbook'], 
+            'civil' => ['standesamt', 'zivil'],
+            'passenger' => ['passagier', 'passagierliste', 'boarding', 'manifest'],
+            'naturalization' => ['einbürgerung', 'einbürgerungen', 'citizenship'],
+            'military' => ['militär', 'militärdienst', 'army', 'soldier', 'war', 'krieg'],
+            'emigration' => ['auswanderung', 'emigration', 'departure'],
+            'immigration' => ['einwanderung', 'immigration', 'arrival'],
+            'census' => ['zählung', 'volkszählung', 'census', 'zählungen'],
+            'addressbook' => ['adressbuch', 'adressbücher', 'directory', 'directories', 'adressen'],
+            'ssdi' => ['social', 'security', 'death', 'index', 'ssdi', 'identifikationsnummer', 'identifikation'],
+            'will' => ['testament', 'nachlass', 'will', 'probate', 'erbfolge', 'succession'],
+            'land' => ['grundbesitz', 'grundbuch', 'kataster', 'deed', 'land'],
+            'cemetery' => ['friedhof', 'grabstein', 'cemetery', 'gravestone', 'headstone', 'begräbnisstätte'],
+            'newspaper' => ['zeitung', 'todesanzeige', 'nachruf', 'obituary', 'newspaper', 'journal'],
+        ];
+
+        $words1 = array_filter(explode(' ', $t1), function($w) { return mb_strlen($w) > 1; });
+        $words2 = array_filter(explode(' ', $t2), function($w) { return mb_strlen($w) > 1; });
+
+        if (empty($words1) || empty($words2)) return false;
+
+        $matches = 0;
+        foreach ($words1 as $w1) {
+            $found = false;
+            foreach ($words2 as $w2) {
+                // Direct match
+                if ($w1 === $w2) {
+                    $found = true;
+                    break;
+                }
+                
+                // Translation match
+                foreach ($map as $en => $variants) {
+                    $all = array_merge([$en], $variants);
+                    if (in_array($w1, $all) && in_array($w2, $all)) {
+                        $found = true;
+                        break 2;
+                    }
+                }
+
+                // Partial match (e.g. "Kirchenbuch" contains "Kirche")
+                if (mb_strlen($w1) > 4 && mb_strlen($w2) > 4) {
+                    if (mb_strpos($w1, $w2) !== false || mb_strpos($w2, $w1) !== false) {
+                        $found = true;
+                        break;
+                    }
+                }
+            }
+            if ($found) $matches++;
+        }
+
+        // If at least 50% of the words from the shorter title match (minimum 2 words)
+        $minWords = min(count($words1), count($words2));
+        $threshold = max(2, ceil($minWords * 0.7)); 
+        
+        return $matches >= $threshold;
+    }
+
+    /**
+     * Find potential duplicate repositories based on name
+     *
+     * @param Tree   $tree
+     * @param string $name Repository name
+     * @return array
+     */
+    public static function findDuplicateRepository(Tree $tree, string $name): array
+    {
+        if (mb_strlen($name) < 3) return ['check_type' => 'repo_duplicate', 'data' => []];
+
+        $treeId = (int)$tree->id();
+        $normalizedInput = self::normalizeSourceTitle($name);
+        $words = array_filter(explode(' ', $normalizedInput), function($w) { return mb_strlen($w) > 2; });
+
+        $query = DB::table('repositories')->where('r_file', '=', $treeId);
+
+        if (!empty($words)) {
+            $query->where(function($q) use ($words) {
+                foreach ($words as $word) {
+                    $q->orWhere('r_gedcom', 'LIKE', '%NAME%' . $word . '%');
+                }
+            });
+        }
+
+        $rows = $query->select(['r_id', 'r_gedcom'])->get();
+        $matches = [];
+        
+        $map = [
+            'archive' => ['archiv', 'archives', 'staatsarchiv', 'stadtarchiv', 'landesarchiv'],
+            'library' => ['bibliothek', 'library', 'bücherei'],
+            'church' => ['pfarramt', 'kirchengemeinde', 'parish'],
+            'office' => ['amt', 'behörde', 'office'],
+        ];
+
+        foreach ($rows as $row) {
+            $gedcom = $row->r_gedcom;
+            $candName = '';
+            if (preg_match('/^1 NAME (.+)$/m', $gedcom, $nm)) $candName = trim($nm[1]);
+            if (empty($candName)) continue;
+
+            $normalizedCand = self::normalizeSourceTitle($candName);
+            $isMatch = ($normalizedInput === $normalizedCand);
+
+            if (!$isMatch) {
+                // Reuse translation logic logic for repo types
+                $w1 = explode(' ', $normalizedInput);
+                $w2 = explode(' ', $normalizedCand);
+                $m = 0;
+                foreach ($w1 as $a) {
+                    foreach ($w2 as $b) {
+                        if ($a === $b) { $m++; break; }
+                        foreach ($map as $en => $vars) {
+                            $all = array_merge([$en], $vars);
+                            if (in_array($a, $all) && in_array($b, $all)) { $m++; break 2; }
+                        }
+                    }
+                }
+                if ($m >= max(1, count($w1) * 0.6)) $isMatch = true;
+            }
+
+            if ($isMatch) {
+                $matches[] = ['id2' => $row->r_id, 'name2' => $candName];
+            }
+        }
+
+        return ['check_type' => 'repo_duplicate', 'data' => $matches];
+    }
+
+    /**
      * Get all family IDs where this person is a spouse
      *
      * @param Tree   $tree

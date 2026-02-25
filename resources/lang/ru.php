@@ -49,7 +49,7 @@ return [
     'Parents Age:' => 'Возраст родителей:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Предупреждает о биологически маловероятном возрасте при рождении ребенка.',
     'Sibling Spacing:' => 'Интервал между рождениями детей:',
-    'Warns if births are too close together (< 9 месяцев).' => 'Предупреждает, если рождения произошли слишком близко друг к другу (< 9 месяцев).',
+    'Warns if births are too close together (< 9 months).' => 'Предупреждает, если рождения произошли слишком близко друг к другу (< 9 месяцев).',
     
     'Optional Checks' => 'Дополнительные проверки',
     'Check missing data' => 'Проверка отсутствующих данных',

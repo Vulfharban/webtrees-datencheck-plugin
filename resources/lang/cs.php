@@ -42,7 +42,7 @@ return [
     'Parents Age:' => 'Věk rodičů:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Varuje před biologicky nepravděpodobným věkem při narození dítěte.',
     'Sibling Spacing:' => 'Odstup mezi sourozenci:',
-    'Warns if births are too close together (< 9 měsíců).' => 'Varuje, pokud jsou porody příliš blízko sebe (< 9 měsíců).',
+    'Warns if births are too close together (< 9 months).' => 'Varuje, pokud jsou porody příliš blízko sebe (< 9 měsíců).',
     
     'Optional Checks' => 'Volitelné kontroly',
     'Check missing data' => 'Kontrola chybějících dat',

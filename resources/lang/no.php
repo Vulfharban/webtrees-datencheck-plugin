@@ -42,7 +42,7 @@ return [
     'Parents Age:' => 'Foreldres alder:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Advarer om biologisk usannsynlig alder ved barnets fødsel.',
     'Sibling Spacing:' => 'Avstand mellom søsken:',
-    'Warns if births are too close together (< 9 måneder).' => 'Advarer hvis fødsler er for tette (< 9 måneder).',
+    'Warns if births are too close together (< 9 months).' => 'Advarer hvis fødsler er for tette (< 9 måneder).',
     
     'Optional Checks' => 'Valgfrie kontroller',
     'Check missing data' => 'Sjekk manglende data',

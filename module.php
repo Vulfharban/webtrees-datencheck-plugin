@@ -105,7 +105,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.3.16';
+        return '1.5.1';
     }
 
     public function getVersion(): string
@@ -278,6 +278,18 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             'xref' => 'I1'
         ]);
 
+        $source_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'CheckSource',
+            'tree'   => $tree->name(),
+        ]);
+
+        $repo_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'CheckRepository',
+            'tree'   => $tree->name(),
+        ]);
+
         return view($this->name() . '::modules/datencheck/interaction', [
             'check_url'      => $check_url,
             'sibling_url'    => $sibling_url,
@@ -288,6 +300,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             'add_task_url'   => $add_task_url,
             'ignore_error_url' => $ignore_error_url,
             'individual_url' => $individual_url,
+            'source_url'     => $source_url,
+            'repo_url'       => $repo_url,
         ]);
     }
 
@@ -373,6 +387,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                     return $this->getCheckFamilyAction($request);
                 case 'CheckSibling':
                     return $this->getCheckSiblingAction($request);
+                case 'CheckSource':
+                    return $this->getCheckSourceAction($request);
+                case 'CheckRepository':
+                    return $this->getCheckRepositoryAction($request);
                 case 'AddTask':
                 return $this->getAddTaskAction($request);
             case 'IgnoreError':
@@ -793,6 +811,54 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         return response(json_encode($data))
             ->withHeader('Content-Type', 'application/json');
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function getCheckSourceAction(ServerRequestInterface $request): ResponseInterface
+    {
+        try {
+            $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
+            $params = $request->getQueryParams();
+            $title = $params['title'] ?? '';
+
+            $data = InteractionService::runSourceCheck($tree, $title);
+
+            return response(json_encode($data))
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Throwable $e) {
+            return response(json_encode(['error' => $e->getMessage()]))
+                ->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function getCheckRepositoryAction(ServerRequestInterface $request): ResponseInterface
+    {
+        try {
+            $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
+            $params = $request->getQueryParams();
+            $name = $params['name'] ?? '';
+
+            $data = InteractionService::runRepositoryCheck($tree, $name);
+
+            return response(json_encode($data))
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Throwable $e) {
+            return response(json_encode(['error' => $e->getMessage()]))
+                ->withHeader('Content-Type', 'application/json');
+        }
     }
 
     /**

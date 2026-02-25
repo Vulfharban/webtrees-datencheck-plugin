@@ -42,7 +42,7 @@ return [
     'Parents Age:' => 'Vanhempien ikä:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Varoittaa biologisesti epätodennäköisestä iästä lapsen syntyessä.',
     'Sibling Spacing:' => 'Sisarusten ikäero:',
-    'Warns if births are too close together (< 9 kuukautta).' => 'Varoittaa, jos syntymät ovat liian lähekkäin (< 9 kuukautta).',
+    'Warns if births are too close together (< 9 months).' => 'Varoittaa, jos syntymät ovat liian lähekkäin (< 9 kuukautta).',
     
     'Optional Checks' => 'Valinnaiset tarkistukset',
     'Check missing data' => 'Tarkista puuttuvat tiedot',

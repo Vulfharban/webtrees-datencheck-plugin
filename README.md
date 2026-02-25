@@ -14,6 +14,13 @@ Vermeiden Sie doppelt angelegte Personen bereits im Entstehungsprozess.
 *   **Interaktiver Vergleich:** Ein detailliertes "Side-by-Side"-Modal erlaubt den direkten Vergleich zwischen dem neuen Datensatz und bestehenden Personen oder Familien, bevor eine Dublette entsteht.
 *   **Familien-Zusammenführung:** Erkennt, wenn für ein Elternpaar bereits eine Familie existiert, und ermöglicht die direkte Verknüpfung statt einer Neuanlage.
 
+### 📚 Quellen- & Archiv-Management (Neu!)
+Behalten Sie die Kontrolle über Ihre Belege und vermeiden Sie redundante Datensätze.
+*   **Live-Quellen-Check:** Prüft bereits während der Eingabe eines Quellentitels auf Dubletten.
+*   **Bilinguales Keyword-Mapping:** Erkennt Äquivalente in DE/EN für 20+ Kategorien (z.B. "Kirchenbuch" ↔ "Churchbook", "Ehe" ↔ "Marriage").
+*   **Erweiterte Metadaten:** Berücksichtigt beim Abgleich nicht nur den Titel, sondern auch Autor (`AUTH`) und Herausgeber (`PUBL`).
+*   **Live-Archiv-Check:** Verhindert doppelte Archive (Repositories) durch Echtzeit-Suche (z.B. "National Archives" ↔ "Nationalarchiv").
+
 ### ✅ Erweiterte Plausibilitätsprüfungen
 Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeiten.
 *   **Biologische Grenzen:**
@@ -41,7 +48,7 @@ Behalten Sie den Überblick über die Datenqualität Ihres gesamten Stammbaums.
 
 ## ⚙️ Konfiguration
 
-Das Modul ist hochgradig anpassbar. Unter **Veraltung > Datencheck > Einstellungen** können Sie festlegen:
+Das Modul ist anpassbar. Unter **Veraltung > Datencheck > Einstellungen** können Sie festlegen:
 *   **Benutzer-spezifische Einstellungen:** Jeder Administrator/Moderator kann seine eigenen Toleranzgrenzen und aktiven Prüfungen speichern, ohne andere Benutzer zu beeinflussen.
 *   **Toleranzgrenzen:** Justieren Sie die Fuzzy-Logik für Namen und Datumsabweichungen.
 *   **Feature-Toggles:** Aktivieren oder Deaktivieren Sie spezifische Prüfmodule (z.B. Geografie-Check, Quellen-Check).
@@ -82,6 +89,13 @@ Prevent duplicate individuals before they are even created.
 *   **Interactive Comparison:** A detailed "side-by-side" modal allows for direct comparison between the new record and existing individuals or families before a duplicate is created.
 *   **Family Merging:** Detects if a family already exists for a pair of parents and allows for direct linking instead of creating a new family record.
 
+### 📚 Source & Repository Management (New!)
+Maintain control over your citations and avoid redundant records.
+*   **Live Source Check:** Checks for duplicate sources in real-time while entering a source title.
+*   **Bilingual Keyword Mapping:** Recognizes equivalents in DE/EN for 20+ categories (e.g., "Kirchenbuch" ↔ "Churchbook", "Ehe" ↔ "Marriage").
+*   **Enhanced Metadata:** Considers not only the title but also the author (`AUTH`) and publisher (`PUBL`) during matching.
+*   **Live Repository Check:** Prevents duplicate archives (repositories) through real-time search (e.g., "National Archives" ↔ "Nationalarchiv").
+
 ### ✅ Advanced Plausibility Checks
 Comprehensive rules to identify biological and logical inconsistencies.
 *   **Biological Limits:**
@@ -109,7 +123,7 @@ Maintain an overview of the data quality of your entire family tree.
 
 ## ⚙️ Configuration
 
-The module is highly customizable. Under **Control Panel > Datencheck > Settings**, you can define:
+The module is customizable. Under **Control Panel > Datencheck > Settings**, you can define:
 *   **User-Specific Settings:** Each administrator/moderator can save their own tolerance limits and active checks without affecting other users.
 *   **Tolerance Thresholds:** Adjust fuzzy logic for names and date deviations.
 *   **Feature Toggles:** Enable or disable specific check modules (e.g., Geographic check, Source check).

@@ -1,5 +1,33 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.5.1] - 2026-02-25
+### Hinzugefügt
+- **Keyword-Update**: "Christening" und "Chri" werden nun beim Tauf-Abgleich erkannt. "Sterbe" und "Sterben" sind nun beide abgedeckt.
+
+## [1.5.0] - 2026-02-25
+### Hinzugefügt
+- **Live-Archiv-Check**: Echtzeit-Dublettensuche für Archive/Repositories (z.B. Archiv ↔ Archives ↔ Staatsarchiv).
+- **Erweiterte Quellendetails**: Der Autor (`AUTH`) wird nun beim Dubletten-Check mit ausgelesen und zur besseren Unterscheidung angezeigt.
+- **Neue Keyword-Kategorien**: Unterstützung für Testamente/Nachlass, Grundbesitz, Friedhöfe und Zeitungen (Obituaries).
+
+## [1.4.3] - 2026-02-25
+### Hinzugefügt
+- **Erweiterte Quellen-Keywords**: Unterstützung für Adressbücher und Social Security Death Index (SSDI) / Identifikationsnummern beim Dubletten-Check.
+
+## [1.4.2] - 2026-02-25
+### Hinzugefügt
+- **Erweiterte Quellen-Keywords**: Unterstützung für Kategorien wie Passagierlisten, Einbürgerung, Militärdienst, Aus/Einwanderung und Volkszählungen beim Dubletten-Check.
+- **Register-Logik**: Automatische Verknüpfung von "Geburtsregister" etc. mit den entsprechenden englischen Begriffen.
+
+## [1.4.0] - 2026-02-25
+### Hinzugefügt
+- **Live-Quellen-Check**: Echtzeit-Suche nach Dubletten bei der Eingabe von Quellentiteln (Deutsch/Englisch-kompatibel).
+- **Integrierte Namens-Normalisierung**: Verbesserte Erkennung von ähnlichen Quellentiteln durch Entfernung von Satzzeichen und Berücksichtigung von Übersetzungen (z.B. "birth" vs "geburt").
+### Behoben
+- **i18n Bugfix: Geschwisterabstand**: Korrektur der fehlerhaften Übersetzungsschlüssel für den Hilfetext "Geschwisterabstand" in 13+ Sprachen (de, it, es, ru, pl, sv, no, fi, da, cs, el, pt, nl).
+- **Behoben: Quellen-Dubletten-Check**: Die Erkennung der Quellentitel-Felder wurde verbessert, damit der Check auch in Modal-Dialogen und bei der Neuanlage zuverlässig auslöst.
+- **Lokalisierung (nl)**: Fehlende Übersetzungen für Geschwisterabstand und Elternalter im Niederländischen nachgetragen.
+
 ## [1.3.16] - 2026-02-23
 ### Hinzugefügt
 - **Intelligente Tauf-Logik**: Zeiträume (z. B. nur Geburtsjahr bekannt) werden nun korrekt verglichen. Taufen im selben Jahr wie eine unpräzise Geburt führen nicht mehr zu Warnungen, sondern zu einem informativen Hinweis ("Info").

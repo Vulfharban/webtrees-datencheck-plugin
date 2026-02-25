@@ -42,7 +42,7 @@ return [
     'Parents Age:' => 'Ηλικία Γονέων:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Προειδοποιεί για βιολογικά απίθανη ηλικία στη γέννηση του παιδιού.',
     'Sibling Spacing:' => 'Διάστημα μεταξύ Αδελφών:',
-    'Warns if births are too close together (< 9 μήνες).' => 'Προειδοποιεί εάν οι γεννήσεις είναι πολύ κοντά χρονικά (< 9 μήνες).',
+    'Warns if births are too close together (< 9 months).' => 'Προειδοποιεί εάν οι γεννήσεις είναι πολύ κοντά χρονικά (< 9 μήνες).',
     
     'Optional Checks' => 'Προαιρετικοί Έλεγχοι',
     'Check missing data' => 'Έλεγχος για ελλείποντα δεδομένα',

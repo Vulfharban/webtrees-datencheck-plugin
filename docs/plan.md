@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.3.12 - **Stable** (502 Fix & Improved Marriage Logic)
+**Status:** Version 1.5.1 - **Stable** (Live Source & Repo Check, Keyword Expansion)
 
 ## Kernfunktionen
 
@@ -26,13 +26,26 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 - [x] **Globale Äquivalente**: Erkennt "Johann" = "Jan" = "John" etc.
 - [x] **Geschlechts-Heuristik**: Erkennt typisch weibliche Endungen (a/e).
 
-### 4. Erweiterte Analysen (Geplant)
-- [ ] **"Likely Dead" Heuristik** (Optional): Warnung bei fehlendem Sterbedatum (>110 Jahre).
-- [ ] **Inzest-Check** (Optional): Prüfung auf zu nahe Verwandtschaftsverhältnisse in Ehen.
-- [ ] **Erweiterte Quellenprüfung** (Optional): Tiefenprüfung der Belegqualität und Konsistenz.
-- [ ] **Quick-Fix Buttons**: Direkte Korrektur einfacher Zeitfehler in der Analyse-Tabelle.
-- [ ] **Generations-Statistiken**: Erkennung von Ausreißern beim Alter bei Erstgeburt.
-- [ ] **Familien-Dubletten**: Identifikation doppelt angelegter Partnerschaften (Elternpaar-Matching).
+### 4. Erweiterte Analysen (Geplant/In Arbeit)
+- [ ] **"Likely Dead" Heuristik**:
+    - *Status:* **Teilweise implementiert** (Max. Lebensspanne 120J wird bereits geprüft).
+    - *Offen:* Heuristik für fehlende Sterbedaten (>110J) und Prüfung letzter Lebenszeichen.
+- [ ] **Erweiterte Quellenprüfung**:
+    - *Status:* **Teilweise implementiert** (Check auf komplett fehlende Quellen existiert).
+    - *Offen:* Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).
+- [ ] **Quick-Fix Buttons**:
+    - *Status:* noch nicht gestartet.
+- [ ] **Generations-Statistiken**:
+    - *Status:* **Teilweise implementiert** (Biologisches Alter der Eltern wird geprüft).
+    - *Offen:* Statistische Ausreißer und extreme Geschwisterabstände.
+- [ ] **Familien-Dubletten**:
+    - *Status:* **Teilweise implementiert** (Interaktiver Check bei Neuanlage existiert).
+    - *Offen:* Bulk-Analyse für "gesplittete" Familien im gesamten Baum.
+
+### 5. Quellencheck & Archive
+- [x] **Quellen-Duplikatssuche (Live)**: Suche nach ähnlichen Quellen während der Eingabe (inkl. Übersetzung, Autoren-Check & Zeichen-Toleranz).
+- [x] **Archiv-Duplikatssuche (Live)**: Echtzeit-Check für Archive/Repositories zur Konsolidierung der Quellenverwaltung.
+- [x] **Bilinguales Keyword-Mapping**: Erkennt Äquivalente in DE/EN für 20+ Kategorien (Militär, Census, Standesamt etc.).
 
 ## Technische Basis
 - **Sprache**: PHP 7.4+ (natives webtrees-Modul)

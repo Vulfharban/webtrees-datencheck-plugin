@@ -49,7 +49,7 @@ return [
     'Parents Age:' => 'Wiek rodziców:',
     'Warns of biologically unlikely age at the birth of the child.' => 'Ostrzega o biologicznie mało prawdopodobnym wieku w chwili narodzin dziecka.',
     'Sibling Spacing:' => 'Odstęp między rodzeństwem:',
-    'Warns if births are too close together (< 9 miesięcy).' => 'Ostrzega, jeśli narodziny są zbyt blisko siebie (< 9 miesięcy).',
+    'Warns if births are too close together (< 9 months).' => 'Ostrzega, jeśli narodziny są zbyt blisko siebie (< 9 miesięcy).',
     
     'Optional Checks' => 'Opcjonalne testy',
     'Check missing data' => 'Sprawdź brakujące dane',

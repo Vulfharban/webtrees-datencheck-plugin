@@ -45,6 +45,10 @@ return [
     'Temporal Impossibility' => 'Temporele plausibiliteit',
     'Possible Duplicates' => 'Mogelijke duplicaten',
     'Sibling Spacing' => 'Tussenruimte broers/zussen',
+    'Parents Age:' => 'Leeftijd ouders:',
+    'Warns of biologically unlikely age at the birth of the child.' => 'Waarschuwt voor biologisch onwaarschijnlijke leeftijd bij de geboorte van het kind.',
+    'Sibling Spacing:' => 'Tussenruimte broers/zussen:',
+    'Warns if births are too close together (< 9 months).' => 'Waarschuwt als geboorten te kort op elkaar volgen (< 9 maanden).',
     
     'Issues Found' => 'Gevonden problemen',
     'Person' => 'Persoon',
