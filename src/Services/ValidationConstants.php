@@ -45,6 +45,9 @@ class ValidationConstants
         'BAPTISM_DELAYED'               => 'Taufe ungewöhnlich spät',
         'MISSING_GENDER'                => 'Geschlecht nicht ausgewählt',
         'GENDER_NAME_MISMATCH'          => 'Vorname passt nicht zum Geschlecht',
+        'LIKELY_DEAD'                   => 'Wahrscheinlich verstorben',
+        'FACT_BEFORE_BIRTH'             => 'Ereignis vor Geburt',
+        'FACT_AFTER_DEATH'              => 'Ereignis nach Tod',
     ];
 
     private static array $labels_en = [
@@ -88,6 +91,9 @@ class ValidationConstants
         'BAPTISM_DELAYED'               => 'Baptism unusually late',
         'MISSING_GENDER'                => 'Gender not specified',
         'GENDER_NAME_MISMATCH'          => 'Name does not match gender',
+        'LIKELY_DEAD'                   => 'Likely dead',
+        'FACT_BEFORE_BIRTH'             => 'Event before birth',
+        'FACT_AFTER_DEATH'              => 'Event after death',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string

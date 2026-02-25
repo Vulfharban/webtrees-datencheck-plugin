@@ -23,6 +23,7 @@ use Wolfrum\Datencheck\Services\TaskService;
 use Wolfrum\Datencheck\Services\ValidationService;
 use Wolfrum\Datencheck\Services\SchemaService;
 use Wolfrum\Datencheck\Services\IgnoredErrorService;
+use Wolfrum\Datencheck\Services\ActionService;
 
 use function response;
 use function route;
@@ -105,7 +106,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.5.1';
+        return '1.5.2';
     }
 
     public function getVersion(): string
@@ -290,6 +291,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             'tree'   => $tree->name(),
         ]);
 
+        $mark_as_dead_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'MarkAsDead',
+            'tree'   => $tree->name(),
+        ]);
+
         return view($this->name() . '::modules/datencheck/interaction', [
             'check_url'      => $check_url,
             'sibling_url'    => $sibling_url,
@@ -302,6 +309,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             'individual_url' => $individual_url,
             'source_url'     => $source_url,
             'repo_url'       => $repo_url,
+            'mark_as_dead_url' => $mark_as_dead_url,
         ]);
     }
 
@@ -406,6 +414,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                     return $this->getAdminAction($request);
                 case 'BatchAnalysis':
                     return $this->getBatchAnalysisAction($request);
+                case 'MarkAsDead':
+                    return $this->getMarkAsDeadAction($request);
                 default:
                     return response(json_encode(['error' => 'Unknown action: ' . $action]))
                         ->withHeader('Content-Type', 'application/json');
@@ -667,6 +677,13 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $tree_title = $tree ? $tree->title() : $tree_name;
         $tree_url = $tree ? route(\Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => $tree->name()]) : '#';
 
+        $marker_tree = $tree ?: Registry::container()->get(Tree::class);
+        $mark_as_dead_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'MarkAsDead',
+            'tree'   => $marker_tree->name(),
+        ]);
+
         // Render view content
         ob_start();
         require $view_file;
@@ -918,6 +935,35 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $success = IgnoredErrorService::ignoreError($tree, $xref, $code, $msg);
 
             return response(json_encode(['success' => $success]))
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Throwable $e) {
+            return response(json_encode(['success' => false, 'message' => $e->getMessage()]))
+                ->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function getMarkAsDeadAction(ServerRequestInterface $request): ResponseInterface
+    {
+        try {
+            $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
+            $params = $request->getQueryParams();
+            $xref = $params['xref'] ?? '';
+
+            if (empty($xref)) {
+                return response(json_encode(['success' => false, 'message' => 'Missing parameters']))
+                    ->withHeader('Content-Type', 'application/json');
+            }
+
+            $result = ActionService::markAsDead($tree, $xref);
+
+            return response(json_encode($result))
                 ->withHeader('Content-Type', 'application/json');
         } catch (\Throwable $e) {
             return response(json_encode(['success' => false, 'message' => $e->getMessage()]))

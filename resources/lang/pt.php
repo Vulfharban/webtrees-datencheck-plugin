@@ -256,4 +256,7 @@ return [
     'Name Consistency' => 'Consistência de nomes',
     'Source Quality' => 'Qualidade das fontes',
     'No marriage data' => 'Sem dados de casamento',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
 ];

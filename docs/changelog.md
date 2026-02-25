@@ -1,5 +1,12 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.5.2] - 2026-02-25
+### Hinzugefügt
+- **"Likely Dead" Heuristik**: Neue Prüfung für Personen, die über 110 Jahre alt wären und keinen Sterbebeleg haben. Berücksichtigt "letzte Lebenszeichen" (z. B. Kindergeburten), um das vermutete Alter zu verfeinern.
+- **Quick-Fix**: Personen in der Analyse können nun direkt per Klick als verstorben markiert werden (Quick-Fix für "Wahrscheinlich verstorben").
+- **Verwaiste Fakten (Orphaned Facts)**: Erkennt Ereignisse (z. B. Beruf, Wohnort), die zeitlich unmöglich vor der Geburt oder nach dem Tod liegen. Robuster Abgleich durch Tag-Normalisierung (strip prefixes) und strikte technische Blacklist (CHAN, UID, SEX etc.).
+- **Lokalisierung**: Vollständige Unterstützung für verwaiste Fakten in allen 26 Sprachen (de, en, fr, es, it, nl vollständig übersetzt).
+
 ## [1.5.1] - 2026-02-25
 ### Hinzugefügt
 - **Keyword-Update**: "Christening" und "Chri" werden nun beim Tauf-Abgleich erkannt. "Sterbe" und "Sterben" sind nun beide abgedeckt.

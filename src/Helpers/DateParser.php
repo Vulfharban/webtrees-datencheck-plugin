@@ -54,8 +54,9 @@ class DateParser
         
         // Try to find a 4-digit year
         foreach ($parts as $part) {
-            if (preg_match('/^\d{4}$/', $part)) {
-                $result['year'] = (int)$part;
+            $cleanPart = preg_replace('/[^0-9]/', '', $part);
+            if (preg_match('/^\d{4}$/', $cleanPart)) {
+                $result['year'] = (int)$cleanPart;
                 break;
             }
         }

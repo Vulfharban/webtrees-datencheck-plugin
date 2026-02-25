@@ -651,6 +651,7 @@
                             <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Person') ?></th>
                             <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Code / Type') ?></th>
                             <th scope="col"><?= \Fisharebest\Webtrees\I18N::translate('Description') ?></th>
+                            <th scope="col" class="text-end"><?= \Fisharebest\Webtrees\I18N::translate('Action') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -870,10 +871,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Replace the tree placeholder and the dummy XREF 'I1'
                         let pUrl = personUrlBase.replace('TREE0', treeName).replace('I1', issue.xref);
                         
+                        let actionHtml = '';
+                        if (issue.code === 'LIKELY_DEAD') {
+                            actionHtml = `<button type="button" class="btn btn-sm btn-outline-danger" title="<?= \Fisharebest\Webtrees\I18N::translate('Mark as dead') ?>" onclick="window.datencheckMarkAsDead('${issue.xref}', this)">
+                                <i class="fa fa-cross"></i> <?= \Fisharebest\Webtrees\I18N::translate('Fix') ?>
+                            </button>`;
+                        }
+                        
                         row.innerHTML = `
                             <td><a href="${pUrl}" target="_blank">${issue.name} <small class="text-muted">(${issue.xref})</small></a></td>
                             <td><span class="badge ${badgeClass}">${issue.label || issue.code}</span></td>
                             <td>${issue.message}</td>
+                            <td class="text-end">${actionHtml}</td>
                         `;
                         resultsTableBody.appendChild(row);
                     }
@@ -883,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (totalIssues >= RENDER_LIMIT && !document.getElementById('render-limit-warning')) {
                     const warnRow = document.createElement('tr');
                     warnRow.id = 'render-limit-warning';
-                    warnRow.innerHTML = `<td colspan="3" class="text-center bg-warning text-dark font-weight-bold p-3">
+                    warnRow.innerHTML = `<td colspan="4" class="text-center bg-warning text-dark font-weight-bold p-3">
                         <i class="fa fa-exclamation-triangle"></i> 
                         ${i18n.tooManyIssues.replace('%s', RENDER_LIMIT)}
                     </td>`;
@@ -914,7 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (totalIssues === 0) {
                      resultsContainer.style.display = 'block';
-                     resultsTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> ${i18n.noIssuesFound}</h4><p>${i18n.cleanTree}</p></td></tr>`;
+                     resultsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-success py-4"><h4><i class="fa fa-check-circle"></i> ${i18n.noIssuesFound}</h4><p>${i18n.cleanTree}</p></td></tr>`;
                      filterControls.style.display = 'none'; // No need to filter nothing
                 }
             }
@@ -961,5 +970,39 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url); // Clean up the object URL
     });
+
+    window.datencheckMarkAsDead = async (xref, btn) => {
+        if (!confirm('<?= \Fisharebest\Webtrees\I18N::translate('Are you sure you want to mark this person as dead?') ?>')) return;
+        
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+        
+        try {
+            const url = '<?= $mark_as_dead_url ?>' + ( '<?= $mark_as_dead_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                btn.className = 'btn btn-sm btn-success ms-2';
+                btn.innerHTML = '<i class="fa fa-check"></i> ' + '<?= \Fisharebest\Webtrees\I18N::translate('Done') ?>';
+                // Find parent row and mark it as resolved (optional: hide it)
+                const row = btn.closest('tr');
+                if (row) {
+                    row.style.opacity = '0.5';
+                    row.style.textDecoration = 'line-through';
+                }
+            } else {
+                alert('<?= \Fisharebest\Webtrees\I18N::translate('Error:') ?> ' + (data.message || 'Unknown error'));
+                btn.disabled = false;
+                btn.innerHTML = oldHtml;
+            }
+        } catch (e) {
+            console.error(e);
+            alert('<?= \Fisharebest\Webtrees\I18N::translate('Connection error') ?>');
+            btn.disabled = false;
+            btn.innerHTML = oldHtml;
+        }
+    };
 });
 </script>

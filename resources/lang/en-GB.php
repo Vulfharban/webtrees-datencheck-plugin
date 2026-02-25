@@ -294,4 +294,7 @@ return [
     'male' => 'male',
     'female' => 'female',
     'No marriage data' => 'No marriage data',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
 ];

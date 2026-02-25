@@ -28,8 +28,9 @@ Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeit
     *   **Posthume Geburten:** Erkennt Geburten nach dem Tod des Vaters (bis zu 9 Monate danach zulässig) oder der Mutter (unmöglich).
 *   **Zeitliche Logik:**
     *   **Lebensereignisse:** Prüft die korrekte Reihenfolge: Geburt → Taufe → Heirat → Tod → Bestattung.
-    *   **Tauf-Check:** Neue Warnung, wenn eine Taufe ungewöhnlich spät (z.B. nach mehr als 30 Tagen, konfigurierbar) nach der Geburt stattfindet – wichtig für die Identifizierung von Erwachsentaufen oder späten Quellen.
-    *   **Lebensspanne:** Anpassbare Warnung bei extremem Alter (z.B. >120 Jahre).
+    *   **Tauf-Check:** Neue Warnung, wenn eine Taufe ungewöhnlich spät (z. B. nach mehr als 30 Tagen, konfigurierbar) nach der Geburt stattfindet – wichtig für die Identifizierung von Erwachsentaufen oder späten Quellen.
+    *   **Verwaiste Fakten (Orphaned Facts):** Erkennt biografische Ereignisse (Beruf, Wohnort), die zeitlich unmöglich vor der Geburt oder nach dem Tod liegen. Robuster Abgleich durch Ausschluss technischer Metadaten (wie Änderungsdatum).
+    *   **Lebensspanne:** Anpassbare Warnung bei extremem Alter (z. B. >120 Jahre).
 *   **Namens- & Formalkonsistenz:**
     *   Prüft auf fehlende Nachnamen oder Unstimmigkeiten zwischen Kindern und Vätern.
     *   **Alias- & Genannt-Namen:** Unterstützung für westfälische Genannt-Namen ("gen.", "vulgo"), polnische/lateinische Aliase ("vel", "alias") und weitere Namensvarianten.
@@ -102,8 +103,8 @@ Comprehensive rules to identify biological and logical inconsistencies.
     *   **Age Thresholds:** Warnings for parents who were unusually young (<14) or old (>50 for mothers, >80 for fathers) at the time of birth (fully configurable).
     *   **Posthumous Births:** Detects births occurring after the father's death (up to 9 months allowed) or the mother's death.
 *   **Temporal Logic:**
-    *   **Life Events:** Verifies the correct chronological order: Birth → Baptism → Marriage → Death → Burial.
     *   **Baptism Check:** New warning for unusually late baptisms (e.g., more than 30 days after birth, configurable) – helpful for identifying adult baptisms or delayed records.
+    *   **Orphaned Facts:** Detects biographical events (occupation, residence) that occur before birth or after death. Robust matching by excluding technical metadata (like modification dates).
     *   **Lifespan:** Customizable warnings for extreme ages (e.g., >120 years).
 *   **Naming & Formal Consistency:**
     *   Checks for missing surnames or inconsistencies between children and fathers.

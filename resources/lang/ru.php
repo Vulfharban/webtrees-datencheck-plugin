@@ -271,4 +271,7 @@ return [
     'The given name "%s" is usually %s, but you selected %s.' => 'Имя "%s" обычно %s, но вы выбрали %s.',
     'male' => 'мужской',
     'female' => 'женский',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
 ];

@@ -308,4 +308,7 @@ return [
     'Geographic Plausibility' => 'Geografska vjerodostojnost',
     'Name Consistency' => 'Dosljednost imena',
     'Source Quality' => 'Kvaliteta izvora',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
 ];

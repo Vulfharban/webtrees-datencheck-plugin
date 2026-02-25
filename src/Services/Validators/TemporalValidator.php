@@ -5,6 +5,8 @@ namespace Wolfrum\Datencheck\Services\Validators;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\ExtCalendar\GregorianCalendar;
 use Wolfrum\Datencheck\Services\ValidationService;
+use Fisharebest\Webtrees\I18N;
+use Wolfrum\Datencheck\Helpers\DateParser;
 
 class TemporalValidator extends AbstractValidator
 {
@@ -35,7 +37,7 @@ class TemporalValidator extends AbstractValidator
             return [
                 'code' => $isImpreciseConflict ? 'IMPRECISE_DATE_CONFLICT_BIRTH_DEATH' : 'BIRTH_AFTER_DEATH',
                 'type' => 'temporal_impossibility',
-                'label' => self::translate('Date conflict'),
+                'label' => self::translate('Check sequence'),
                 'severity' => $isImpreciseConflict ? 'info' : 'error',
                 'message' => $isImpreciseConflict 
                     ? self::translate(
@@ -93,13 +95,10 @@ class TemporalValidator extends AbstractValidator
     public static function checkBaptismBeforeBirth(?Individual $person, string $overrideBirth = '', string $overrideBap = ''): ?array
     {
         $birthMinJD = ValidationService::getEffectiveJD($person, 'BIRT', $overrideBirth);
-        $birthMaxJD = ValidationService::getEffectiveMaxJD($person, 'BIRT', $overrideBirth);
-        $bapMinJD = ValidationService::getEffectiveJD($person, 'CHR', $overrideBap);
         $bapMaxJD = ValidationService::getEffectiveMaxJD($person, 'CHR', $overrideBap);
 
-        if (!$birthMinJD || !$bapMinJD) return null;
+        if (!$birthMinJD || !$bapMaxJD) return null;
 
-        // 1. Definitiv unmöglich: Taufe endet vor Geburtszeitraum
         if ($bapMaxJD < $birthMinJD) {
             return [
                 'code' => 'BAPTISM_BEFORE_BIRTH',
@@ -114,62 +113,6 @@ class TemporalValidator extends AbstractValidator
             ];
         }
 
-        // 2. Überschneidung / Ungenauigkeit: Taufe beginnt vor Geburt, endet aber danach/währenddessen
-        if ($bapMinJD < $birthMinJD) {
-            $birthPrecise = ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth);
-            $bapPrecise = ValidationService::isPreciseDate($person, 'CHR', $overrideBap);
-
-            if (!$birthPrecise || !$bapPrecise) {
-                return [
-                    'code' => 'IMPRECISE_DATE_CONFLICT_BAPTISM',
-                    'type' => 'chronological_inconsistency',
-                    'label' => self::translate('Check sequence'),
-                    'severity' => 'info',
-                    'message' => self::translate(
-                        'Birth/Baptism dates are imprecise (%s / %s). Exact sequence unknown.',
-                        self::formatDate($person, 'BIRT', $overrideBirth),
-                        self::formatDate($person, 'CHR', $overrideBap)
-                    ),
-                ];
-            }
-        }
-
-        // 3. Definitiv zu langer Abstand: Taufe beginnt erst > 30 Tage nach ENDE des Geburtszeitraums
-        if ($birthMaxJD && $bapMinJD && $bapMinJD > $birthMaxJD + 30) {
-            $diff = $bapMinJD - $birthMaxJD;
-            if ($diff < 3650) { // Weniger als 10 Jahre
-                return [
-                    'code' => 'BAPTISM_DELAYED',
-                    'type' => 'chronological_inconsistency',
-                    'label' => self::translate('Check sequence'),
-                    'severity' => 'warning',
-                    'message' => self::translate(
-                        'Baptism (%s) is unusually long after birth (%s). Gap: %d days.',
-                        self::formatDate($person, 'CHR', $overrideBap),
-                        self::formatDate($person, 'BIRT', $overrideBirth),
-                        $diff
-                    ),
-                ];
-            }
-        }
-
-        // 4. HINWEIS: Taufe liegt weit nach Beginn, aber noch im Rahmen der Ungenauigkeit (z.B. nur Geburtsjahr bekannt)
-        if ($birthMinJD && $bapMinJD && $bapMinJD > $birthMinJD + 30) {
-             if (!ValidationService::isPreciseDate($person, 'BIRT', $overrideBirth)) {
-                  return [
-                      'code' => 'BAPTISM_DELAY_POSSIBLE',
-                      'type' => 'chronological_inconsistency',
-                      'label' => self::translate('Check sequence'),
-                      'severity' => 'info',
-                      'message' => self::translate(
-                          'Birth date is imprecise (%s). Baptism was on %s. Birth likely occurred shortly before baptism.',
-                          self::formatDate($person, 'BIRT', $overrideBirth),
-                          self::formatDate($person, 'CHR', $overrideBap)
-                      ),
-                  ];
-             }
-        }
-
         return null;
     }
 
@@ -179,12 +122,10 @@ class TemporalValidator extends AbstractValidator
     public static function checkBurialBeforeDeath(?Individual $person, string $overrideDeath = '', string $overrideBurial = ''): ?array
     {
         $deathMinJD = ValidationService::getEffectiveJD($person, 'DEAT', $overrideDeath);
-        $burialMinJD = ValidationService::getEffectiveJD($person, 'BURI', $overrideBurial);
         $burialMaxJD = ValidationService::getEffectiveMaxJD($person, 'BURI', $overrideBurial);
 
-        if (!$deathMinJD || !$burialMinJD) return null;
+        if (!$deathMinJD || !$burialMaxJD) return null;
 
-        // Definitely impossible
         if ($burialMaxJD < $deathMinJD) {
             return [
                 'code' => 'BURIAL_BEFORE_DEATH',
@@ -195,51 +136,22 @@ class TemporalValidator extends AbstractValidator
             ];
         }
 
-        // Potential conflict: Overlap or imprecise
-        if ($burialMinJD < $deathMinJD) {
-            $deathPrecise = ValidationService::isPreciseDate($person, 'DEAT', $overrideDeath);
-            $burialPrecise = ValidationService::isPreciseDate($person, 'BURI', $overrideBurial);
-
-            if (!$deathPrecise || !$burialPrecise) {
-                return [
-                    'code' => 'IMPRECISE_DATE_CONFLICT_BURIAL',
-                    'type' => 'chronological_inconsistency',
-                    'label' => self::translate('Check sequence'),
-                    'severity' => 'info',
-                    'message' => self::translate('Death/Burial dates are imprecise. Exact dates are missing.'),
-                ];
-            }
-        }
-        
         return null;
     }
 
     /**
-     * Check if a date is in the future (e.g. 2945 vs 1945)
+     * Check if a date is in the future
      */
     public static function checkFutureDate(?Individual $person, string $tag, string $overrideDate = ''): ?array
     {
         $dateMinJD = ValidationService::getEffectiveJD($person, $tag, $overrideDate);
         if (!$dateMinJD) return null;
 
-        // Current date JD
         $now = new \DateTime();
         $currentJD = gregoriantojd((int)$now->format('n'), (int)$now->format('j'), (int)$now->format('Y'));
 
         if ($dateMinJD > $currentJD) {
             $year = ValidationService::getYearFromJD($dateMinJD);
-            
-            $labels = [
-                'BIRT' => \Fisharebest\Webtrees\I18N::translate('Birth'),
-                'DEAT' => \Fisharebest\Webtrees\I18N::translate('Death'),
-                'CHR'  => \Fisharebest\Webtrees\I18N::translate('Baptism'),
-                'BURI' => \Fisharebest\Webtrees\I18N::translate('Burial'),
-                'MARR' => \Fisharebest\Webtrees\I18N::translate('Marriage'),
-                'DIV'  => \Fisharebest\Webtrees\I18N::translate('Divorce'),
-            ];
-            
-            $label = $labels[$tag] ?? $tag;
-
             return [
                 'code' => 'FUTURE_DATE_' . $tag,
                 'type' => 'temporal_impossibility',
@@ -247,12 +159,160 @@ class TemporalValidator extends AbstractValidator
                 'severity' => 'error',
                 'message' => self::translate(
                     'The date for %s (%s) is in the future.',
-                    $label,
+                    I18N::translate($tag),
                     ValidationService::formatDate($person, $tag, $overrideDate) ?: $year
                 ),
             ];
         }
 
         return null;
+    }
+
+    /**
+     * Check if a person is likely dead
+     */
+    public static function checkLikelyDead(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = ''): ?array
+    {
+        if (!$person && !$overrideBirth) return null;
+        if ($overrideDeath) return null;
+
+        if ($person && ($person->facts(['DEAT'])->first() || $person->facts(['BURI'])->first())) {
+            return null;
+        }
+
+        $birthYear = $person ? ValidationService::getEffectiveYear($person, 'BIRT', $overrideBirth) : ValidationService::parseYearOnly($overrideBirth);
+        if (!$birthYear) return null;
+
+        $currentYear = (int)date('Y');
+        $age = $currentYear - $birthYear;
+        if ($age > 110) {
+            $lastSignalYear = $birthYear;
+            if ($person) {
+                foreach ($person->facts() as $fact) {
+                    $tag = strtoupper(trim($fact->tag()));
+                    if (in_array($tag, ['CHAN', '_CHAN', 'RESN', 'REFN', 'RIN', 'UID', '_UID', 'OBJE', 'NOTE', 'SOUR', 'ASSO', 'BIRT', 'DEAT', 'BURI'])) continue;
+                    $factDate = $fact->date();
+                    if ($factDate->isOK()) {
+                        $year = $factDate->minimumDate()->year();
+                        if ($year > $lastSignalYear) $lastSignalYear = $year;
+                    }
+                }
+            }
+            return [
+                'code' => 'LIKELY_DEAD',
+                'type' => 'missing_data',
+                'label' => self::translate('Likely dead'),
+                'severity' => 'warning',
+                'message' => self::translate(
+                    'Person born %d years ago (%d) has no death record. Last known life signal: %d.',
+                    $age,
+                    $birthYear,
+                    $lastSignalYear
+                ),
+            ];
+        }
+        return null;
+    }
+
+    /**
+     * Check for Orphaned Facts (biographical events before birth or after death).
+     * Finalized for version 1.5.2.
+     */
+    public static function checkOrphanedFacts(Individual $person): array
+    {
+        $issues = [];
+        
+        // 1. Establish Lifespan Extremes (Years)
+        $birthYear = null;
+        $deathYear = null;
+
+        // Internal helper: robust year extraction (bypass strict validation)
+        $extractYear = function($fact) {
+            if (!$fact) return null;
+            $rawText = $fact->date()->display() . ' ' . $fact->value();
+            $p = DateParser::parseGedcomDate($rawText);
+            return $p['year'] ?: null;
+        };
+
+        $birthDate = $person->getBirthDate();
+        if ($birthDate->isOK()) $birthYear = $birthDate->minimumDate()->year();
+        foreach ($person->facts(['BIRT', 'CHR', 'BAPM']) as $f) {
+            $y = $extractYear($f);
+            if ($y && ($birthYear === null || $y < $birthYear)) $birthYear = $y;
+        }
+
+        $deathDate = $person->getDeathDate();
+        if ($deathDate->isOK()) $deathYear = $deathDate->maximumDate()->year();
+        foreach ($person->facts(['DEAT', 'BURI']) as $f) {
+            $y = $extractYear($f);
+            if ($y && ($deathYear === null || $y > $deathYear)) $deathYear = $y;
+        }
+
+        if ($birthYear === null && $deathYear === null) return [];
+
+        // 2. Scan ALL Facts
+        foreach ($person->facts() as $fact) {
+            $tag = strtoupper(trim($fact->tag()));
+            
+            // Normalize tag (strip prefixes like INDI: or FAM:) for blacklist check
+            if (str_contains($tag, ':')) {
+                $tag = substr($tag, strrpos($tag, ':') + 1);
+            }
+            
+            // Hard blacklist against technical and boundary noise
+            $blackList = [
+                'CHAN', '_CHAN', 'UID', '_UID', 'RIN', 'REFN', 'RESN', 'BIRT', 'DEAT', 
+                'CHR', 'BAPM', 'BURI', 'NOTE', 'SOUR', 'OBJE', 'SEX', 'NAME', 
+                'FAMS', 'FAMC', 'ALIA', 'ANCI', 'DESI', 'ASSO', 'ATTR'
+            ];
+            if (in_array($tag, $blackList)) continue;
+            
+            // Filter out webtrees-specific technical custom tags
+            if (str_starts_with($tag, '_')) {
+                $noise = ['_TODO', '_TASK', '_UPD', '_UPDATED', '_WT_USER', '_SCN', '_TYPE', '_CHANGES', '_DATES', '_UID'];
+                if (in_array($tag, $noise)) continue;
+            }
+
+            // Extract Year
+            $fYear = $extractYear($fact);
+            if (!$fYear) continue;
+
+            // Case A: Before Birth (Biographical event should not occur before life starts)
+            if ($birthYear !== null && $fYear < $birthYear) {
+                $issues[] = [
+                    'code' => 'FACT_BEFORE_BIRTH',
+                    'type' => 'chronological_inconsistency',
+                    'label' => self::translate('Check sequence'),
+                    'severity' => 'error',
+                    'message' => self::translate(
+                        'Event "%s" (%d) occurs before birth (%d).',
+                        $fact->label(),
+                        $fYear,
+                        $birthYear
+                    ),
+                    'xref' => $person->xref()
+                ];
+            }
+
+            // Case B: After Death (Biographical event should not occur after life ends)
+            // Note: Posthumous events like BURI are handled via blacklist above.
+            if ($deathYear !== null && $fYear > $deathYear) {
+                $issues[] = [
+                    'code' => 'FACT_AFTER_DEATH',
+                    'type' => 'chronological_inconsistency',
+                    'label' => self::translate('Check sequence'),
+                    'severity' => 'error',
+                    'message' => self::translate(
+                        'Event "%s" (%d) occurs after death (%d).',
+                        $fact->label(),
+                        $fYear,
+                        $deathYear
+                    ),
+                    'xref' => $person->xref()
+                ];
+            }
+        }
+
+        return $issues;
     }
 }

@@ -1,24 +1,17 @@
 # Nächste Session - Webtrees Datencheck Plugin
 
 ## Status Quo
-- **Version:** 1.5.1 (Stable)
+- **Version:** 1.5.2 (Stable)
 - **Letzte Änderungen:**
-  - Live-Archiv-Check (Repositories) hinzugefügt.
-  - Umfangreiches Keyword-Mapping (DE/EN) für 20+ Quellenkategorien.
-  - Berücksichtigung von Autoren (AUTH) beim Quellen-Abgleich.
-  - Feld-Erkennungs-Fix für Quellen in Modals und Neuanlagen.
+  - "Likely Dead" Heuristik implementiert.
+  - Orphaned Facts Check finalisiert (Blacklist-System + Tag-Normalisierung + i18n für 26 Sprachen).
 
 ## Offene Punkte / Nächste Schritte
-1. **"Likely Dead" Heuristik**:
-   - Implementierung der Logik für Personen ohne Sterbedatum, die über 110 Jahre alt wären.
-   - Einbeziehung "letzter Lebenszeichen" (z.B. Geburt eines Kindes, Zeuge bei Heirat) zur Verfeinerung.
-2. **Generations-Check**:
-   - Statistische Analyse auf Ausreißer (z.B. ungewöhnlich viele Kinder in kurzem Abstand über die gesamte Fruchtbarkeitsphase).
-3. **Quick-Fix UI**:
-   - Erste Experimente mit Buttons in der Analyse-Tabelle (z.B. "Als verstorben markieren").
-4. **Erweiterte Quellenprüfung**:
-   - Konsistenzprüfung: Passt der Quellentyp zum Fakt? (z.B. Geburtsurkunde für einen Tod-Fakt).
+1. **Generations-Check**:
+   - Statistische Analyse auf Ausreißer (z.B. ungewöhnlich viele Kinder in kurzem Abstand).
+2. **Erweiterte Quellenprüfung**:
+   - Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).
 
 ## Technische Notizen
-- Der Live-Quellen-Check nutzt `StringHelper::levenshteinDistance` und eine Übersetzungstabelle für Begriffe wie "Birth/Geburt".
-- Die AJAX-Validierung ist nun sehr stabil und deckt fast alle relevanten Felder ab.
+- Die "Orphaned Facts" Prüfung nutzt ein robustes Tag-Normalisierungs-System, um Präfixe wie `INDI:` zu ignorieren.
+- Blacklist umfasst nun: CHAN, UID, SEX, NAME, BURI, FAMS, FAMC und webtrees-interne `_`-Tags.

@@ -41,8 +41,9 @@
 - [x] **Repository-Check**: Live-Dublettensuche für Archive/Repositories (v1.5.0).
 - [x] **Präzisions-Matching**: Berücksichtigung von Autoren (AUTH) und Wort-Reihenfolge (v1.5.1).
 
-## 🚀 Phase 22: Erweiterte Analysen & Heuristiken (NEXT)
-- [ ] **"Likely Dead" Heuristik**: Warnung für Personen ohne Sterbedatum (>110J) inkl. Prüfung letzter Lebenszeichen.
+## ✅ Phase 22: Erweiterte Analysen & Heuristiken (COMPLETE - 2026-02-25)
+- [x] **"Likely Dead" Heuristik**: Warnung für Personen ohne Sterbedatum (>110J) inkl. Prüfung letzter Lebenszeichen.
+- [x] **Verwaiste Fakten**: Prüfung auf Ereignisse zeitlich außerhalb der Lebensspanne.
 - [ ] **Generations-Check**: Statistische Prüfung auf biologische Ausreißer (z.B. Elternteil zu jung/alt bei Geburt).
 - [ ] **Erweiterte Quellenprüfung**: Identifikation quellenloser Ereignisse und Konsistenzprüfung Quellentyp vs. Fakt.
 
@@ -62,3 +63,4 @@
 - **v1.3.11:** Scheidungs-Validierung & Verbesserungen an der Eheurkunde
 - **v1.4.0:** Live-Quellen-Check & i18n Fixes
 - **v1.5.1:** Live-Archiv-Check, Keyword-Mapping & Autoren-Support
+- **v1.5.2:** Likely Dead Heuristik & Verwaiste Fakten (Orphaned Facts)

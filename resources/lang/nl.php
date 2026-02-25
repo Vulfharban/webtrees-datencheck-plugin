@@ -166,4 +166,7 @@ return [
     'The given name "%s" is usually %s, but you selected %s.' => 'De voornaam "%s" is gewoonlijk %s, maar u hebt %s geselecteerd.',
     'male' => 'mannelijk',
     'female' => 'vrouwelijk',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Gebeurtenis "%s" (%d) vindt plaats vóór de geboorte (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Gebeurtenis "%s" (%d) vindt plaats na het overlijden (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Geboorte-/overlijdensdatums zijn onnauwkeurig (%s - %s). Exacte datums ontbreken.',
 ];

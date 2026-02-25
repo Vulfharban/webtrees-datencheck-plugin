@@ -311,4 +311,6 @@ return [
     'The given name "%s" is usually %s, but you selected %s.' => 'Името "%s" обикновено е %s, но вие сте избрали %s.',
     'male' => 'мъжки',
     'female' => 'женски',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
 ];

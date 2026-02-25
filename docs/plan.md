@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.5.1 - **Stable** (Live Source & Repo Check, Keyword Expansion)
+**Status:** Version 1.5.2 - **Stable** (Likely Dead & Orphaned Facts)
 
 ## Kernfunktionen
 
@@ -27,9 +27,10 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 - [x] **Geschlechts-Heuristik**: Erkennt typisch weibliche Endungen (a/e).
 
 ### 4. Erweiterte Analysen (Geplant/In Arbeit)
-- [ ] **"Likely Dead" Heuristik**:
-    - *Status:* **Teilweise implementiert** (Max. Lebensspanne 120J wird bereits geprüft).
-    - *Offen:* Heuristik für fehlende Sterbedaten (>110J) und Prüfung letzter Lebenszeichen.
+- [x] **"Likely Dead" Heuristik**:
+    - *Status:* **Vollständig implementiert** (Check auf fehlende Sterbedaten >110J inkl. letzter Lebenszeichen).
+- [x] **Verwaiste Fakten**:
+    - *Status:* **Vollständig implementiert** (Prüfung auf biografische Ereignisse außerhalb der Lebensspanne inkl. technischer Blacklist).
 - [ ] **Erweiterte Quellenprüfung**:
     - *Status:* **Teilweise implementiert** (Check auf komplett fehlende Quellen existiert).
     - *Offen:* Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).

@@ -131,6 +131,13 @@ class ValidationService
             $issue = Validators\TemporalValidator::checkBurialBeforeDeath($person, $overrideDeath, $overrideBurial);
             if ($issue) $issues[] = $issue;
 
+            $issue = Validators\TemporalValidator::checkLikelyDead($person, $module, $overrideBirth, $overrideDeath);
+            if ($issue) $issues[] = $issue;
+
+            if ($person) {
+                $issues = array_merge($issues, Validators\TemporalValidator::checkOrphanedFacts($person));
+            }
+
             // NEW: Check for future dates
             foreach (['BIRT' => $overrideBirth, 'DEAT' => $overrideDeath, 'CHR' => $overrideBap, 'BURI' => $overrideBurial, 'MARR' => $marrOverride, 'DIV' => ''] as $tag => $override) {
                 $issue = Validators\TemporalValidator::checkFutureDate($person, $tag, $override);

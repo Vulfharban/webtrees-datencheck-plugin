@@ -268,4 +268,7 @@ return [
     'The given name "%s" is usually %s, but you selected %s.' => 'Imię "%s" jest zazwyczaj %s, ale wybrano %s.',
     'male' => 'męski',
     'female' => 'żeński',
+    'Event "%s" (%d) occurs before birth (%d).' => 'Event "%s" (%d) occurs before birth (%d).',
+    'Event "%s" (%d) occurs after death (%d).' => 'Event "%s" (%d) occurs after death (%d).',
+    'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.' => 'Birth/Death dates are imprecise (%s - %s). Exact dates are missing.',
 ];
