@@ -54,13 +54,24 @@
 
 ---
 
+## ✅ Phase 23: GEDCOM-Standard & Stabilität (COMPLETE - 2026-03-02)
+- [x] **Check GEDCOM (Bulk)**: Validierung auf mehrfache Ereignisse (BIRT, DEAT, SEX, BAPM, BURI).
+- [x] **Info-Level Kategorie**: Einführung einer "Blaue Kategorie" für Empfehlungen zur Datenpflege.
+- [x] **Globale Lokalisierung**: Ausweitung des vollautomatischen i18n-Setups auf 27+ Sprachen.
+- [x] **Build-Fix**: Sanierung des PowerShell-Build-Skripts für robuste ZIP-Erstellung auf Windows.
+
+---
+
 ## Versionshistorie
 - **v1.3.0:** Globale Namens-Datenbank, Ehenamen-Logik, Diakritika
 - **v1.3.3:** Kompakte Anzeige, Sterbeort-Integration
 - **v1.3.6:** Zukunftsdaten, Fixes für Neuanlagen
 - **v1.3.8:** Geschlechts-Heuristiken & AJAX-Fixes
 - **v1.3.10:** Deaktivierbares Menü-Icon & Server-Error Fixes
-- **v1.3.11:** Scheidungs-Validierung & Verbesserungen an der Eheurkunde
+- **v1.3.11:** Scheidungs-Validierung & Verbesserungen
 - **v1.4.0:** Live-Quellen-Check & i18n Fixes
 - **v1.5.1:** Live-Archiv-Check, Keyword-Mapping & Autoren-Support
 - **v1.5.2:** Likely Dead Heuristik & Verwaiste Fakten (Orphaned Facts)
+- **v1.5.4:** CSV-Excel-Fixes & Build-Sicherheit (Forward Slashes)
+- **v1.5.6:** Vollständige italienische Übersetzung & Server-Error Fixes
+- **v1.5.7:** GEDCOM-Standardprüfung, Info-Kategorie & ZIP-Recovery Fix

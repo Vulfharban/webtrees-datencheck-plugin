@@ -39,6 +39,10 @@ Umfangreiche Regeln zur Identifizierung biologischer und logischer Unstimmigkeit
     *   **Pflichtfeld-Prüfung:** Warnung, wenn ein Vorname eingegeben wurde, aber das Geschlecht noch nicht ausgewählt ist.
     *   **Namens-Abgleich & Heuristik:** Erkennt Unstimmigkeiten zwischen Vorname und gewähltem Geschlecht (z.B. "Hans" als weiblich) mittels einer umfangreichen integrierten Datenbank.
     *   **Intelligente Erkennung:** Erkennt typisch weibliche Namensendungen (wie 'a' oder 'e') automatisch, auch wenn der Name nicht in der Datenbank steht.
+*   **GEDCOM-Standard & Redundanz (Neu!):**
+    *   **Mehrfache Ereignisse:** Identifiziert Personen mit mehreren Geburts- (`BIRT`), Tauf- (`BAPM`/`CHR`), Todes- (`DEAT`) oder Bestattungseinsträgen (`BURI`).
+    *   **Geschlechts-Tags:** Prüft auf mehrfache `SEX`-Tags bei einer Person.
+    *   **Datenreinigung:** Diese Hinweise werden als informative Meldungen (Blau) ausgegeben, um die Bereinigung redundanter Datensätze zu erleichtern.
 
 ### 📊 Analyse-Dashboard & Reporting
 Behalten Sie den Überblick über die Datenqualität Ihres gesamten Stammbaums.
@@ -114,6 +118,10 @@ Comprehensive rules to identify biological and logical inconsistencies.
     *   **Required Field Check:** Warning when a given name is entered but the gender is not yet specified.
     *   **Name-Gender Matching:** Detects inconsistencies between given names and selected gender (e.g., "Hans" marked as female) using a large built-in database.
     *   **Intelligent Heuristics:** Automatically recognizes typically female name endings (like 'a' or 'e') even if the name is not in the database.
+*   **GEDCOM Standard & Redundancy (New!):**
+    *   **Multiple Events:** Identifies individuals with redundant birth (`BIRT`), baptism (`BAPM`/`CHR`), death (`DEAT`), or burial (`BURI`) records.
+    *   **Gender Tags:** Detects multiple `SEX` tags on a single person record.
+    *   **Data Cleanup:** These findings are displayed as informative messages (blue) to assist in consolidating redundant data points.
 
 ### 📊 Analysis Dashboard & Reporting
 Maintain an overview of the data quality of your entire family tree.

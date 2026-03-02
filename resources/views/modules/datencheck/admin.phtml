@@ -576,6 +576,10 @@
                             <input class="form-check-input analysis-category" type="checkbox" value="date_format" id="chk_date" checked>
                             <label class="form-check-label" for="chk_date"><?= \Fisharebest\Webtrees\I18N::translate('Date Format') ?></label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input analysis-category" type="checkbox" value="gedcom_standard" id="chk_gedcom" checked>
+                            <label class="form-check-label" for="chk_gedcom"><?= \Fisharebest\Webtrees\I18N::translate('Check GEDCOM') ?></label>
+                        </div>
                     </div>
                     <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('If categories are selected here, they will override the general settings for this analysis run.') ?></small>
                 </div>
@@ -630,6 +634,7 @@
                                 <option value="missing_source"><?= \Fisharebest\Webtrees\I18N::translate('Source Quality') ?></option>
                                 <option value="duplicate_check"><?= \Fisharebest\Webtrees\I18N::translate('Possible Duplicates') ?></option>
                                 <option value="sibling_spacing"><?= \Fisharebest\Webtrees\I18N::translate('Sibling Spacing') ?></option>
+                                <option value="gedcom_standard"><?= \Fisharebest\Webtrees\I18N::translate('Check GEDCOM') ?></option>
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end justify-content-end">
@@ -697,14 +702,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Translated strings for JS
     const i18n = {
-        analyzing: '<?= \Fisharebest\Webtrees\I18N::translate('Analyzing...') ?>',
-        initializing: '<?= \Fisharebest\Webtrees\I18N::translate('Initializing...') ?>',
-        done: '<?= \Fisharebest\Webtrees\I18N::translate('Done!') ?>',
-        noIssuesFound: '<?= \Fisharebest\Webtrees\I18N::translate('No issues found!') ?>',
-        cleanTree: '<?= \Fisharebest\Webtrees\I18N::translate('Your tree is clean.') ?>',
-        analysisError: '<?= \Fisharebest\Webtrees\I18N::translate('Analysis error:') ?>',
-        errorRestart: '<?= \Fisharebest\Webtrees\I18N::translate('Error! Restart?') ?>',
-        tooManyIssues: '<?= \Fisharebest\Webtrees\I18N::translate('Too many issues found. Showing only the first %s. Please use CSV Export for the full list.', 1000) ?>'
+        analyzing: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Analyzing...')) ?>,
+        initializing: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Initializing...')) ?>,
+        done: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Done!')) ?>,
+        noIssuesFound: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('No issues found!')) ?>,
+        cleanTree: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Your tree is clean.')) ?>,
+        analysisError: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Analysis error:')) ?>,
+        errorRestart: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Error! Restart?')) ?>,
+        rescan: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Rescan')) ?>,
+        tooManyIssues: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Too many issues found. Showing only the first %s. Please use CSV Export for the full list.', 1000)) ?>,
+        csvPerson: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Person')) ?>,
+        csvType: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Code / Type')) ?>,
+        csvMessage: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Description')) ?>,
+        csvSeverity: <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Severity')) ?>
     };
 
     let totalIssues = 0;
@@ -916,7 +926,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Done
                 btn.disabled = false;
-                btn.innerHTML = `<i class="fa fa-check"></i> ${i18n.done}`;
+                btn.innerHTML = `<i class="fa fa-sync"></i> ${i18n.rescan}`;
                 progressBar.classList.remove('progress-bar-animated');
                 progressBar.classList.remove('bg-success');
                 progressBar.classList.add('bg-primary');
@@ -942,12 +952,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let csvContent = "\uFEFF"; // BOM for Excel compatibility
         
-        // Add Header Row
-        csvContent += '"Person";"XREF";"Type";"Message";"Severity"\r\n';
+        // Add Header Row (Translated)
+        csvContent += `"${i18n.csvPerson}";"XREF";"${i18n.csvType}";"${i18n.csvMessage}";"${i18n.csvSeverity}"\r\n`;
+
+        // Helper to strip HTML tags for clean CSV output
+        const stripHtml = (text) => String(text).replace(/<[^>]*>?/gm, '');
 
         allFoundIssues.forEach(issue => {
             // Escape double quotes by doubling them, then wrap in quotes
-            const escapeAndQuote = (text) => `"${String(text).replace(/"/g, '""')}"`;
+            const escapeAndQuote = (text) => `"${stripHtml(text).replace(/"/g, '""')}"`;
 
             let row = [
                 escapeAndQuote(issue.name),
@@ -972,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.datencheckMarkAsDead = async (xref, btn) => {
-        if (!confirm('<?= \Fisharebest\Webtrees\I18N::translate('Are you sure you want to mark this person as dead?') ?>')) return;
+        if (!confirm(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Are you sure you want to mark this person as dead?')) ?>)) return;
         
         const oldHtml = btn.innerHTML;
         btn.disabled = true;
@@ -985,7 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.success) {
                 btn.className = 'btn btn-sm btn-success ms-2';
-                btn.innerHTML = '<i class="fa fa-check"></i> ' + '<?= \Fisharebest\Webtrees\I18N::translate('Done') ?>';
+                btn.innerHTML = '<i class="fa fa-check"></i> ' + <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Done')) ?>;
                 // Find parent row and mark it as resolved (optional: hide it)
                 const row = btn.closest('tr');
                 if (row) {
@@ -993,7 +1006,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.style.textDecoration = 'line-through';
                 }
             } else {
-                alert('<?= \Fisharebest\Webtrees\I18N::translate('Error:') ?> ' + (data.message || 'Unknown error'));
+                alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Error:')) ?> + ' ' + (data.message || 'Unknown error'));
                 btn.disabled = false;
                 btn.innerHTML = oldHtml;
             }

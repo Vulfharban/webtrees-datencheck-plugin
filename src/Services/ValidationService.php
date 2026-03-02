@@ -176,6 +176,11 @@ class ValidationService
                 if (in_array('date_format', $filters) || !$useFilters) {
                     $issues = array_merge($issues, self::checkInvalidMonths($person));
                 }
+
+                // Multiple Tags (BIRT, DEAT, SEX)
+                if (in_array('gedcom_standard', $filters) || !$useFilters) {
+                    $issues = array_merge($issues, self::checkMultipleGedcomTags($person));
+                }
             }
 
             // Names (handles null person via overrides)
@@ -1604,6 +1609,77 @@ class ValidationService
                     ];
                 }
             }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Check for multiple occurrences of tags that should ideally appear only once
+     * (e.g. BIRT, DEAT) or MUST appear only once (e.g. SEX)
+     */
+    private static function checkMultipleGedcomTags(Individual $person): array
+    {
+        $issues = [];
+        
+        // Check BIRT
+        $birtFacts = $person->facts(['BIRT']);
+        if ($birtFacts->count() > 1) {
+            $issues[] = [
+                'code' => 'MULTIPLE_BIRTH_EVENTS',
+                'type' => 'gedcom_standard',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check GEDCOM'),
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has %d birth events. Only one is recommended.', $birtFacts->count()),
+            ];
+        }
+
+        // Check BAPM/CHR
+        $bapFacts = $person->facts(['BAPM', 'CHR']);
+        if ($bapFacts->count() > 1) {
+            $issues[] = [
+                'code' => 'MULTIPLE_BAPTISM_EVENTS',
+                'type' => 'gedcom_standard',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check GEDCOM'),
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has %d baptism events. Only one is recommended.', $bapFacts->count()),
+            ];
+        }
+
+        // Check DEAT
+        $deatFacts = $person->facts(['DEAT']);
+        if ($deatFacts->count() > 1) {
+            $issues[] = [
+                'code' => 'MULTIPLE_DEATH_EVENTS',
+                'type' => 'gedcom_standard',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check GEDCOM'),
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has %d death events. Only one is recommended.', $deatFacts->count()),
+            ];
+        }
+
+        // Check BURI
+        $buriFacts = $person->facts(['BURI']);
+        if ($buriFacts->count() > 1) {
+            $issues[] = [
+                'code' => 'MULTIPLE_BURIAL_EVENTS',
+                'type' => 'gedcom_standard',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check GEDCOM'),
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has %d burial events. Only one is recommended.', $buriFacts->count()),
+            ];
+        }
+
+        // Check SEX
+        $sexFacts = $person->facts(['SEX']);
+        if ($sexFacts->count() > 1) {
+            $issues[] = [
+                'code' => 'MULTIPLE_SEX_TAGS',
+                'type' => 'gedcom_standard',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Check GEDCOM'),
+                'severity' => 'info',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has %d gender tags (SEX). Only one is allowed by standard.', $sexFacts->count()),
+            ];
         }
 
         return $issues;

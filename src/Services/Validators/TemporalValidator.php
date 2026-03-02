@@ -190,7 +190,7 @@ class TemporalValidator extends AbstractValidator
             if ($person) {
                 foreach ($person->facts() as $fact) {
                     $tag = strtoupper(trim($fact->tag()));
-                    if (in_array($tag, ['CHAN', '_CHAN', 'RESN', 'REFN', 'RIN', 'UID', '_UID', 'OBJE', 'NOTE', 'SOUR', 'ASSO', 'BIRT', 'DEAT', 'BURI'])) continue;
+                if (in_array($tag, ['CHAN', '_CHAN', 'RESN', 'REFN', 'RIN', 'UID', '_UID', 'OBJE', 'NOTE', 'SOUR', 'ASSO', 'BIRT', 'DEAT', 'BURI', 'SSN', '_FSFTID', '_FSLIVED', '_FSID', '_FSPID'])) continue;
                     $factDate = $fact->date();
                     if ($factDate->isOK()) {
                         $year = $factDate->minimumDate()->year();
@@ -259,11 +259,10 @@ class TemporalValidator extends AbstractValidator
                 $tag = substr($tag, strrpos($tag, ':') + 1);
             }
             
-            // Hard blacklist against technical and boundary noise
             $blackList = [
                 'CHAN', '_CHAN', 'UID', '_UID', 'RIN', 'REFN', 'RESN', 'BIRT', 'DEAT', 
                 'CHR', 'BAPM', 'BURI', 'NOTE', 'SOUR', 'OBJE', 'SEX', 'NAME', 
-                'FAMS', 'FAMC', 'ALIA', 'ANCI', 'DESI', 'ASSO', 'ATTR'
+                'FAMS', 'FAMC', 'ALIA', 'ANCI', 'DESI', 'ASSO', 'ATTR', 'SSN', '_FSFTID', '_FSLIVED', '_FSID', '_FSPID'
             ];
             if (in_array($tag, $blackList)) continue;
             

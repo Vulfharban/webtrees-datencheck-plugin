@@ -106,7 +106,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.5.2';
+        return '1.5.7';
     }
 
     public function getVersion(): string
@@ -630,7 +630,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         // Tree-specific breadcrumbs if we have a context
         $breadcrumb_links = [];
         if ($tree) {
-            $breadcrumb_links[route(IndividualPage::class, ['tree' => $tree->name()])] = $tree->title();
+            $breadcrumb_links[route(\Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => $tree->name()])] = $tree->title();
             $breadcrumb_links[$control_panel_url] = \Fisharebest\Webtrees\I18N::translate('Control panel');
         } else {
             $breadcrumb_links[$control_panel_url] = \Fisharebest\Webtrees\I18N::translate('Control panel');

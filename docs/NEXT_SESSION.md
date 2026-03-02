@@ -1,17 +1,26 @@
-# Nächste Session - Webtrees Datencheck Plugin
+# Nächste Sitzung - Planung
 
-## Status Quo
-- **Version:** 1.5.2 (Stable)
-- **Letzte Änderungen:**
-  - "Likely Dead" Heuristik implementiert.
-  - Orphaned Facts Check finalisiert (Blacklist-System + Tag-Normalisierung + i18n für 26 Sprachen).
+## Aktueller Stand (v1.5.7)
+*   **GEDCOM-Standardprüfung**: Vollständig implementiert (BIRT, DEAT, BAPM, BURI, SEX).
+*   **Info-Kategorie**: Neue blaue Kategorie für redaktionelle Hinweise zur Datenpflege eingeführt.
+*   **Lokalisierung**: Alle 27 Sprachdateien sind auf dem neuesten Stand.
+*   **Build-System**: Das PowerShell-Build-Skript ist nun robust gegen Pfad-Variationen und stellt die Ordnerstruktur korrekt wieder her.
 
-## Offene Punkte / Nächste Schritte
-1. **Generations-Check**:
-   - Statistische Analyse auf Ausreißer (z.B. ungewöhnlich viele Kinder in kurzem Abstand).
-2. **Erweiterte Quellenprüfung**:
-   - Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).
+## Offene Punkte & Ideen
+1.  **Erweiterte Quellenprüfung (Qualität)**:
+    *   Überprüfung auf konsistente Verwendung von Quellentypen (z.B. Geburtsurkunde für Geburtsfakt).
+    *   Erkennung von fehlenden Seitenzahlen (`PAGE`) in Quellenzitaten.
+2.  **Quick-Fix Buttons**:
+    *   UI-Erweiterung in der Analyse-Tabelle, um einfache Fehler (z.B. falsche Reihenfolge Taufe/Geburt) mit einem Klick zu korrigieren.
+3.  **Hierarchie & Statistik**:
+    *   Prüfung auf statistische Ausreißer im Stammbaum (z.B. extreme Abstände zwischen Geschwistern über 10 Jahre ohne Lücke).
+4.  **Familien-Zusammenführung (Bulk)**:
+    *   Globale Analyse zur Identifizierung von gesplitteten Familien (gleiche Eltern, verschiedene Familien-Records).
 
-## Technische Notizen
-- Die "Orphaned Facts" Prüfung nutzt ein robustes Tag-Normalisierungs-System, um Präfixe wie `INDI:` zu ignorieren.
-- Blacklist umfasst nun: CHAN, UID, SEX, NAME, BURI, FAMS, FAMC und webtrees-interne `_`-Tags.
+## Erledigte Aufgaben (heute)
+*   Fix: `sprintf` Placeholder Error (`%d` vs `%s`) in Übersetzungstexten.
+*   Fix: ZIP-Build Fehler (fehlende Buchstaben am Dateianfang).
+*   Fix: ZIP-Build Fehler (flache Dateihierarchie korrigiert).
+*   Feature: "Check GEDCOM" Kategorie in Dashboard und Filter.
+*   Feature: Dubletten-Check für Taufe und Bestattung.
+*   Localization: Update für alle 27 Sprachen.

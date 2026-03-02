@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.5.2 - **Stable** (Likely Dead & Orphaned Facts)
+**Status:** Version 1.5.7 - **Stable** (Check GEDCOM & Fixes)
 
 ## Kernfunktionen
 
@@ -15,11 +15,13 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 - [x] **Zukunftsdatum-Schutz**: Verhindert die Eingabe von Daten in der Zukunft.
 - [x] **Geschlechts-Validierung**: Warnung bei fehlendem Geschlecht oder Mismatch zum Vornamen.
 - [x] **Scheidungs-Validierung**: Chronologie-Prüfungen für Scheidungen und Berücksichtigung bei Ehe-Überlappung.
+- [x] **Check GEDCOM (Mehrfache Ereignisse)**: Identifikation redundanter Fakten (Info-Level).
 
 ### 2. Globale Analyse (Bulk-Check)
 - [x] **Scan des gesamten Baums**: Auflistung aller Fehler in einer Tabelle.
 - [x] **CSV-Export**: Download der Ergebnisse für externe Bearbeitung.
 - [x] **Fehler ignorieren**: Möglichkeit, Fehlalarme dauerhaft auszublenden.
+- [x] **Filterung**: Auswahl bestimmter Fehlerklassen für gezielte Analysen (inkl. GEDCOM-Standard).
 
 ### 3. Namens-Intelligenz
 - [x] **Phonetische Suche**: Kölner Phonetik für Namensvarianten.
@@ -36,12 +38,9 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
     - *Offen:* Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).
 - [ ] **Quick-Fix Buttons**:
     - *Status:* noch nicht gestartet.
-- [ ] **Generations-Statistiken**:
-    - *Status:* **Teilweise implementiert** (Biologisches Alter der Eltern wird geprüft).
-    - *Offen:* Statistische Ausreißer und extreme Geschwisterabstände.
-- [ ] **Familien-Dubletten**:
-    - *Status:* **Teilweise implementiert** (Interaktiver Check bei Neuanlage existiert).
-    - *Offen:* Bulk-Analyse für "gesplittete" Familien im gesamten Baum.
+- [ ] **Hierarchie-Checks**: Statistische Prüfung auf biologische Ausreißer (z.B. Elternteil zu jung/alt bei Geburt).
+- [x] **Familien-Dubletten**:
+    - *Status:* **Vollständig implementiert** (Interaktiver Check bei Neuanlage & Bulk-Check GEDCOM-Standard).
 
 ### 5. Quellencheck & Archive
 - [x] **Quellen-Duplikatssuche (Live)**: Suche nach ähnlichen Quellen während der Eingabe (inkl. Übersetzung, Autoren-Check & Zeichen-Toleranz).

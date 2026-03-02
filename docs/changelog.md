@@ -1,5 +1,37 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.5.7] - 2026-03-02
+### Hinzugefügt
+- **GEDCOM-Standardprüfung**: Neue Validierung für mehrfache Geburts- (`BIRT`), Tauf- (`BAPM`/`CHR`), Todes- (`DEAT`), Bestattungs- (`BURI`) oder Geschlechtsangaben (`SEX`) bei einer Person. 
+- **Datenpflege-Kategorie**: Diese neuen Prüfungen werden als hilfreiche **Info-Meldungen (Blau)** kategorisiert, um die Bereinigung redundanter Datensätze zu unterstützen.
+- **Lokalisierung**: Vollständige Unterstützung der neuen Meldungen in allen 27 Sprachen (inkl. Bulgarisch, Griechisch, Finnisch, Polnisch, Ukrainisch etc.).
+### Behoben
+- **ZIP-Buildprozess**: Korrektur der Pfad-Berechnung im Build-Skript `build_release.ps1`. Dateien und Ordner werden nun wieder mit korrekten Namen (keine fehlenden Anfangsbuchstaben mehr) und vollständiger Verzeichnisstruktur im ZIP-Archiv gespeichert.
+- **Breadcrumb-Navigation**: Fix für einen fehlerhaften Link in der Modul-Navigation ("The parameter 'xref' is missing").
+- **Sprachdateien**: Korrektur der Platzhalter (`%d` statt `%s`) in den Übersetzungen für "Event occurs before birth/after death".
+
+## [1.5.6] - 2026-03-02
+### Behoben
+- **Italienische Übersetzung**: Vollständige Überarbeitung der italienischen Sprachdatei (`it.php`). Sprachmischungen (französische und deutsche Begriffe in der italienischen Ausgabe) wurden korrigiert und fehlende Validierungsmeldungen ergänzt.
+
+## [1.5.5] - 2026-03-02
+### Behoben
+- **Kritischer PHP-Fehler**: Fix für den Fehler "2 arguments are required, 1 given" in der Admin-Ansicht, der bei bestimmten Übersetzungen auftreten konnte.
+
+## [1.5.4] - 2026-03-02
+### Geändert
+- **CSV-Export**: Verbesserte Excel-Kompatibilität und Lesbarkeit. HTML-Tags werden nun automatisch entfernt, und die Spaltenüberschriften werden in der jeweiligen Benutzersprache ausgegeben.
+- **Build-Prozess**: Umstellung auf plattformübergreifende Pfadtrenner (Forward Slashes) im ZIP-Archiv, um Fehler beim Entpacken unter Linux und macOS zu vermeiden.
+### Behoben
+- **Stabilität (Sprachen)**: Fix für einen Syntax-Fehler bei Sprachen mit Apostrophen (z. B. Französisch), durch den der Analyse-Button inaktiv blieb.
+
+## [1.5.3] - 2026-03-02
+### Geändert
+- **Admin-UI**: Button-Beschriftung nach Abschluss der Analyse wurde von "Fertig" auf "Neu scannen" (bzw. entsprechende Übersetzungen) geändert. Das Icon wurde für eine bessere optische Rückmeldung auf ein Synchronisations-Symbol (`fa-sync`) aktualisiert.
+- **Lokalisierung (ca)**: Die katalanische Sprachdatei wurde auf den ISO-Standard `ca.php` umbenannt und die Übersetzungen korrigiert (spanische Begriffe entfernt).
+### Behoben
+- **Fehlalarme bei Datumsprüfungen**: Technische GEDCOM-Tags wie `SSN` (Sozialversicherungsnummer) und verschiedene FamilySearch-IDs (`_FSFTID`, `_FSLIVED`, `_FSID`, `_FSPID`) werden nun explizit ignoriert. Dies verhindert, dass Zahlenfolgen aus diesen Feldern fälschlicherweise als Jahreszahlen interpretiert werden.
+
 ## [1.5.2] - 2026-02-25
 ### Hinzugefügt
 - **"Likely Dead" Heuristik**: Neue Prüfung für Personen, die über 110 Jahre alt wären und keinen Sterbebeleg haben. Berücksichtigt "letzte Lebenszeichen" (z. B. Kindergeburten), um das vermutete Alter zu verfeinern.

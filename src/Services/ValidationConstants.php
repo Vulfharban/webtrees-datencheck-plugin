@@ -48,6 +48,11 @@ class ValidationConstants
         'LIKELY_DEAD'                   => 'Wahrscheinlich verstorben',
         'FACT_BEFORE_BIRTH'             => 'Ereignis vor Geburt',
         'FACT_AFTER_DEATH'              => 'Ereignis nach Tod',
+        'MULTIPLE_BIRTH_EVENTS'         => 'Mehrfache Geburtsereignisse',
+        'MULTIPLE_DEATH_EVENTS'         => 'Mehrfache Todesereignisse',
+        'MULTIPLE_BAPTISM_EVENTS'       => 'Mehrfache Taufereignisse',
+        'MULTIPLE_BURIAL_EVENTS'        => 'Mehrfache Bestattungsereignisse',
+        'MULTIPLE_SEX_TAGS'             => 'Mehrfache Geschlechtsangaben (SEX)',
     ];
 
     private static array $labels_en = [
@@ -94,6 +99,11 @@ class ValidationConstants
         'LIKELY_DEAD'                   => 'Likely dead',
         'FACT_BEFORE_BIRTH'             => 'Event before birth',
         'FACT_AFTER_DEATH'              => 'Event after death',
+        'MULTIPLE_BIRTH_EVENTS'         => 'Multiple birth events',
+        'MULTIPLE_DEATH_EVENTS'         => 'Multiple death events',
+        'MULTIPLE_BAPTISM_EVENTS'       => 'Multiple baptism events',
+        'MULTIPLE_BURIAL_EVENTS'        => 'Multiple burial events',
+        'MULTIPLE_SEX_TAGS'             => 'Multiple gender tags (SEX)',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string
