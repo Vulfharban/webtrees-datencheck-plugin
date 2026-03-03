@@ -208,7 +208,7 @@ class DatabaseService
         
         return [
             'check_type' => 'interactive_duplicates',
-            'description' => 'Found ' . count($possibleDuplicates) . ' potential matches',
+            'description' => \Fisharebest\Webtrees\I18N::translate('Found %d potential matches', count($possibleDuplicates)),
             'data' => $possibleDuplicates,
         ];
     }
@@ -264,7 +264,7 @@ class DatabaseService
         
         return [
             'check_type' => 'family_check',
-            'description' => 'Found ' . count($familyIds) . ' existing families',
+            'description' => \Fisharebest\Webtrees\I18N::translate('Found %d existing families', count($familyIds)),
             'data' => $familyIds,
         ];
     }
@@ -299,7 +299,7 @@ class DatabaseService
         if ((empty($husbandId) && empty($wifeId)) || (empty($childGiven) && empty($childSurname))) {
             return [
                 'check_type' => 'sibling_check',
-                'description' => 'Insufficient data',
+                'description' => \Fisharebest\Webtrees\I18N::translate('Insufficient data'),
                 'data' => [],
             ];
         }
@@ -322,7 +322,7 @@ class DatabaseService
         if ($families->isEmpty()) {
             return [
                 'check_type' => 'sibling_check',
-                'description' => 'No family found',
+                'description' => \Fisharebest\Webtrees\I18N::translate('No family found'),
                 'data' => [],
             ];
         }
@@ -408,7 +408,7 @@ class DatabaseService
         
         return [
             'check_type' => 'sibling_check',
-            'description' => 'Found ' . count($matches) . ' potential duplicate siblings',
+            'description' => \Fisharebest\Webtrees\I18N::translate('Found %d potential duplicate siblings', count($matches)),
             'data' => $matches,
         ];
     }
@@ -473,7 +473,7 @@ class DatabaseService
         if (mb_strlen($title) < 3) {
             return [
                 'check_type' => 'source_duplicate',
-                'description' => 'Title too short',
+                'description' => \Fisharebest\Webtrees\I18N::translate('Title too short'),
                 'data' => [],
             ];
         }
@@ -561,7 +561,7 @@ class DatabaseService
 
         return [
             'check_type' => 'source_duplicate',
-            'description' => 'Found ' . count($matches) . ' potential duplicate sources',
+            'description' => \Fisharebest\Webtrees\I18N::translate('Found %d potential duplicate sources', count($matches)),
             'data' => $matches,
         ];
     }

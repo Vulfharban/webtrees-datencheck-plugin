@@ -96,7 +96,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function description(): string
     {
-        return 'Checks for data inconsistencies.';
+        return \Fisharebest\Webtrees\I18N::translate('Checks for data inconsistencies.');
     }
 
     public function customModuleAuthorName(): string
@@ -106,7 +106,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.5.7';
+        return '1.6.0';
     }
 
     public function getVersion(): string
@@ -416,8 +416,10 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                     return $this->getBatchAnalysisAction($request);
                 case 'MarkAsDead':
                     return $this->getMarkAsDeadAction($request);
+                case 'ApplyFix':
+                    return $this->getApplyFixAction($request);
                 default:
-                    return response(json_encode(['error' => 'Unknown action: ' . $action]))
+                    return response(json_encode(['error' => \Fisharebest\Webtrees\I18N::translate('Unknown action: %s', $action)]))
                         ->withHeader('Content-Type', 'application/json');
             }
         } catch (\Throwable $e) {
@@ -681,7 +683,12 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $mark_as_dead_url = route('module', [
             'module' => $this->name(),
             'action' => 'MarkAsDead',
-            'tree'   => $marker_tree->name(),
+            'tree'   => 'TREE0',
+        ]);
+        $apply_fix_url = route('module', [
+            'module' => $this->name(),
+            'action' => 'ApplyFix',
+            'tree'   => 'TREE0',
         ]);
 
         // Render view content
@@ -819,7 +826,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $famId = $params['fam'] ?? '';
 
         if (empty($famId)) {
-            return response(json_encode(['error' => 'Missing fam parameter']))
+            return response(json_encode(['error' => \Fisharebest\Webtrees\I18N::translate('Missing parameters'), 'code' => 'MISSING_PARAMS']))
                 ->withHeader('Content-Type', 'application/json')
                 ->withStatus(400);
         }
@@ -928,7 +935,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $msg   = $params['msg'] ?? ''; // Optional: ignore reason
 
             if (empty($xref) || empty($code)) {
-                return response(json_encode(['success' => false, 'message' => 'Missing parameters']))
+                return response(json_encode(['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Missing parameters'), 'code' => 'MISSING_PARAMS']))
                     ->withHeader('Content-Type', 'application/json');
             }
 
@@ -957,11 +964,41 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $xref = $params['xref'] ?? '';
 
             if (empty($xref)) {
-                return response(json_encode(['success' => false, 'message' => 'Missing parameters']))
+                return response(json_encode(['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Missing parameters'), 'code' => 'MISSING_PARAMS']))
                     ->withHeader('Content-Type', 'application/json');
             }
 
             $result = ActionService::markAsDead($tree, $xref);
+
+            return response(json_encode($result))
+                ->withHeader('Content-Type', 'application/json');
+        } catch (\Throwable $e) {
+            return response(json_encode(['success' => false, 'message' => $e->getMessage()]))
+                ->withHeader('Content-Type', 'application/json');
+        }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function getApplyFixAction(ServerRequestInterface $request): ResponseInterface
+    {
+        try {
+            $tree = $this->getTree($request);
+            if ($tree === null || !Auth::isEditor($tree)) {
+                throw new HttpAccessDeniedException();
+            }
+            $params = $request->getQueryParams();
+            $xref = $params['xref'] ?? '';
+            $fixType = $params['fix_type'] ?? '';
+
+            if (empty($xref) || empty($fixType)) {
+                return response(json_encode(['success' => false, 'message' => \Fisharebest\Webtrees\I18N::translate('Missing parameters'), 'code' => 'MISSING_PARAMS']))
+                    ->withHeader('Content-Type', 'application/json');
+            }
+
+            $result = ActionService::applyFix($tree, $xref, $fixType);
 
             return response(json_encode($result))
                 ->withHeader('Content-Type', 'application/json');

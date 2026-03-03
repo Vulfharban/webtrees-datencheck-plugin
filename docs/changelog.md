@@ -1,36 +1,33 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+gu
+
+## [1.6.0] - 2026-03-03
+### Geändert
+- **Vollständige Internationalisierung (i18n)**: Alle verbleibenden hartkodierten Texte in PHP-Services (Validation, Action, Interaction, Database) und JavaScript-AJAX-Meldungen wurden in `I18N::translate()` gekapselt.
+- **Robustere Fehlerbehandlung**: Einführung maschinenlesbarer Fehlercodes (z.B. `NOT_FOUND`, `MISSING_PARAMS`) für die API, um Logikfehler in verschiedenen Sprachen zu vermeiden.
+- **Sprach-Automatisierung**: Neues Skript-System zur automatischen Verteilung von Übersetzungsschlüsseln auf alle 49 unterstützten Sprachen.
+- **Spezifische Übersetzungen**: Integration neuer Übersetzungen für Französisch, Italienisch, Spanisch, Niederländisch und Portugiesisch.
+- **Datenbank-Meldungen**: Alle Meldungen aus dem `DatabaseService` (Duplikate, Geschwister, Quellen) sind nun vollständig übersetzbar.
+
+## [1.5.9] - 2026-03-03
+### Hinzugefügt
+- **Quick-Fix Buttons**: Einführung von Buttons in der Analyse-Tabelle zur schnellen Korrektur gängiger Fehler.
+- **Intelligenter Datums-Tausch**: `ActionService::swapDates` ermöglicht den Tausch von Daten zwischen Fakten (z.B. Taufe vor Geburt) unter Erhalt von Zusatzdaten wie Orten (`PLAC`) und Quellen (`SOUR`).
+- **Erweiterte Korrekturen**: Unterstützung für den Tausch von BIRT/CHR, DEAT/BURI und BIRT/DEAT.
+
+## [1.5.8] - 2026-03-03
+### Geändert
+- **Globales i18n-Refactoring**: Alle verbleibenden hartkodierten Texte in PHP-Services und JavaScript-AJAX-Meldungen wurden in `I18N::translate()` gekapselt.
+- **Sprach-Offensive**: Integration von 22 neuen Sprachen (jetzt insgesamt 49 Sprachvarianten unterstützt).
+- **Norwegisch-Standard**: Umstellung des Sprachcodes von `no` auf den webtrees-Standard `nb` (Bokmål).
+- **Platzhalter-Synchronisation**: Alle `%d` und `%s` Platzhalter wurden in allen 49 Sprachdateien einheitlich korrigiert.
+
 ## [1.5.7] - 2026-03-02
 ### Hinzugefügt
-- **GEDCOM-Standardprüfung**: Neue Validierung für mehrfache Geburts- (`BIRT`), Tauf- (`BAPM`/`CHR`), Todes- (`DEAT`), Bestattungs- (`BURI`) oder Geschlechtsangaben (`SEX`) bei einer Person. 
-- **Datenpflege-Kategorie**: Diese neuen Prüfungen werden als hilfreiche **Info-Meldungen (Blau)** kategorisiert, um die Bereinigung redundanter Datensätze zu unterstützen.
-- **Lokalisierung**: Vollständige Unterstützung der neuen Meldungen in allen 27 Sprachen (inkl. Bulgarisch, Griechisch, Finnisch, Polnisch, Ukrainisch etc.).
-### Behoben
-- **ZIP-Buildprozess**: Korrektur der Pfad-Berechnung im Build-Skript `build_release.ps1`. Dateien und Ordner werden nun wieder mit korrekten Namen (keine fehlenden Anfangsbuchstaben mehr) und vollständiger Verzeichnisstruktur im ZIP-Archiv gespeichert.
-- **Breadcrumb-Navigation**: Fix für einen fehlerhaften Link in der Modul-Navigation ("The parameter 'xref' is missing").
-- **Sprachdateien**: Korrektur der Platzhalter (`%d` statt `%s`) in den Übersetzungen für "Event occurs before birth/after death".
-
-## [1.5.6] - 2026-03-02
-### Behoben
-- **Italienische Übersetzung**: Vollständige Überarbeitung der italienischen Sprachdatei (`it.php`). Sprachmischungen (französische und deutsche Begriffe in der italienischen Ausgabe) wurden korrigiert und fehlende Validierungsmeldungen ergänzt.
-
-## [1.5.5] - 2026-03-02
-### Behoben
-- **Kritischer PHP-Fehler**: Fix für den Fehler "2 arguments are required, 1 given" in der Admin-Ansicht, der bei bestimmten Übersetzungen auftreten konnte.
-
-## [1.5.4] - 2026-03-02
-### Geändert
-- **CSV-Export**: Verbesserte Excel-Kompatibilität und Lesbarkeit. HTML-Tags werden nun automatisch entfernt, und die Spaltenüberschriften werden in der jeweiligen Benutzersprache ausgegeben.
-- **Build-Prozess**: Umstellung auf plattformübergreifende Pfadtrenner (Forward Slashes) im ZIP-Archiv, um Fehler beim Entpacken unter Linux und macOS zu vermeiden.
-### Behoben
-- **Stabilität (Sprachen)**: Fix für einen Syntax-Fehler bei Sprachen mit Apostrophen (z. B. Französisch), durch den der Analyse-Button inaktiv blieb.
-
-## [1.5.3] - 2026-03-02
-### Geändert
-- **Admin-UI**: Button-Beschriftung nach Abschluss der Analyse wurde von "Fertig" auf "Neu scannen" (bzw. entsprechende Übersetzungen) geändert. Das Icon wurde für eine bessere optische Rückmeldung auf ein Synchronisations-Symbol (`fa-sync`) aktualisiert.
-- **Lokalisierung (ca)**: Die katalanische Sprachdatei wurde auf den ISO-Standard `ca.php` umbenannt und die Übersetzungen korrigiert (spanische Begriffe entfernt).
-### Behoben
-- **Fehlalarme bei Datumsprüfungen**: Technische GEDCOM-Tags wie `SSN` (Sozialversicherungsnummer) und verschiedene FamilySearch-IDs (`_FSFTID`, `_FSLIVED`, `_FSID`, `_FSPID`) werden nun explizit ignoriert. Dies verhindert, dass Zahlenfolgen aus diesen Feldern fälschlicherweise als Jahreszahlen interpretiert werden.
+- **GEDCOM-Standardprüfung (Bulk)**: Neue Validierung auf mehrfache Ereignisse (BIRT, DEAT, SEX, BAPM, BURI).
+- **Info-Kategorie**: Einführung einer "Blauen Kategorie" (Info) für redaktionelle Hinweise zur Datenpflege, die keine harten Fehler darstellen.
+- **Build-System**: Sanierung des PowerShell-Build-Skripts für robuste ZIP-Erstellung auf Windows-Systemen (Fix für Pfad-Variationen).
 
 ## [1.5.2] - 2026-02-25
 ### Hinzugefügt

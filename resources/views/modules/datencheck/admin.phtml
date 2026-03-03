@@ -839,7 +839,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data = await response.json();
             } catch (e) {
                 console.error('Server response was not JSON:', await response.text());
-                throw new Error('Server response was not valid JSON.');
+                throw new Error(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Server response was not valid JSON.')) ?>);
             }
 
             if (data.error) {
@@ -883,8 +883,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         let actionHtml = '';
                         if (issue.code === 'LIKELY_DEAD') {
-                            actionHtml = `<button type="button" class="btn btn-sm btn-outline-danger" title="<?= \Fisharebest\Webtrees\I18N::translate('Mark as dead') ?>" onclick="window.datencheckMarkAsDead('${issue.xref}', this)">
-                                <i class="fa fa-cross"></i> <?= \Fisharebest\Webtrees\I18N::translate('Fix') ?>
+                            actionHtml = `<button type="button" class="btn btn-sm btn-danger" title="<?= \Fisharebest\Webtrees\I18N::translate('Mark as dead') ?>" onclick="window.datencheckMarkAsDead('${issue.xref}', this)">
+                                <?= \Fisharebest\Webtrees\I18N::translate('Fix') ?>
+                            </button>`;
+                        } else if (['BAPTISM_BEFORE_BIRTH', 'BURIAL_BEFORE_DEATH', 'BIRTH_AFTER_DEATH'].includes(issue.code)) {
+                            let fixType = 'SWAP_BIRT_CHR';
+                            if (issue.code === 'BURIAL_BEFORE_DEATH') fixType = 'SWAP_DEAT_BURI';
+                            if (issue.code === 'BIRTH_AFTER_DEATH') fixType = 'SWAP_BIRT_DEAT';
+                            
+                            actionHtml = `<button type="button" class="btn btn-sm btn-primary" title="<?= \Fisharebest\Webtrees\I18N::translate('Swap dates') ?>" onclick="window.datencheckApplyFix('${issue.xref}', '${fixType}', this)">
+                                <?= \Fisharebest\Webtrees\I18N::translate('Fix') ?>
                             </button>`;
                         }
                         
@@ -989,16 +997,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const oldHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+        btn.innerHTML = '...';
         
         try {
-            const url = '<?= $mark_as_dead_url ?>' + ( '<?= $mark_as_dead_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref;
+            const currentTree = getSelectedTree();
+            const url = '<?= $mark_as_dead_url ?>'.replace('TREE0', currentTree) + ( '<?= $mark_as_dead_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref;
             const response = await fetch(url);
             const data = await response.json();
             
             if (data.success) {
                 btn.className = 'btn btn-sm btn-success ms-2';
-                btn.innerHTML = '<i class="fa fa-check"></i> ' + <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Done')) ?>;
+                btn.innerHTML = <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Done')) ?>;
                 // Find parent row and mark it as resolved (optional: hide it)
                 const row = btn.closest('tr');
                 if (row) {
@@ -1006,13 +1015,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.style.textDecoration = 'line-through';
                 }
             } else {
-                alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Error:')) ?> + ' ' + (data.message || 'Unknown error'));
+                alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Error:')) ?> + ' ' + (data.message || <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Unknown error')) ?>));
                 btn.disabled = false;
                 btn.innerHTML = oldHtml;
             }
         } catch (e) {
             console.error(e);
-            alert('<?= \Fisharebest\Webtrees\I18N::translate('Connection error') ?>');
+            alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Connection error')) ?>);
+            btn.disabled = false;
+            btn.innerHTML = oldHtml;
+        }
+    };
+    
+    window.datencheckApplyFix = async (xref, fixType, btn) => {
+        if (!confirm(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Are you sure you want to apply this automated fix?')) ?>)) return;
+        
+        const oldHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '...';
+        
+        try {
+            const currentTree = getSelectedTree();
+            const url = '<?= $apply_fix_url ?>'.replace('TREE0', currentTree) + ( '<?= $apply_fix_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref + '&fix_type=' + fixType;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                btn.className = 'btn btn-sm btn-success ms-2';
+                btn.innerHTML = <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Fixed')) ?>;
+                const row = btn.closest('tr');
+                if (row) {
+                    row.style.opacity = '0.5';
+                    row.style.textDecoration = 'line-through';
+                }
+            } else {
+                alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Error:')) ?> + ' ' + (data.message || <?= json_encode(\Fisharebest\Webtrees\I18N::translate('Unknown error')) ?>));
+                btn.disabled = false;
+                btn.innerHTML = oldHtml;
+            }
+        } catch (e) {
+            console.error(e);
+            alert(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Connection error')) ?>);
             btn.disabled = false;
             btn.innerHTML = oldHtml;
         }

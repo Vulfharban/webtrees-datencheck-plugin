@@ -1211,10 +1211,10 @@ class ValidationService
                 $issues[] = [
                     'code' => 'LONG_DISTANCE_MIGRATION',
                     'type' => 'geographic_info',
-                    'label' => 'Große Distanz',
+                    'label' => \Fisharebest\Webtrees\I18N::translate('Large distance'),
                     'severity' => 'info',
-                    'message' => sprintf(
-                        'Zwischen Geburt (%s) und Tod (%s) liegen ca. %d km.',
+                    'message' => \Fisharebest\Webtrees\I18N::translate(
+                        'Distance between birth (%s) and death (%s) is approx. %d km.',
                         $birthCtx['name'],
                         $deathCtx['name'],
                         round($distKm)
@@ -1248,10 +1248,10 @@ class ValidationService
                         $issues[] = [
                             'code' => 'IMPOSSIBLE_TRAVEL_SPEED',
                             'type' => 'geographic_implausibility',
-                            'label' => 'Ort/Zeit prüfen',
+                            'label' => \Fisharebest\Webtrees\I18N::translate('Check place/time'),
                             'severity' => 'error',
-                            'message' => sprintf(
-                                'Unmögliche Reise: %d km in < 2 Tagen zwischen "%s" und "%s".',
+                            'message' => \Fisharebest\Webtrees\I18N::translate(
+                                'Impossible travel: %d km in < 2 days between "%s" and "%s".',
                                 round($distKm),
                                 $birthCtx['name'],
                                 $deathCtx['name']
@@ -1407,10 +1407,10 @@ class ValidationService
         if (empty($givenNamePrimary) && !empty($surnamePrimary)) {
             $issues[] = [
                 'code' => 'MISSING_GIVEN_NAME',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Given name missing'),
                 'type' => 'missing_given_name',
-                'label' => 'Vorname fehlt',
                 'severity' => 'warning',
-                'message' => 'Person hat einen Nachnamen, aber keinen Vornamen',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has a surname, but no given name'),
             ];
         }
 
@@ -1451,14 +1451,14 @@ class ValidationService
                 
                 // If more than 30% or 40% different
                 if ($maxLen > 0 && ($lev / $maxLen) > 0.4) {
-                    $typeName = ($type === '_MARNM' || str_contains($type, 'MARRIED')) ? 'Ehename' : 'Alternativer Name';
+                    $typeName = ($type === '_MARNM' || str_contains($type, 'MARRIED')) ? \Fisharebest\Webtrees\I18N::translate('Married name') : \Fisharebest\Webtrees\I18N::translate('Alternative name');
                     $issues[] = [
                         'code' => 'NAME_MISMATCH',
                         'type' => 'name_mismatch',
-                        'label' => 'Vorname prüfen',
+                        'label' => \Fisharebest\Webtrees\I18N::translate('Verify given name'),
                         'severity' => 'warning',
-                        'message' => sprintf(
-                            'Unterschiedliche Vornamen entdeckt: "%s" (%s) vs. "%s" (Geburtsname)',
+                        'message' => \Fisharebest\Webtrees\I18N::translate(
+                            'Different given names detected: "%s" (%s) vs. "%s" (Birth name)',
                             $name['givn'],
                             $typeName,
                             $primaryName['givn']

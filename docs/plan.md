@@ -3,7 +3,7 @@
 ## Projektziel
 Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und die Erfassung von Dubletten während der Eingabe unterdrückt.
 
-**Status:** Version 1.5.7 - **Stable** (Check GEDCOM & Fixes)
+**Status:** Version 1.5.9 - **Stable** (Quick-Fix Buttons & Global i18n)
 
 ## Kernfunktionen
 
@@ -36,11 +36,13 @@ Entwicklung eines Plugins für webtrees, das Dateninkonsistenzen verhindert und 
 - [ ] **Erweiterte Quellenprüfung**:
     - *Status:* **Teilweise implementiert** (Check auf komplett fehlende Quellen existiert).
     - *Offen:* Qualitative Prüfung (Repositories, Seitenzahlen, Konsistenz Check).
-- [ ] **Quick-Fix Buttons**:
-    - *Status:* noch nicht gestartet.
+- [x] **Quick-Fix Buttons**:
+    - *Status:* **Vollständig implementiert** (Automatischer Datums-Tausch & Markierung als verstorben).
 - [ ] **Hierarchie-Checks**: Statistische Prüfung auf biologische Ausreißer (z.B. Elternteil zu jung/alt bei Geburt).
 - [x] **Familien-Dubletten**:
     - *Status:* **Vollständig implementiert** (Interaktiver Check bei Neuanlage & Bulk-Check GEDCOM-Standard).
+- [x] **Globales i18n Refaktoring**:
+    - *Status:* **Abgeschlossen** (Alle UI-Strings und Service-Meldungen gekapselt, 49 Sprachen integriert).
 
 ### 5. Quellencheck & Archive
 - [x] **Quellen-Duplikatssuche (Live)**: Suche nach ähnlichen Quellen während der Eingabe (inkl. Übersetzung, Autoren-Check & Zeichen-Toleranz).

@@ -229,7 +229,7 @@ class TemporalValidator extends AbstractValidator
         // Internal helper: robust year extraction (bypass strict validation)
         $extractYear = function($fact) {
             if (!$fact) return null;
-            $rawText = $fact->date()->display() . ' ' . $fact->value();
+            $rawText = strip_tags($fact->date()->display()) . ' ' . $fact->value();
             $p = DateParser::parseGedcomDate($rawText);
             return $p['year'] ?: null;
         };

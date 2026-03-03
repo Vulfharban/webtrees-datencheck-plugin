@@ -946,7 +946,7 @@ document.addEventListener("DOMContentLoaded", function() {
             fetch("<?= $details_url ?>".includes("?") ? "<?= $details_url ?>&xref=" + xref : "<?= $details_url ?>?xref=" + xref)
                 .then(r => r.json())
                 .then(d => {
-                    if (d.error && d.error.includes("nicht gefunden")) {
+                    if (d.code === 'NOT_FOUND' || (d.error && d.error.includes("nicht gefunden"))) {
                         console.log("Datencheck: Individual " + xref + " not found, checking if it is a family...");
                         if (!data.famXref) {
                             data.famXref = xref;

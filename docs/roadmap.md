@@ -62,6 +62,15 @@
 
 ---
 
+## ✅ Phase 24: Globale Lokalisierung & Refactoring (COMPLETE - 2026-03-03)
+- [x] **i18n-Service-Fix**: Kapselung aller harten Strings in `DatabaseService.php` in `I18N::translate()`.
+- [x] **JS-i18n**: Lokalisierung der AJAX-Fehlermeldungen in der Admin-UI.
+- [x] **Sprach-Offensive**: Integration von 22 neuen Sprachen (total 49).
+- [x] **Norwegisch-Update**: Migration von `no` auf den Standard-Code `nb` (Bokmål).
+- [x] **Platzhalter-Sanierung**: Einheitliche Korrektur aller `sprintf`-Formate in allen Sprachen.
+
+---
+
 ## Versionshistorie
 - **v1.3.0:** Globale Namens-Datenbank, Ehenamen-Logik, Diakritika
 - **v1.3.3:** Kompakte Anzeige, Sterbeort-Integration
@@ -75,3 +84,5 @@
 - **v1.5.4:** CSV-Excel-Fixes & Build-Sicherheit (Forward Slashes)
 - **v1.5.6:** Vollständige italienische Übersetzung & Server-Error Fixes
 - **v1.5.7:** GEDCOM-Standardprüfung, Info-Kategorie & ZIP-Recovery Fix
+- **v1.5.8:** Globales i18n-Refactoring & Integration von 22 neuen Sprachen (insges. 49)
+- **v1.5.9:** Quick-Fix Buttons & intelligenter Datums-Tausch inkl. GEDCOM-Erhalt

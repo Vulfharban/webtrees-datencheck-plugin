@@ -53,6 +53,8 @@ class ValidationConstants
         'MULTIPLE_BAPTISM_EVENTS'       => 'Mehrfache Taufereignisse',
         'MULTIPLE_BURIAL_EVENTS'        => 'Mehrfache Bestattungsereignisse',
         'MULTIPLE_SEX_TAGS'             => 'Mehrfache Geschlechtsangaben (SEX)',
+        'LONG_DISTANCE_MIGRATION'       => 'Große Distanz',
+        'IMPOSSIBLE_TRAVEL_SPEED'       => 'Unmögliche Reise',
     ];
 
     private static array $labels_en = [
@@ -104,6 +106,8 @@ class ValidationConstants
         'MULTIPLE_BAPTISM_EVENTS'       => 'Multiple baptism events',
         'MULTIPLE_BURIAL_EVENTS'        => 'Multiple burial events',
         'MULTIPLE_SEX_TAGS'             => 'Multiple gender tags (SEX)',
+        'LONG_DISTANCE_MIGRATION'       => 'Large distance',
+        'IMPOSSIBLE_TRAVEL_SPEED'       => 'Impossible travel',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string
