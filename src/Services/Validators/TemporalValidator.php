@@ -190,11 +190,36 @@ class TemporalValidator extends AbstractValidator
             if ($person) {
                 foreach ($person->facts() as $fact) {
                     $tag = strtoupper(trim($fact->tag()));
-                if (in_array($tag, ['CHAN', '_CHAN', 'RESN', 'REFN', 'RIN', 'UID', '_UID', 'OBJE', 'NOTE', 'SOUR', 'ASSO', 'BIRT', 'DEAT', 'BURI', 'SSN', '_FSFTID', '_FSLIVED', '_FSID', '_FSPID'])) continue;
+                    
+                    // Normalize tag (strip prefixes like INDI:)
+                    if (str_contains($tag, ':')) {
+                        $tag = substr($tag, strrpos($tag, ':') + 1);
+                    }
+
+                    // Skip technical and metadata tags that are not life signals
+                    $blackList = [
+                        'CHAN', '_CHAN', 'RESN', 'REFN', 'RIN', 'UID', '_UID', 'OBJE', 'NOTE', 'SOUR', 'ASSO',
+                        'BIRT', 'DEAT', 'BURI', 'SSN', '_FSFTID', '_FSLIVED', '_FSID', '_FSPID'
+                    ];
+                    
+                    if (in_array($tag, $blackList)) {
+                        continue;
+                    }
+
+                    // Skip common webtrees/custom noise tags
+                    if (str_starts_with($tag, '_')) {
+                        $noise = ['_TODO', '_TASK', '_UPD', '_UPDATED', '_WT_USER', '_SCN', '_TYPE', '_CHANGES', '_DATES'];
+                        if (in_array($tag, $noise)) {
+                            continue;
+                        }
+                    }
+
                     $factDate = $fact->date();
                     if ($factDate->isOK()) {
                         $year = $factDate->minimumDate()->year();
-                        if ($year > $lastSignalYear) $lastSignalYear = $year;
+                        if ($year > $lastSignalYear) {
+                            $lastSignalYear = $year;
+                        }
                     }
                 }
             }
