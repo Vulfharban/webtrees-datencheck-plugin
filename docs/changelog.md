@@ -2,6 +2,13 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 
 gu
 
+## [1.6.1] - 2026-03-03
+### Geändert
+- **Massives Sprach-Update**: Vollständige Überarbeitung und Ergänzung von 28+ Sprachdateien (u.a. Russisch, Ukrainisch, Polnisch, Japanisch, Koreanisch, Persisch, Türkisch, Vietnamesisch).
+- **Syntax-Fixes**: Behebung von PHP-Syntaxfehlern (nicht maskierte einfache Anführungszeichen) in diversen Übersetzungsdateien.
+- **Konsistenz-Prüfung**: Abgleich aller 49 unterstützten Sprachen auf Vollständigkeit der neuen i18n-Schlüssel.
+- **Regionale Optimierung**: Korrektur von abgeschnittenen Texten in englischen Varianten (`en-AU`, `en-GB`, `en-US`).
+
 ## [1.6.0] - 2026-03-03
 ### Geändert
 - **Vollständige Internationalisierung (i18n)**: Alle verbleibenden hartkodierten Texte in PHP-Services (Validation, Action, Interaction, Database) und JavaScript-AJAX-Meldungen wurden in `I18N::translate()` gekapselt.

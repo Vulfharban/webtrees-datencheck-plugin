@@ -384,11 +384,11 @@ return [
     'Large distance' => 'Large distance',
     'Distance between birth (%s) and death (%s) is approx. %d km.' => 'Distance between birth (%s) and death (%s) is approx. %d km.',
     'Check place/time' => 'Check place/time',
-    'Impossible travel: %d km in < 2 days between "%s" and "%s".' => 'Impossible travel: %d km in < 2 days between ',
+    'Impossible travel: %d km in < 2 days between "%s" and "%s".' => 'Impossible travel: %d km in < 2 days between "%s" and "%s".',
     'Given name missing' => 'Given name missing',
     'Person has a surname, but no given name' => 'Person has a surname, but no given name',
     'Married name' => 'Married name',
     'Alternative name' => 'Alternative name',
     'Verify given name' => 'Verify given name',
-    'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Different given names detected: ',
+    'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Different given names detected: "%s" (%s) vs. "%s" (Birth name)',
 ];
