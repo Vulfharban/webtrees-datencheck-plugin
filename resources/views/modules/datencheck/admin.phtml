@@ -545,39 +545,39 @@
                     <label class="form-label d-block fw-bold"><?= \Fisharebest\Webtrees\I18N::translate('Categories to analyze:') ?></label>
                     <div class="d-flex flex-wrap gap-3 p-3 bg-white border rounded">
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="biological" id="chk_bio" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="biological" id="chk_bio" name="chk_bio" <?= $module->getSetting('analysis_cat_bio', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_bio"><?= \Fisharebest\Webtrees\I18N::translate('Biological Plausibility') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="temporal" id="chk_temp" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="temporal" id="chk_temp" name="chk_temp" <?= $module->getSetting('analysis_cat_temp', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_temp"><?= \Fisharebest\Webtrees\I18N::translate('Temporal Plausibility') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="marriage" id="chk_marr" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="marriage" id="chk_marr" name="chk_marr" <?= $module->getSetting('analysis_cat_marr', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_marr"><?= \Fisharebest\Webtrees\I18N::translate('Marriage Plausibility') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="missing_data" id="chk_miss" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="missing_data" id="chk_miss" name="chk_miss" <?= $module->getSetting('analysis_cat_miss', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_miss"><?= \Fisharebest\Webtrees\I18N::translate('Missing Data') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="geographic" id="chk_geo" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="geographic" id="chk_geo" name="chk_geo" <?= $module->getSetting('analysis_cat_geo', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_geo"><?= \Fisharebest\Webtrees\I18N::translate('Geographic Plausibility') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="names" id="chk_name" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="names" id="chk_name" name="chk_name" <?= $module->getSetting('analysis_cat_name', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_name"><?= \Fisharebest\Webtrees\I18N::translate('Name Consistency') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="sources" id="chk_src" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="sources" id="chk_src" name="chk_src" <?= $module->getSetting('analysis_cat_src', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_src"><?= \Fisharebest\Webtrees\I18N::translate('Source Quality') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="date_format" id="chk_date" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="date_format" id="chk_date" name="chk_date" <?= $module->getSetting('analysis_cat_date', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_date"><?= \Fisharebest\Webtrees\I18N::translate('Date Format') ?></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input analysis-category" type="checkbox" value="gedcom_standard" id="chk_gedcom" checked>
+                            <input class="form-check-input analysis-category" type="checkbox" value="gedcom_standard" id="chk_gedcom" name="chk_gedcom" <?= $module->getSetting('analysis_cat_gedcom', '1') === '1' ? 'checked' : '' ?>>
                             <label class="form-check-label" for="chk_gedcom"><?= \Fisharebest\Webtrees\I18N::translate('Check GEDCOM') ?></label>
                         </div>
                     </div>

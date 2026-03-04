@@ -106,7 +106,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.1.1';
+        return '1.6.2';
     }
 
     public function getVersion(): string
@@ -729,6 +729,17 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_imprecise_dates', isset($params['enable_imprecise_dates']) ? '1' : '0');
         $this->setSetting('enable_menu_icon', isset($params['enable_menu_icon']) ? '1' : '0');
         
+        // Save analysis category settings
+        $this->setSetting('analysis_cat_bio', isset($params['chk_bio']) ? '1' : '0');
+        $this->setSetting('analysis_cat_temp', isset($params['chk_temp']) ? '1' : '0');
+        $this->setSetting('analysis_cat_marr', isset($params['chk_marr']) ? '1' : '0');
+        $this->setSetting('analysis_cat_miss', isset($params['chk_miss']) ? '1' : '0');
+        $this->setSetting('analysis_cat_geo', isset($params['chk_geo']) ? '1' : '0');
+        $this->setSetting('analysis_cat_name', isset($params['chk_name']) ? '1' : '0');
+        $this->setSetting('analysis_cat_src', isset($params['chk_src']) ? '1' : '0');
+        $this->setSetting('analysis_cat_date', isset($params['chk_date']) ? '1' : '0');
+        $this->setSetting('analysis_cat_gedcom', isset($params['chk_gedcom']) ? '1' : '0');
+        
         // Save threshold preferences
         $this->setSetting('min_mother_age', $params['min_mother_age'] ?? '14');
         $this->setSetting('max_mother_age', $params['max_mother_age'] ?? '50');
@@ -1118,7 +1129,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             
             // Pre-warm caches for this batch
             ValidationService::preWarmCache($tree, $totalXrefs);
-            
             $results = [];
             $registry = Registry::individualFactory();
             $debugRaw = null;

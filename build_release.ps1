@@ -1,4 +1,4 @@
-$version = "v1.6.1.1"
+$version = "v1.6.2"
 $zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = (Get-Item .).FullName
 $tempDir = Join-Path $env:TEMP "webtrees-datencheck-build"
@@ -55,10 +55,9 @@ $archive = [System.IO.Compression.ZipFile]::Open($zipPath, 'Create')
 # Recursively get all files but NOT directories
 $files = Get-ChildItem -Path $targetDir -Recurse | Where-Object { -not $_.PSIsContainer }
 
-# Normalize the target prefix for reliable removal
-# Using (Get-Item).FullName ensures we compare the same format (Long/Short)
-$targetFull = (Get-Item $targetDir).FullName
-$prefix = $targetFull.TrimEnd("\") + "\"
+# Normalize the prefix for reliable removal - using tempDir to include the plugin folder in the zip
+$tempFull = (Get-Item $tempDir).FullName
+$prefix = $tempFull.TrimEnd("\") + "\"
 
 foreach ($file in $files) {
     # Normalize $file path too

@@ -1,5 +1,11 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.2] - 2026-03-04
+### Geändert
+- **ZIP-Struktur**: Das Release-ZIP enthält nun den übergeordneten Ordner `webtrees-datencheck-plugin`. Dies erleichtert das Entpacken direkt in das `modules_v4`-Verzeichnis von webtrees.
+### Behoben
+- **Analyse-Einstellungen**: Die Checkboxen für die Kategoriewahl auf dem Analyse-Tab werden nun beim Speichern dauerhaft im Benutzerprofil hinterlegt.
+
 ## [1.6.1.1] - 2026-03-03
 ### Behoben
 - **"Likely Dead" Korrektur**: Behebung eines Fehlers, bei dem das Datum der letzten Datensatz-Änderung (`CHAN`) fälschlicherweise als "Lebenszeichen" gewertet wurde (z. B. 2026 bei Personen aus dem 17. Jahrhundert).
