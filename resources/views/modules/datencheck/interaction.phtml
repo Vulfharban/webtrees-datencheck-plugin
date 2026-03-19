@@ -70,6 +70,15 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Detect search pages - do NOT run duplicate/validation checks there
+    const _dcPath = window.location.pathname + window.location.search;
+    const _isSearchPage = /search-(general|phonetic|advanced|replace)/i.test(_dcPath) ||
+                          /action=search/i.test(_dcPath) ||
+                          /module=search/i.test(_dcPath);
+    if (_isSearchPage) {
+        console.log('Datencheck: Search page detected, skipping interactive checks.');
+    }
+
     let personTimeout = null;
     let familyTimeout;
     let repoTimeout;
@@ -113,6 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const checkDuplicate = (e) => {
+        if (_isSearchPage) return;
         const given = document.querySelector('[id*="GIVN"]')?.value || "";
         const surname = document.querySelector('[id*="SURN"]')?.value || "";
         const birth = document.querySelector('[id*="BIRT"][id*="DATE"]')?.value || "";
@@ -243,6 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const checkSibling = () => {
+        if (_isSearchPage) return;
         const given = document.querySelector('[id$="-GIVN"]')?.value || "";
         const surname = document.querySelector('[id$="-SURN"]')?.value || "";
         const birth = document.querySelector('[id$="-INDI-BIRT-DATE"]')?.value || "";
@@ -311,6 +322,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const checkFamily = () => {
+        if (_isSearchPage) return;
         const husb = document.getElementById("HUSB")?.value || "";
         const wife = document.getElementById("WIFE")?.value || "";
 
@@ -1464,6 +1476,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Validation check for data plausibility
     const checkValidation = () => {
+        if (_isSearchPage) return;
         const context = getContext();
         const allElements = Array.from(document.querySelectorAll('input, select, textarea'));
         

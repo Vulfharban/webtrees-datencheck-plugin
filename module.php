@@ -106,7 +106,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.2';
+        return '1.6.3';
     }
 
     public function getVersion(): string
@@ -320,20 +320,28 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         }
 
         $id   = 'menu-datencheck';
-        $file = __DIR__ . '/resources/images/datencheck_icon.png';
-        $icon = '<i class="menu-icon fas fa-check-double"></i>'; // Fallback
         
-        // Only show icon if enabled in settings (default: enabled)
-        $show_icon = $this->getSetting('enable_menu_icon', '1') === '1';
+        // Icon style setting: 'standard', 'transparent', 'light', 'none'
+        // Backwards compatible: old '1' = 'standard', old '0' = 'none'
+        $icon_style = $this->getSetting('menu_icon_style', '');
+        if ($icon_style === '') {
+            // Migration from old boolean setting
+            $old = $this->getSetting('enable_menu_icon', '1');
+            $icon_style = ($old === '0') ? 'none' : 'standard';
+        }
 
-        if ($show_icon && file_exists($file)) {
-            $data   = file_get_contents($file);
+        $icon_files = [
+            'standard'    => __DIR__ . '/resources/images/datencheck_icon.png',
+            'transparent' => __DIR__ . '/resources/images/datencheck_icon_transparent.png',
+            'light'       => __DIR__ . '/resources/images/datencheck_icon_light.png',
+        ];
+
+        $label = $this->title();
+        if ($icon_style !== 'none' && isset($icon_files[$icon_style]) && file_exists($icon_files[$icon_style])) {
+            $data   = file_get_contents($icon_files[$icon_style]);
             $base64 = base64_encode($data);
-            // Use 58px size (perfectly between 50 and 64)
             $icon   = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" style="width:58px; height:58px; object-fit:contain; display:block; margin:0 auto 0;">';
-            $label = $icon . '<span>' . $this->title() . '</span>';
-        } else {
-            $label = $this->title();
+            $label  = $icon . '<span>' . $this->title() . '</span>';
         }
 
         // Create main menu item (Dropdown)
@@ -727,7 +735,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_genannt_names', isset($params['enable_genannt_names']) ? '1' : '0');
         $this->setSetting('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
         $this->setSetting('enable_imprecise_dates', isset($params['enable_imprecise_dates']) ? '1' : '0');
-        $this->setSetting('enable_menu_icon', isset($params['enable_menu_icon']) ? '1' : '0');
+        $icon_style = $params['menu_icon_style'] ?? 'standard';
+        if (!in_array($icon_style, ['standard', 'transparent', 'light', 'none'])) {
+            $icon_style = 'standard';
+        }
+        $this->setSetting('menu_icon_style', $icon_style);
         
         // Save analysis category settings
         $this->setSetting('analysis_cat_bio', isset($params['chk_bio']) ? '1' : '0');

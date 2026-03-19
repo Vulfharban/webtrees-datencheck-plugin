@@ -1,5 +1,13 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.3] - 2026-03-19
+### Hinzugefügt
+- **Menü-Icon Stile**: Einführung von 4 wählbaren Icon-Stilen (Standard, Transparent, Hell, Kein Icon) in den Einstellungen für bessere Kompatibilität mit verschiedenen Themes.
+- **Dunkle Themes**: Neues kontrastreiches Icon-Set ("Hell") für webtrees-Themes mit dunklem Hintergrund.
+- **Admin-Vorschau**: Interaktive Live-Vorschau in den Modul-Einstellungen mit Hintergrund-Umschalter zur Prüfung der Lesbarkeit.
+### Behoben
+- **Such-Trigger**: Die automatische Dublettenprüfung wurde auf Suchseiten (Phonetische Suche, Erweiterte Suche) deaktiviert, um Performance zu sparen und unnötige Hintergrund-Anfragen zu vermeiden.
+
 ## [1.6.2] - 2026-03-04
 ### Geändert
 - **ZIP-Struktur**: Das Release-ZIP enthält nun den übergeordneten Ordner `webtrees-datencheck-plugin`. Dies erleichtert das Entpacken direkt in das `modules_v4`-Verzeichnis von webtrees.
