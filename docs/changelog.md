@@ -1,5 +1,9 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.7] - 2026-03-24
+### Geändert
+- **Listen-Icon**: Optimierte Darstellung des Modul-Icons für Desktop-Menüs (3,4rem). Das Icon wird nun zentriert über dem Text angezeigt, um sich nahtlos in Themes mit 3D-Icons einzufügen.
+
 ## [1.6.6] - 2026-03-24
 ### Geändert
 - **Namen-Sofortsuche**: Dubletten werden jetzt auch dann gesucht, wenn das Geburtsdatum noch leer ist. Dies beschleunigt die Erkennung während der ersten Dateneingabe erheblich.

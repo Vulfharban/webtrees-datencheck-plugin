@@ -107,7 +107,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.6';
+        return '1.6.7';
     }
 
     public function getVersion(): string
@@ -352,9 +352,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 $data   = @file_get_contents($icon_files[$icon_style]);
                 $base64 = base64_encode($data);
                 
-                // Automatic size: 1.25em scales with font height, vertical-align keeps it inline
-                $icon = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" aria-hidden="true" style="width:1.25em; height:1.25em; object-fit:contain; vertical-align:middle; margin-right:0.4rem; display:inline-block;">';
-                $label = $icon . '<span>' . $this->title() . '</span>';
+                // Final visual alignment: 3.4rem seems like the sweet spot for 3D desktop icons
+                $icon = '<img src="data:image/png;base64,' . $base64 . '" aria-hidden="true" style="width:3.4rem; height:3.4rem; object-fit:contain; display:block; margin:0 auto 4px auto;">';
+                $label = '<span style="text-align:center; display:inline-block; vertical-align:bottom;">' . $icon . '<span style="display:block; font-size:0.92rem;">' . $this->title() . '</span></span>';
             } catch (\Throwable $e) {
                 // Fallback to text only
             }
