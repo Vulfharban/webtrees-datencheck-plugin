@@ -1,5 +1,12 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.4] - 2026-03-24
+### Hinzugefügt
+- **Automatisierte Icon-Wahl**: Das Menü-Icon wird nun automatisch basierend auf der Helligkeit des Themes ausgewählt (Helles Icon für dunkle Themes, transparentes Icon für helle Themes). Die manuelle Konfiguration entfällt.
+- **Doppelnamen-Optimierung**: Verbesserte Dublettenerkennung für Personen mit Bindestrich-Nachnamen oder mehreren Nachnamen (spanische Konventionen). Suchbegriffe werden nun intelligent geteilt und einzeln abgeglichen.
+- **UI-Stabilität**: Das Dubletten-Warnfenster verfügt nun über einen Schließen-Button und bleibt auch beim Wechseln von Eingabefeldern sichtbar.
+- **Erweiterte Feld-Erkennung**: Unterstützung für zusätzliche Namensfelder (Suffix, Volltext-NAME) als Auslöser für die Dublettenprüfung.
+
 ## [1.6.3] - 2026-03-19
 ### Hinzugefügt
 - **Menü-Icon Stile**: Einführung von 4 wählbaren Icon-Stilen (Standard, Transparent, Hell, Kein Icon) in den Einstellungen für bessere Kompatibilität mit verschiedenen Themes.

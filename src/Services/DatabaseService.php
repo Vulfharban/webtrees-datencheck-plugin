@@ -46,15 +46,30 @@ class DatabaseService
         $parsedBaptism = DateParser::parseGedcomDate($baptismDate);
         
         // Search for candidates with similar surname or matching full name
-        $surnamePattern = '%' . $surname . '%';
+        // Support double surnames by splitting input by common separators (space, hyphen, slash)
+        $surnameParts = preg_split('/[\s\-\/]/', $surname, -1, PREG_SPLIT_NO_EMPTY);
+        if (empty($surnameParts) && !empty($surname)) {
+            $surnameParts = [$surname];
+        }
+
         $marriedPattern = $marriedSurname ? '%' . $marriedSurname . '%' : null;
-        $treeId = (int)$tree->id();
+        $treeId         = (int)$tree->id();
         
         $rows = DB::table('name')
             ->where('n_file', '=', $treeId)
-            ->where(function($query) use ($surnamePattern, $marriedPattern) {
-                $query->where('n_surname', 'LIKE', $surnamePattern)
-                      ->orWhere('n_full', 'LIKE', $surnamePattern);
+            ->where(function($query) use ($surnameParts, $marriedPattern) {
+                if (empty($surnameParts)) {
+                    // Fallback to avoid empty where clause
+                    $query->whereRaw('0=1');
+                } else {
+                    foreach ($surnameParts as $part) {
+                        if (mb_strlen($part) < 2) continue; // Skip very short parts
+                        $pattern = '%' . $part . '%';
+                        $query->orWhere('n_surname', 'LIKE', $pattern)
+                              ->orWhere('n_full', 'LIKE', $pattern);
+                    }
+                }
+                
                 if ($marriedPattern) {
                     $query->orWhere('n_surname', 'LIKE', $marriedPattern)
                           ->orWhere('n_full', 'LIKE', $marriedPattern);

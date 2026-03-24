@@ -24,6 +24,7 @@ use Wolfrum\Datencheck\Services\ValidationService;
 use Wolfrum\Datencheck\Services\SchemaService;
 use Wolfrum\Datencheck\Services\IgnoredErrorService;
 use Wolfrum\Datencheck\Services\ActionService;
+use Fisharebest\Webtrees\Services\ThemeService;
 
 use function response;
 use function route;
@@ -106,7 +107,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.3';
+        return '1.6.4';
     }
 
     public function getVersion(): string
@@ -319,15 +320,24 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             return null;
         }
 
-        $id   = 'menu-datencheck';
+        $id = 'menu-datencheck';
         
-        // Icon style setting: 'standard', 'transparent', 'light', 'none'
-        // Backwards compatible: old '1' = 'standard', old '0' = 'none'
-        $icon_style = $this->getSetting('menu_icon_style', '');
-        if ($icon_style === '') {
-            // Migration from old boolean setting
-            $old = $this->getSetting('enable_menu_icon', '1');
-            $icon_style = ($old === '0') ? 'none' : 'standard';
+        // Automatic icon style selection based on theme brightness
+        $icon_style = 'standard';
+        try {
+            $theme = Registry::container()->get(ThemeService::class)->theme();
+            if (method_exists($theme, 'brightness')) {
+                // Determine brightness: < 128 is dark, >= 128 is light
+                $icon_style = ($theme->brightness() < 128) ? 'light' : 'transparent';
+            } elseif (str_contains(strtolower($theme->name()), 'dark') || str_contains(strtolower($theme->name()), 'black')) {
+                // Fallback for dark themes by name
+                $icon_style = 'light';
+            } else {
+                // Default to transparent (dark text on light bg)
+                $icon_style = 'transparent';
+            }
+        } catch (\Throwable $e) {
+            $icon_style = 'standard';
         }
 
         $icon_files = [
@@ -337,15 +347,20 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         ];
 
         $label = $this->title();
-        if ($icon_style !== 'none' && isset($icon_files[$icon_style]) && file_exists($icon_files[$icon_style])) {
-            $data   = file_get_contents($icon_files[$icon_style]);
-            $base64 = base64_encode($data);
-            $icon   = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" style="width:58px; height:58px; object-fit:contain; display:block; margin:0 auto 0;">';
-            $label  = $icon . '<span>' . $this->title() . '</span>';
+        if (isset($icon_files[$icon_style]) && file_exists($icon_files[$icon_style])) {
+            try {
+                $data   = @file_get_contents($icon_files[$icon_style]);
+                $base64 = base64_encode($data);
+                
+                // Automatic size: 1.25em scales with font height, vertical-align keeps it inline
+                $icon = '<img src="data:image/png;base64,' . $base64 . '" class="wt-icon-menu" aria-hidden="true" style="width:1.25em; height:1.25em; object-fit:contain; vertical-align:middle; margin-right:0.4rem; display:inline-block;">';
+                $label = $icon . '<span>' . $this->title() . '</span>';
+            } catch (\Throwable $e) {
+                // Fallback to text only
+            }
         }
 
         // Create main menu item (Dropdown)
-        // Add bootstrap classes to match native menu behavior
         $menu = new Menu($label, '#', $id, [
             'class' => 'dropdown-toggle menu-datencheck', 
             'data-bs-toggle' => 'dropdown'
@@ -735,11 +750,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_genannt_names', isset($params['enable_genannt_names']) ? '1' : '0');
         $this->setSetting('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
         $this->setSetting('enable_imprecise_dates', isset($params['enable_imprecise_dates']) ? '1' : '0');
-        $icon_style = $params['menu_icon_style'] ?? 'standard';
-        if (!in_array($icon_style, ['standard', 'transparent', 'light', 'none'])) {
-            $icon_style = 'standard';
-        }
-        $this->setSetting('menu_icon_style', $icon_style);
         
         // Save analysis category settings
         $this->setSetting('analysis_cat_bio', isset($params['chk_bio']) ? '1' : '0');
