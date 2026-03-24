@@ -1,5 +1,10 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.6] - 2026-03-24
+### Geändert
+- **Namen-Sofortsuche**: Dubletten werden jetzt auch dann gesucht, wenn das Geburtsdatum noch leer ist. Dies beschleunigt die Erkennung während der ersten Dateneingabe erheblich.
+- **Optimierte Trefferquote**: Verbesserung der Dublettenerkennung bei unvollständigen Datensätzen und Neuanlagen.
+
 ## [1.6.5] - 2026-03-24
 ### Behoben
 - **Dublettenerkennung**: Fix für Dubletten-Suche bei unterschiedlicher Schreibweise des Geschlechts (M/m, F/f).

@@ -103,9 +103,8 @@ class DatabaseService
             if (preg_match('/^1 SEX (.+)$/m', $gedcom, $sexMatch)) {
                 $candidateSex = strtoupper(trim($sexMatch[1]));
             }
-                if ($candidateSex !== '' && $candidateSex !== 'U' && $sex !== 'U' && $candidateSex !== $sex) {
-                    continue;
-                }
+            if ($candidateSex !== '' && $candidateSex !== 'U' && $sex !== 'U' && $candidateSex !== $sex) {
+                continue;
             }
 
             // 3. Given Name Check (At least one given name must match or have phonetic overlap)
@@ -152,7 +151,10 @@ class DatabaseService
             }
 
             // 4. Date Check (Month and Year must match for AT LEAST ONE date)
-            $dateOverlap = false;
+            // If NO birth/baptism/death dates are provided in input, we allow matching by name only.
+            $dateOverlap = (!$parsedBirth['year'] && !$parsedDeath['year'] && !$parsedBaptism['year']);
+            
+            if (!$dateOverlap) {
             
             // Candidate dates
             $candBirth = self::extractDateFromGedcom($gedcom, 'BIRT');
@@ -188,8 +190,9 @@ class DatabaseService
                 if ($parsedBirth['year'] && $candBirth['year'] && $parsedBirth['year'] === $candBirth['year']) $yearsMatch = true;
                 if ($parsedDeath['year'] && $candDeath['year'] && $parsedDeath['year'] === $candDeath['year']) $yearsMatch = true;
                 
-                if ($yearsMatch) {
-                    $dateOverlap = true;
+                    if ($yearsMatch) {
+                        $dateOverlap = true;
+                    }
                 }
             }
 
