@@ -64,9 +64,9 @@ class DatabaseService
                 } else {
                     foreach ($surnameParts as $part) {
                         if (mb_strlen($part) < 2) continue; // Skip very short parts
-                        $pattern = '%' . $part . '%';
-                        $query->orWhere('n_surname', 'LIKE', $pattern)
-                              ->orWhere('n_full', 'LIKE', $pattern);
+                        $pattern = '%' . mb_strtolower($part) . '%';
+                        $query->orWhere(DB::raw('LOWER(n_surname)'), 'LIKE', $pattern)
+                              ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $pattern);
                     }
                 }
                 
@@ -98,11 +98,11 @@ class DatabaseService
             $gedcom = $gedcomRow->i_gedcom;
 
             // 2. Gender Check
-            if (!empty($sex)) {
-                $candidateSex = '';
-                if (preg_match('/^1 SEX (.+)$/m', $gedcom, $sexMatch)) {
-                    $candidateSex = trim($sexMatch[1]);
-                }
+            $sex = strtoupper($sex);
+            $candidateSex = '';
+            if (preg_match('/^1 SEX (.+)$/m', $gedcom, $sexMatch)) {
+                $candidateSex = strtoupper(trim($sexMatch[1]));
+            }
                 if ($candidateSex !== '' && $candidateSex !== 'U' && $sex !== 'U' && $candidateSex !== $sex) {
                     continue;
                 }
@@ -233,15 +233,15 @@ class DatabaseService
         $inTag = false;
         foreach ($lines as $line) {
             $line = trim($line);
-            if (str_starts_with($line, "1 " . $tag)) {
+            if (strpos($line, "1 " . $tag) === 0) {
                 $inTag = true;
                 continue;
             }
             if ($inTag) {
-                if (str_starts_with($line, "1 ")) {
+                if (strpos($line, "1 ") === 0) {
                     break;
                 }
-                if (str_starts_with($line, "2 DATE ")) {
+                if (strpos($line, "2 DATE ") === 0) {
                     $dateStr = trim(substr($line, 7));
                     $p = DateParser::parseGedcomDate($dateStr);
                     return ['year' => $p['year'], 'month' => $p['month']];

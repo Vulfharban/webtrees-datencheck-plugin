@@ -436,16 +436,16 @@ class NameHelper
                 $clean = mb_strtolower(trim($word), 'UTF-8');
                 
                 // Polish: -ska (F), -ski (M)
-                if (str_ends_with($clean, 'ska')) return 'F';
-                if (str_ends_with($clean, 'ski')) return 'M';
+                if (preg_match('/ska$/u', $clean)) return 'F';
+                if (preg_match('/ski$/u', $clean)) return 'M';
 
                 // Russian/Bulgarian: -eva, -ova, -ina (F) vs -ev, -ov, -in (M)
                 if (preg_match('/(eva|ova|ina|aya)$/u', $clean)) return 'F';
                 if (preg_match('/(ev|ov|in|iy)$/u', $clean)) return 'M';
 
                 // Scandinavian: -datter, -dotter (F) vs -sen, -son (M)
-                if (str_ends_with($clean, 'datter') || str_ends_with($clean, 'dotter')) return 'F';
-                if (str_ends_with($clean, 'sen') || str_ends_with($clean, 'son') || str_ends_with($clean, 'sson')) return 'M';
+                if (preg_match('/(datter|dotter)$/u', $clean)) return 'F';
+                if (preg_match('/(sen|son|sson)$/u', $clean)) return 'M';
 
                 // Lithuanian: -ienė, -ytė, -atė (F) vs -as, -is, -us (M)
                 if (preg_match('/(iene|yte|ate|ute)$/u', $clean)) return 'F';

@@ -1,5 +1,12 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.5] - 2026-03-24
+### Behoben
+- **Dublettenerkennung**: Fix für Dubletten-Suche bei unterschiedlicher Schreibweise des Geschlechts (M/m, F/f).
+- **Robuste Feld-Erkennung**: Verbesserte JS-Erkennung der Namensfelder (GIVN, SURN) zur Vermeidung von Konflikten mit versteckten Platzhalterfeldern einiger Themes.
+- **Datenbank-Kompatibilität**: Case-Insensitive Dubletten-Suche durch erzwungenes Kleinfomat (LOWER) in SQL-Abfragen.
+- **PHP-Kompatibilität**: Erhöhung der Abwärtskompatibilität für PHP 7.4 (Vermeidung von str_starts_with / str_ends_with).
+
 ## [1.6.4] - 2026-03-24
 ### Hinzugefügt
 - **Automatisierte Icon-Wahl**: Das Menü-Icon wird nun automatisch basierend auf der Helligkeit des Themes ausgewählt (Helles Icon für dunkle Themes, transparentes Icon für helle Themes). Die manuelle Konfiguration entfällt.

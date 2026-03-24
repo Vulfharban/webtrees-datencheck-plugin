@@ -130,10 +130,14 @@ document.addEventListener("DOMContentLoaded", function() {
             const matches = inputs.filter(el => {
                 const id = (el.id || "").toUpperCase();
                 const name = (el.name || "").toUpperCase();
-                const visible = (el.offsetParent !== null || el.type !== 'hidden');
-                return visible && tags.some(t => id.includes(t) || name.includes(t));
+                const tag = (el.getAttribute('data-tag') || "").toUpperCase();
+                // Improved visibility check: ignore fields hidden via CSS or type=hidden
+                const visible = (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0) && el.type !== 'hidden';
+                return visible && tags.some(t => id.includes(t) || name.includes(t) || tag.includes(t));
             });
-            return matches.length > 0 ? (matches[0].value || "").trim() : "";
+            // Prefer the input that currently has focus OR the one that is NOT empty
+            let best = matches.find(m => m === document.activeElement) || matches.find(m => m.value.trim().length > 0) || matches[0];
+            return best ? (best.value || "").trim() : "";
         };
 
         let given = getBestValue(['GIVN', 'GIVEN', '_GNAME']);
@@ -273,8 +277,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     html += "</ul>";
                     warningArea.innerHTML = html;
                     warningArea.style.display = "block";
-                } else if (!given && !surname) {
-                    warningArea.style.display = "none";
+                } else {
+                    // No duplicates found, hide warning area
+                    if (warningArea) warningArea.style.display = "none";
                 }
             });
     };
