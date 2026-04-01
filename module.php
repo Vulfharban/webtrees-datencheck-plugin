@@ -6,7 +6,9 @@ use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigTrait;
 use Fisharebest\Webtrees\Module\ModuleCustomInterface;
+use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleMenuInterface;
+use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleFooterInterface;
 use Fisharebest\Webtrees\Menu;
 use Fisharebest\Webtrees\Tree;
@@ -48,9 +50,10 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
-class DatencheckModule extends AbstractModule implements ModuleCustomInterface, ModuleMenuInterface, ModuleFooterInterface, ModuleConfigInterface
+class DatencheckModule extends AbstractModule implements ModuleCustomInterface, ModuleMenuInterface, ModuleFooterInterface, ModuleConfigInterface, ModuleGlobalInterface
 {
     use ModuleConfigTrait;
+    use ModuleCustomTrait;
 
     /**
      * Get a setting, preferring user-specific settings if available.
@@ -107,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.7';
+        return '1.6.8';
     }
 
     public function getVersion(): string
@@ -154,12 +157,83 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     {
         $file = __DIR__ . '/resources/images/datencheck_icon.png';
         if (file_exists($file)) {
-            $data   = file_get_contents($file);
+            $data   = @file_get_contents($file);
             $base64 = base64_encode($data);
             return 'data:image/png;base64,' . $base64;
         }
 
         return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function headContent(): string
+    {
+        // Load the SVG dynamically from the filesystem to allow user overrides, but serve as Base64 for stability
+        $svg_path = $this->resourcesFolder() . 'images/icon.svg';
+        $svg_b64 = '';
+        if (file_exists($svg_path)) {
+            $svg_b64 = base64_encode(file_get_contents($svg_path));
+        }
+
+        return '<style>' .
+               /* Webtrees & Modern: 50px (mit 90% Skalierung für optimalen Sitz) */
+               '.wt-theme-webtrees .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-modern .menu-datencheck .nav-link::before { ' .
+               '    content: "" !important; ' .
+               '    display: block !important; ' .
+               '    width: 50px !important; ' .
+               '    height: 50px !important; ' .
+               '    margin: 0 auto 4px auto !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
+               '    background-size: 90% !important; ' .
+               '    background-repeat: no-repeat !important; ' .
+               '    background-position: center !important; ' .
+               '} ' .
+               /* Xenea & Clouds: 30px (waren bei 40px/50px zu wuchtig) */
+               '.wt-theme-xenea .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-clouds .menu-datencheck .nav-link::before { ' .
+               '    content: "" !important; ' .
+               '    display: block !important; ' .
+               '    width: 30px !important; ' .
+               '    height: 30px !important; ' .
+               '    margin: 0 auto 4px auto !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
+               '    background-size: contain !important; ' .
+               '    background-repeat: no-repeat !important; ' .
+               '    background-position: center !important; ' .
+               '} ' .
+               /* Colors: 3rem (war bei 2rem noch zu klein für die Leiste) */
+               '.wt-theme-colors .menu-datencheck .nav-link::before { ' .
+               '    content: "" !important; ' .
+               '    display: inline-block !important; ' .
+               '    width: 3rem !important; ' .
+               '    height: 3rem !important; ' .
+               '    vertical-align: middle !important; ' .
+               '    margin: 0 0.5rem 0 0 !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
+               '    background-size: contain !important; ' .
+               '    background-repeat: no-repeat !important; ' .
+               '    background-position: center !important; ' .
+               '} ' .
+               '</style>';
+    }
+
+    /**
+     * @return string
+     */
+    public function bodyContent(): string
+    {
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function resourcesFolder(): string
+    {
+        return __DIR__ . '/resources/';
     }
 
     public function customTranslations(string $language): array
@@ -320,48 +394,15 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             return null;
         }
 
-        $id = 'menu-datencheck';
+        $menu_id = 'menu-datencheck';
         
-        // Automatic icon style selection based on theme brightness
-        $icon_style = 'standard';
-        try {
-            $theme = Registry::container()->get(ThemeService::class)->theme();
-            if (method_exists($theme, 'brightness')) {
-                // Determine brightness: < 128 is dark, >= 128 is light
-                $icon_style = ($theme->brightness() < 128) ? 'light' : 'transparent';
-            } elseif (str_contains(strtolower($theme->name()), 'dark') || str_contains(strtolower($theme->name()), 'black')) {
-                // Fallback for dark themes by name
-                $icon_style = 'light';
-            } else {
-                // Default to transparent (dark text on light bg)
-                $icon_style = 'transparent';
-            }
-        } catch (\Throwable $e) {
-            $icon_style = 'standard';
-        }
-
-        $icon_files = [
-            'standard'    => __DIR__ . '/resources/images/datencheck_icon.png',
-            'transparent' => __DIR__ . '/resources/images/datencheck_icon_transparent.png',
-            'light'       => __DIR__ . '/resources/images/datencheck_icon_light.png',
-        ];
-
+        // Use pure text as label. 
+        // Themes like Xenea or Modern add the icon via CSS ::before targeting the parent class "menu-datencheck".
+        // This matches webtrees core modules like "Suche" or "Sammelbehälter".
         $label = $this->title();
-        if (isset($icon_files[$icon_style]) && file_exists($icon_files[$icon_style])) {
-            try {
-                $data   = @file_get_contents($icon_files[$icon_style]);
-                $base64 = base64_encode($data);
-                
-                // Final visual alignment: 3.4rem seems like the sweet spot for 3D desktop icons
-                $icon = '<img src="data:image/png;base64,' . $base64 . '" aria-hidden="true" style="width:3.4rem; height:3.4rem; object-fit:contain; display:block; margin:0 auto 4px auto;">';
-                $label = '<span style="text-align:center; display:inline-block; vertical-align:bottom;">' . $icon . '<span style="display:block; font-size:0.92rem;">' . $this->title() . '</span></span>';
-            } catch (\Throwable $e) {
-                // Fallback to text only
-            }
-        }
 
         // Create main menu item (Dropdown)
-        $menu = new Menu($label, '#', $id, [
+        $menu = new Menu($label, '#', $menu_id, [
             'class' => 'dropdown-toggle menu-datencheck', 
             'data-bs-toggle' => 'dropdown'
         ]);
@@ -374,7 +415,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         ]);
         
         $menu->addSubmenu(new Menu(
-            '<i class="fas fa-stethoscope fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">' . \Fisharebest\Webtrees\I18N::translate('Overview & Analysis') . '</span>', 
+            '<i class="fas fa-chart-line fa-fw"></i> ' . \Fisharebest\Webtrees\I18N::translate('Overview & Analysis'), 
             $url_dashboard, 
             'menu-datencheck-dashboard',
             ['class' => 'dropdown-item']
@@ -389,7 +430,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             ]);
             
             $menu->addSubmenu(new Menu(
-                '<i class="fas fa-eye-slash fa-fw" style="margin-right:8px; vertical-align:middle;"></i> <span style="vertical-align:middle; line-height:24px;">' . \Fisharebest\Webtrees\I18N::translate('Ignored Entries') . '</span>', 
+                '<i class="fas fa-eye-slash fa-fw"></i> ' . \Fisharebest\Webtrees\I18N::translate('Ignored Entries'), 
                 $url_ignored, 
                 'menu-datencheck-ignored',
                 ['class' => 'dropdown-item']

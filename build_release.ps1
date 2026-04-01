@@ -1,4 +1,4 @@
-$version = "v1.6.3"
+$version = "v1.6.8"
 $zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = (Get-Item .).FullName
 $tempDir = Join-Path $env:TEMP "webtrees-datencheck-build"

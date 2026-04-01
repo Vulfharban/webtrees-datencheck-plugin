@@ -1,5 +1,11 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.8] - 2026-04-01
+### Geändert
+- **Premium Menü-Integration**: Vollständige Überarbeitung der Menü-Icons nach webtrees-Best-Practices. Die Steuerung von Icon-Größe und Sichtbarkeit erfolgt nun ausschließlich über das Theme, während das Plugin nur noch die semantische Klasse und das SVG-Icon bereitstellt. Dies sorgt für eine perfekte Integration in alle Themes (z.B. Xenea, Modern, Clouds).
+- **Vektorgrafiken**: Umstellung des Menü-Icons auf SVG für verlustfreie Skalierung bei jeder Displaygröße.
+- **CSS-Refaktorisierung**: Auslagerung der Stile in eine externe CSS-Datei und Entfernung hartkodierter Inline-Styles im PHP-Code.
+
 ## [1.6.7] - 2026-03-24
 ### Geändert
 - **Listen-Icon**: Optimierte Darstellung des Modul-Icons für Desktop-Menüs (3,4rem). Das Icon wird nun zentriert über dem Text angezeigt, um sich nahtlos in Themes mit 3D-Icons einzufügen.
