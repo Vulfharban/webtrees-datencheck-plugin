@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Εναλλακτικό όνομα',
     'Verify given name' => 'Επαλήθευση μικρού ονόματος',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Εντοπίστηκαν διαφορετικά μικρά ονόματα: "%s" (%s) έναντι "%s" (Όνομα γέννησης)',
+    'Lenient Spanish name matching for duplicates' => 'Επιεικής αντιστοίχιση ισπανικών ονομάτων για διπλότυπα',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Επισημαίνει πιθανά διπλότυπα εάν οποιοδήποτε μέρος του μικρού ονόματος ή του επωνύμου ταιριάζει (ισπανικό πρότυπο).',
+    'Ignored Fact Types' => 'Αγνοημένοι τύποι γεγονότων',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Λίστα τύπων γεγονότων (ετικετών) χωρισμένη με κόμμα που πρέπει να αγνοούνται κατά τους ελέγχους αλληλουχίας ημερομηνιών.',
+    'Yes' => 'Ναι',
+    'No' => 'Όχι',
 ];

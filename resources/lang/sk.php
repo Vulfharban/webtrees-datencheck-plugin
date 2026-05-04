@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Alternatívne meno',
     'Verify given name' => 'Overiť krstné meno',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Zistené rozdielne krstné mená: "%s" (%s) vs. "%s" (rodné meno)',
+    'Lenient Spanish name matching for duplicates' => 'Zjednodušené porovnávanie španielskych mien pre duplikáty',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Označí potenciálne duplikáty, ak sa zhoduje AKÁKOĽVEK časť krstného mena alebo priezviska (španielsky vzor).',
+    'Ignored Fact Types' => 'Ignorované typy faktov',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Čiarkami oddelený zoznam typov faktov (štítkov), ktoré sa majú ignorovať pri kontrole sekvencie dát.',
+    'Yes' => 'Áno',
+    'No' => 'Nie',
 ];

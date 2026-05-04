@@ -400,8 +400,24 @@
                         >
                         <label class="form-check-label" for="enable_spanish_surnames">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Spanish double surnames') ?></strong><br>
-                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates combinations of father and mother surnames.') ?></small>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates combinations of father and mother surnames during validation.') ?></small>
                         </label>
+                    </div>
+
+                    <div class="form-check mt-2 ms-4">
+                        <input 
+                            class="form-check-input" 
+                            type="checkbox" 
+                            id="enable_spanish_lenient_duplicates" 
+                            name="enable_spanish_lenient_duplicates" 
+                            value="1"
+                            <?= $module->getSetting('enable_spanish_lenient_duplicates', '0') === '1' ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="enable_spanish_lenient_duplicates">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Lenient Spanish name matching for duplicates') ?></strong><br>
+                            <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).') ?></small>
+                        </label>
+                    </div>
                     </div>
 
                     <div class="form-check mt-2 ms-4">
@@ -447,6 +463,23 @@
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Consider Genannt-Namen (alias) naming conventions') ?></strong><br>
                             <small class="text-muted"><?= \Fisharebest\Webtrees\I18N::translate('Tolerates alias names (Westphalian: "genannt", "gen.", "vulgo", "dictus"; Polish/Latin: "vel", "alias", "zwany", "inaczej").') ?></small>
                         </label>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label" for="ignored_fact_types">
+                            <strong><?= \Fisharebest\Webtrees\I18N::translate('Ignored Fact Types') ?></strong>
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="ignored_fact_types" 
+                            name="ignored_fact_types" 
+                            value="<?= htmlspecialchars($module->getSetting('ignored_fact_types', '')) ?>"
+                            placeholder="e.g. Ashes Interred, Probate, CustomType"
+                        >
+                        <small class="text-muted">
+                            <?= \Fisharebest\Webtrees\I18N::translate('Comma-separated list of fact types (labels) to ignore during date sequence checks.') ?>
+                        </small>
                     </div>
                     
                     <div class="form-check mt-3">

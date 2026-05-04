@@ -389,4 +389,10 @@ return [
     'Alternative name' => 'Nom alternatiu',
     'Verify given name' => 'Verificar el nom propi',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'S\'han detectat noms propis diferents: "%s" (%s) vs. "%s" (Nom de naixement)',
+    'Lenient Spanish name matching for duplicates' => 'Coincidència flexible de noms espanyols per a duplicats',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Marca possibles duplicats si QUALSEVOL part del nom o cognom coincideix (patró espanyol).',
+    'Ignored Fact Types' => 'Tipus de fets ignorats',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Llista de tipus de fets (etiquetes) separats per comes a ignorar durant les comprovacions de seqüència de dates.',
+    'Yes' => 'Sí',
+    'No' => 'No',
 ];

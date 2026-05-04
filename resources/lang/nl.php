@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Alternatieve naam',
     'Verify given name' => 'Controleer voornaam',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Verschillende voornamen gedetecteerd: "%s" (%s) vs. "%s" (Geboortenaam)',
+    'Lenient Spanish name matching for duplicates' => 'Coulante Spaanse naammatching voor duplicaten',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Markeert mogelijke duplicaten als ELK deel van de voornaam of achternaam overeenkomt (Spaans patroon).',
+    'Ignored Fact Types' => 'Genegeerde feittypes',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Door komma\'s gescheiden lijst met feittypes (labels) die moeten worden genegeerd tijdens datumvolgordecontroles.',
+    'Yes' => 'Ja',
+    'No' => 'Nee',
 ];

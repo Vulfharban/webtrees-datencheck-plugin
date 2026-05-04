@@ -1734,11 +1734,60 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     };
 
-    window.datencheckIgnoreError = (btn) => {
+    /**
+     * Custom confirmation dialog using Bootstrap Modals (replaces browser confirm)
+     * as requested by users for clearer Yes/No choices.
+     */
+    window.datencheckConfirm = (message) => {
+        return new Promise((resolve) => {
+            const modalHtml = `
+                <div class="modal fade" id="dcConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-body p-4">
+                                <p class="mb-0 fs-5">${message}</p>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" id="dcConfirmNo"><?= \Fisharebest\Webtrees\I18N::translate('No') ?></button>
+                                <button type="button" class="btn btn-primary px-4" id="dcConfirmYes"><?= \Fisharebest\Webtrees\I18N::translate('Yes') ?></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existing = document.getElementById('dcConfirmModal');
+            if (existing) existing.remove();
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modalEl = document.getElementById('dcConfirmModal');
+            const modal = new bootstrap.Modal(modalEl);
+            
+            document.getElementById('dcConfirmYes').onclick = () => {
+                modal.hide();
+                resolve(true);
+            };
+            document.getElementById('dcConfirmNo').onclick = () => {
+                modal.hide();
+                resolve(false);
+            };
+            
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                resolve(false);
+                modalEl.remove();
+            });
+            
+            modal.show();
+        });
+    };
+
+    window.datencheckIgnoreError = async (btn) => {
         const xref = btn.dataset.xref;
         const code = btn.dataset.code;
 
-        if (!confirm('<?= \Fisharebest\Webtrees\I18N::translate('Do you want to ignore this error for this person permanently?') ?>')) {
+        const confirmed = await window.datencheckConfirm('<?= \Fisharebest\Webtrees\I18N::translate('Do you want to ignore this error for this person permanently?') ?>');
+        if (!confirmed) {
             return;
         }
 

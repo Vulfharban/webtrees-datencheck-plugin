@@ -392,4 +392,10 @@ return [
     'Alternative name' => 'Nama alternatif',
     'Verify given name' => 'Verifikasi nama depan',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Nama depan yang berbeda terdeteksi: "%s" (%s) vs. "%s" (Nama lahir)',
+    'Lenient Spanish name matching for duplicates' => 'Pencocokan nama Spanyol yang longgar untuk duplikat',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Menandai potensi duplikat jika ADA bagian dari nama depan atau nama belakang yang cocok (pola Spanyol).',
+    'Ignored Fact Types' => 'Tipe Fakta yang Diabaikan',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Daftar tipe fakta (label) yang dipisahkan koma untuk diabaikan selama pemeriksaan urutan tanggal.',
+    'Yes' => 'Ya',
+    'No' => 'Tidak',
 ];

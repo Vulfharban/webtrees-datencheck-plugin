@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.8';
+        return '1.6.9';
     }
 
     public function getVersion(): string
@@ -608,7 +608,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $data = InteractionService::runInteractiveCheck(
                 $tree, $given, $surname, $birth,
                 $fuzzyDiffHighAge, $fuzzyDiffDefault,
-                $death, $baptism, $sex, $marriedSurname
+                $death, $baptism, $sex, $marriedSurname,
+                $this->getSetting('enable_spanish_lenient_duplicates', '0') === '1'
             );
 
             return response(json_encode($data))
@@ -663,6 +664,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $fuzzy_diff_high_age = $this->getSetting('fuzzy_diff_high_age', '6');
         $fuzzy_diff_default = $this->getSetting('fuzzy_diff_default', '2');
         $enable_scand_patronym = $this->getSetting('enable_scand_patronym', '0');
+        $ignored_fact_types = $this->getSetting('ignored_fact_types', '');
         $module = $this;
         
         // Generate CSRF token for the form
@@ -672,14 +674,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         // Detect tree from request to pass to view
         $tree = $this->getTree($request);
         
-        // Fallback to Registry (session-based active tree)
-        if (!$tree) {
-            try {
-                $tree = Registry::container()->get(Tree::class);
-            } catch (\Throwable $e) {
-                $tree = null;
-            }
-        }
 
         // Verify access - if not a moderator for this tree, we can't show it as default
         if ($tree && !Auth::isModerator($tree)) {
@@ -743,7 +737,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $tree_title = $tree ? $tree->title() : $tree_name;
         $tree_url = $tree ? route(\Fisharebest\Webtrees\Http\RequestHandlers\TreePage::class, ['tree' => $tree->name()]) : '#';
 
-        $marker_tree = $tree ?: Registry::container()->get(Tree::class);
         $mark_as_dead_url = route('module', [
             'module' => $this->name(),
             'action' => 'MarkAsDead',
@@ -786,11 +779,13 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_scand_patronym', isset($params['enable_scandinavian_patronymics']) ? '1' : '0');
         $this->setSetting('enable_slavic_surnames', isset($params['enable_slavic_surnames']) ? '1' : '0');
         $this->setSetting('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
+        $this->setSetting('enable_spanish_lenient_duplicates', isset($params['enable_spanish_lenient_duplicates']) ? '1' : '0');
         $this->setSetting('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
         $this->setSetting('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
         $this->setSetting('enable_genannt_names', isset($params['enable_genannt_names']) ? '1' : '0');
         $this->setSetting('enable_source_checks', isset($params['enable_source_checks']) ? '1' : '0');
         $this->setSetting('enable_imprecise_dates', isset($params['enable_imprecise_dates']) ? '1' : '0');
+        $this->setSetting('ignored_fact_types', $params['ignored_fact_types'] ?? '');
         
         // Save analysis category settings
         $this->setSetting('analysis_cat_bio', isset($params['chk_bio']) ? '1' : '0');

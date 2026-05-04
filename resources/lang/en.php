@@ -410,4 +410,10 @@ return [
     'Found %d potential duplicate siblings' => 'Found %d potential duplicate siblings',
     'Title too short' => 'Title too short',
     'Found %d potential duplicate sources' => 'Found %d potential duplicate sources',
+    'Lenient Spanish name matching for duplicates' => 'Lenient Spanish name matching for duplicates',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).',
+    'Ignored Fact Types' => 'Ignored Fact Types',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Comma-separated list of fact types (labels) to ignore during date sequence checks.',
+    'Yes' => 'Yes',
+    'No' => 'No',
 ];

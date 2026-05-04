@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Nume alternativ',
     'Verify given name' => 'Verificare prenume',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'S-au detectat prenume diferite: "%s" (%s) în loc de "%s" (Nume la naștere)',
+    'Lenient Spanish name matching for duplicates' => 'Potrivire flexibilă a numelor spaniole pentru duplicate',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Marchează duplicatele potențiale dacă ORICE parte a numelui sau prenumelui se potrivește (model spaniol).',
+    'Ignored Fact Types' => 'Tipuri de fapte ignorate',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Listă separată prin virgulă de tipuri de fapte (etichete) de ignorat în timpul verificărilor secvenței de date.',
+    'Yes' => 'Da',
+    'No' => 'Nu',
 ];

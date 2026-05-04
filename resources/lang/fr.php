@@ -403,4 +403,10 @@ return [
     'Alternative name' => 'Nom alternatif',
     'Verify given name' => 'Vérifier le prénom',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Différents prénoms détectés : "%s" (%s) vs. "%s" (Nom de naissance)',
+    'Lenient Spanish name matching for duplicates' => 'Correspondance flexible des noms espagnols pour les doublons',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Signale les doublons potentiels si TOUTE partie du prénom ou du nom correspond (modèle espagnol).',
+    'Ignored Fact Types' => 'Types de faits ignorés',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Liste de types de faits (libellés) séparés par des virgules à ignorer lors des vérifications de séquence de dates.',
+    'Yes' => 'Oui',
+    'No' => 'Non',
 ];

@@ -392,4 +392,10 @@ return [
     'Alternative name' => 'Tên thay thế',
     'Verify given name' => 'Xác minh tên gọi',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Phát hiện tên gọi khác nhau: "%s" (%s) so với "%s" (Tên khai sinh)',
+    'Lenient Spanish name matching for duplicates' => 'Khớp tên Tây Ban Nha lỏng lẻo cho các bản trùng lặp',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Đánh dấu các bản trùng lặp tiềm năng nếu BẤT KỲ phần nào của tên hoặc họ khớp (mẫu Tây Ban Nha).',
+    'Ignored Fact Types' => 'Các loại sự kiện bị bỏ qua',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Danh sách các loại sự kiện (nhãn) cách nhau bằng dấu phẩy cần bỏ qua trong quá trình kiểm tra trình tự ngày tháng.',
+    'Yes' => 'Có',
+    'No' => 'Không',
 ];

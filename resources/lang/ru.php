@@ -397,4 +397,10 @@ return [
     'Alternative name' => 'Альтернативное имя',
     'Verify given name' => 'Проверить имя',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Обнаружены разные имена: "%s" (%s) vs. "%s" (имя при рождении)',
+    'Lenient Spanish name matching for duplicates' => 'Гибкое сопоставление испанских имен для дубликатов',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Помечает потенциальные дубликаты, если ЛЮБАЯ часть имени или фамилии совпадает (испанский шаблон).',
+    'Ignored Fact Types' => 'Игнорируемые типы фактов',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Список типов фактов (меток) через запятую, которые следует игнорировать при проверке последовательности дат.',
+    'Yes' => 'Да',
+    'No' => 'Нет',
 ];

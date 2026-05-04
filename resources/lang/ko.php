@@ -392,4 +392,10 @@ return [
     'Alternative name' => '대체 이름',
     'Verify given name' => '이름 확인',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => '서로 다른 이름이 감지됨: "%s"(%s) vs. "%s"(출생 시 이름)',
+    'Lenient Spanish name matching for duplicates' => '중복에 대한 관대한 스페인어 이름 매칭',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => '이름이나 성의 어느 부분이라도 일치하면 잠재적인 중복으로 표시합니다(스페인어 패턴).',
+    'Ignored Fact Types' => '무시된 사실 유형',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => '날짜 순서 확인 중에 무시할 사실 유형(레이블)의 쉼표로 구분된 목록입니다.',
+    'Yes' => '예',
+    'No' => '아니요',
 ];

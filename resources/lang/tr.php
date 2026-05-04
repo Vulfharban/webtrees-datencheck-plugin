@@ -396,4 +396,10 @@ return [
     'Found %d potential duplicate siblings' => '%d potansiyel kopya kardeş bulundu',
     'Title too short' => 'Başlık çok kısa',
     'Found %d potential duplicate sources' => '%d potansiyel kopya kaynak bulundu',
+    'Lenient Spanish name matching for duplicates' => 'Mükerrer kayıtlar için esnek İspanyolca isim eşleşmesi',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Ad veya soyadının HERHANGİ bir kısmı eşleşirse olası kopyaları işaretler (İspanyolca kalıbı).',
+    'Ignored Fact Types' => 'Yoksayılan Olay Türleri',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Tarih sırası kontrolleri sırasında yoksayılacak olay türlerinin (etiketlerin) virgülle ayrılmış listesi.',
+    'Yes' => 'Evet',
+    'No' => 'Hayır',
 ];

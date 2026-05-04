@@ -12,7 +12,15 @@ class StringHelper
      */
     public static function normalizeName(string $name): string
     {
-        return trim(preg_replace('/\s+/', ' ', str_replace('/', '', $name)));
+        $name = str_replace('/', '', $name);
+        $name = mb_strtolower($name, 'UTF-8');
+        
+        // Remove accents for better matching
+        $search  = ['á', 'ä', 'č', 'ď', 'é', 'ě', 'í', 'ň', 'ó', 'ö', 'ř', 'š', 'ť', 'ú', 'ů', 'ü', 'ý', 'ž', 'ł', 'ń', 'ó', 'ś', 'ź', 'ż', 'ą', 'ę', 'å', 'ø'];
+        $replace = ['a', 'a', 'c', 'd', 'e', 'e', 'i', 'n', 'o', 'o', 'r', 's', 't', 'u', 'u', 'u', 'y', 'z', 'l', 'n', 'o', 's', 'z', 'z', 'a', 'e', 'a', 'o'];
+        $name = str_replace($search, $replace, $name);
+
+        return trim(preg_replace('/\s+/', ' ', $name));
     }
 
     /**

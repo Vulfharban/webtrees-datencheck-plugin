@@ -392,4 +392,10 @@ return [
     'Alternative name' => 'Enw amgen',
     'Verify given name' => 'Gwirio enw bedydd',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Enwau bedydd gwahanol wedi\'u canfod: "%s" (%s) yn erbyn "%s" (Enw geni)',
+    'Lenient Spanish name matching for duplicates' => 'Lenient Spanish name matching for duplicates',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).',
+    'Ignored Fact Types' => 'Ignored Fact Types',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Comma-separated list of fact types (labels) to ignore during date sequence checks.',
+    'Yes' => 'Yes',
+    'No' => 'No',
 ];

@@ -388,4 +388,10 @@ return [
     'Alternative name' => 'Alternatív név',
     'Verify given name' => 'Utónév ellenőrzése',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Eltérő utónevek találhatók: "%s" (%s) vs. "%s" (születési név)',
+    'Lenient Spanish name matching for duplicates' => 'Engedékeny spanyol névillesztés duplikátumokhoz',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Jelzi a potenciális duplikátumokat, ha az utónév vagy a vezetéknév BÁRMELY része egyezik (spanyol minta).',
+    'Ignored Fact Types' => 'Ignorált ténytípusok',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Ténytípusok (címkék) vesszővel elválasztott listája, amelyeket figyelmen kívül kell hagyni a dátumsorrend-ellenőrzések során.',
+    'Yes' => 'Igen',
+    'No' => 'Nem',
 ];

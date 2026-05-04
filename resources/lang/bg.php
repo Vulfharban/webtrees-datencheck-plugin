@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Алтернативно име',
     'Verify given name' => 'Проверка на малкото име',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Открити са различни малки имена: "%s" (%s) срещу "%s" (Рождено име)',
+    'Lenient Spanish name matching for duplicates' => 'Гъвкаво съвпадение на испански имена за дубликати',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Маркира потенциални дубликати, ако ВСЯКА част от личното или фамилното име съвпада (испански модел).',
+    'Ignored Fact Types' => 'Игнорирани типове факти',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Списък с типове факти (етикети), разделени със запетая, които да се игнорират по време на проверки на последователността на датите.',
+    'Yes' => 'Да',
+    'No' => 'Не',
 ];

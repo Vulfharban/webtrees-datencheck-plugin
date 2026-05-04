@@ -391,4 +391,10 @@ return [
     'Alternative name' => 'Alternativt navn',
     'Verify given name' => 'Bekreft fornavn',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Ulike fornavn oppdaget: "%s" (%s) vs. "%s" (Fødenavn)',
+    'Lenient Spanish name matching for duplicates' => 'Fleksibel spansk navnematching for dubletter',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Marker potensielle dubletter hvis EN DEL av fornavnet eller etternavnet samsvarer (spansk mønster).',
+    'Ignored Fact Types' => 'Ignorerte faktatyper',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Kommaseparert liste over faktatyper (etiketter) som skal ignoreres under datosekvenskontroller.',
+    'Yes' => 'Ja',
+    'No' => 'Nei',
 ];

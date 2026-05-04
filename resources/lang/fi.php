@@ -390,4 +390,10 @@ return [
     'Alternative name' => 'Vaihtoehtoinen nimi',
     'Verify given name' => 'Vahvista etunimi',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Havaittu eri etunimiä: "%s" (%s) vs. "%s" (Tyttönimi/Poikanimi)',
+    'Lenient Spanish name matching for duplicates' => 'Lievä espanjalainen nimien haku duplikaateille',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Merkitsee mahdolliset duplikaatit, jos MIKÄ TAHANSA etunimen tai sukunimen osa täsmää (espanjalainen malli).',
+    'Ignored Fact Types' => 'Sivuutetut tapahtumatyypit',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Pilkulla erotettu luettelo tapahtumatyypeistä (tunnisteista), jotka jätetään huomiotta päivämääräjärjestyksen tarkistuksissa.',
+    'Yes' => 'Kyllä',
+    'No' => 'Ei',
 ];

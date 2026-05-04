@@ -392,4 +392,10 @@ return [
     'Alternative name' => '別名',
     'Verify given name' => '名を確認',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => '異なる名が検出されました：「%s」（%s）対「%s」（出生名）',
+    'Lenient Spanish name matching for duplicates' => '重複に対するスペイン名の緩やかな一致',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => '名または姓のいずれかの部分が一致する場合、重複の可能性があるとしてフラグを立てます（スペイン語パターン）。',
+    'Ignored Fact Types' => '無視された事実タイプ',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => '日付シーケンスのチェック中に無視する事実タイプ（ラベル）のカンマ区切りリスト。',
+    'Yes' => 'はい',
+    'No' => 'いいえ',
 ];

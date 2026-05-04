@@ -35,7 +35,8 @@ class DatabaseService
         string $deathDate = '',
         string $baptismDate = '',
         string $sex = '',
-        string $marriedSurname = ''
+        string $marriedSurname = '',
+        bool $lenient = false
     ): array {
         $inputGivenNormalized = StringHelper::normalizeName($given);
         $inputGivenParts = array_filter(explode(' ', $inputGivenNormalized));
@@ -108,11 +109,13 @@ class DatabaseService
             }
 
             // 3. Given Name Check (At least one given name must match or have phonetic overlap)
-            $normalizedCandidate = StringHelper::normalizeName($candidateName);
-            $candParts = explode(' ', $normalizedCandidate);
-            $candSurname = array_pop($candParts);
-            $candGivenParts = array_filter($candParts);
-            $candGiven = implode(' ', $candGivenParts);
+            // 3. Given Name Check
+            $split = self::splitFullName($candidateName);
+            $candGiven = $split['given'];
+            $candSurname = $split['surname'];
+            
+            $normalizedCandGiven = StringHelper::normalizeName($candGiven);
+            $candGivenParts = array_filter(explode(' ', $normalizedCandGiven));
             
             $nameOverlap = false;
             
@@ -145,6 +148,19 @@ class DatabaseService
             
             // Also check NameHelper for defined equivalences (Jan == Johann, Adalbert == Wojciech, etc.)
             $equivalentMatch = NameHelper::areNamesEquivalent($given, $candGiven);
+
+            // Spanish lenience: If ANY word matches (even across given/surname if they are mixed)
+            if ($lenient && !$nameOverlap) {
+                $candFullParts = array_filter(explode(' ', StringHelper::normalizeName($candidateName)));
+                $inputFullParts = array_merge($inputGivenParts, array_filter(explode(' ', StringHelper::normalizeName($surname))));
+                foreach ($inputFullParts as $ip) {
+                    if (mb_strlen($ip) < 3) continue;
+                    if (in_array($ip, $candFullParts)) {
+                        $nameOverlap = true;
+                        break;
+                    }
+                }
+            }
             
             if (!$nameOverlap && !$phoneticMatch && !$equivalentMatch) {
                 continue;
@@ -252,6 +268,32 @@ class DatabaseService
             }
         }
         return ['year' => null, 'month' => null];
+    }
+
+    /**
+     * Split a full name into given and surname parts using /slashes/ if present.
+     * 
+     * @param string $full
+     * @return array{given: string, surname: string}
+     */
+    private static function splitFullName(string $full): array
+    {
+        // Try to find /Surname/
+        if (preg_match('/^(.*?)\/(.*)\/(.*?)$/', $full, $m)) {
+            $given = trim($m[1] . ' ' . $m[3]);
+            $surname = trim($m[2]);
+            return ['given' => $given, 'surname' => $surname];
+        }
+        
+        // Fallback: last word is surname
+        $parts = explode(' ', trim($full));
+        if (count($parts) > 1) {
+            $surname = array_pop($parts);
+            $given = implode(' ', $parts);
+            return ['given' => $given, 'surname' => $surname];
+        }
+        
+        return ['given' => $full, 'surname' => ''];
     }
     
     /**

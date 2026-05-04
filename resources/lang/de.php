@@ -412,4 +412,10 @@ return [
     'Found %d potential duplicate siblings' => '%d potenzielle doppelte Geschwister gefunden',
     'Title too short' => 'Titel zu kurz',
     'Found %d potential duplicate sources' => '%d potenzielle doppelte Quellen gefunden',
+    'Lenient Spanish name matching for duplicates' => 'Lenientes spanisches Namens-Matching für Dubletten',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Markiert potenzielle Dubletten, wenn IRGENDEIN Teil des Vor- oder Nachnamens übereinstimmt (spanisches Namensmuster).',
+    'Ignored Fact Types' => 'Ignorierte Fakt-Typen',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Kommagetrennte Liste von Fakt-Typen (Bezeichnungen), die bei Datumsprüfungen ignoriert werden sollen.',
+    'Yes' => 'Ja',
+    'No' => 'Nein',
 ];

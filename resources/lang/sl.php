@@ -392,4 +392,10 @@ return [
     'Alternative name' => 'Alternativno ime',
     'Verify given name' => 'Preveri ime',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Zaznana različna imena: "%s" (%s) proti "%s" (rojstno ime)',
+    'Lenient Spanish name matching for duplicates' => 'Prilagodljivo ujemanje španskih imen za dvojnike',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Označi morebitne dvojnike, če se ujema KATERI KOLI del imena ali priimka (španski vzorec).',
+    'Ignored Fact Types' => 'Prezrte vrste dejstev',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Z vejico ločen seznam vrst dejstev (oznak), ki jih je treba prezreti med preverjanjem zaporedja datumov.',
+    'Yes' => 'Da',
+    'No' => 'Ne',
 ];

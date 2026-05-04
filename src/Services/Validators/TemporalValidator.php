@@ -243,7 +243,7 @@ class TemporalValidator extends AbstractValidator
      * Check for Orphaned Facts (biographical events before birth or after death).
      * Finalized for version 1.5.2.
      */
-    public static function checkOrphanedFacts(Individual $person): array
+    public static function checkOrphanedFacts(Individual $person, string $ignoredTypes = ''): array
     {
         $issues = [];
         
@@ -268,7 +268,8 @@ class TemporalValidator extends AbstractValidator
 
         $deathDate = $person->getDeathDate();
         if ($deathDate->isOK()) $deathYear = $deathDate->maximumDate()->year();
-        foreach ($person->facts(['DEAT', 'BURI']) as $f) {
+        // Use all common "end of life" facts to establish the reference year
+        foreach ($person->facts(['DEAT', 'BURI', 'CREM', 'FUNL']) as $f) {
             $y = $extractYear($f);
             if ($y && ($deathYear === null || $y > $deathYear)) $deathYear = $y;
         }
@@ -286,7 +287,7 @@ class TemporalValidator extends AbstractValidator
             
             $blackList = [
                 'CHAN', '_CHAN', 'UID', '_UID', 'RIN', 'REFN', 'RESN', 'BIRT', 'DEAT', 
-                'CHR', 'BAPM', 'BURI', 'NOTE', 'SOUR', 'OBJE', 'SEX', 'NAME', 
+                'CHR', 'BAPM', 'BURI', 'CREM', 'FUNL', 'PROB', 'WILL', 'NOTE', 'SOUR', 'OBJE', 'SEX', 'NAME', 
                 'FAMS', 'FAMC', 'ALIA', 'ANCI', 'DESI', 'ASSO', 'ATTR', 'SSN', '_FSFTID', '_FSLIVED', '_FSID', '_FSPID'
             ];
             if (in_array($tag, $blackList)) continue;
@@ -295,6 +296,25 @@ class TemporalValidator extends AbstractValidator
             if (str_starts_with($tag, '_')) {
                 $noise = ['_TODO', '_TASK', '_UPD', '_UPDATED', '_WT_USER', '_SCN', '_TYPE', '_CHANGES', '_DATES', '_UID'];
                 if (in_array($tag, $noise)) continue;
+            }
+
+            // Heuristic check for posthumous keywords in the label (covers EVEN with TYPE)
+            $label = strtolower($fact->label());
+            $posthumousKeywords = [
+                'burial', 'cremation', 'probate', 'will', 'ashes', 'interred', 'funeral', 
+                'beerdigung', 'bestattung', 'einäscherung', 'nachlass', 'grab', 'friedhof', 
+                'trauerfeier', 'beisetzung', 'cremains', 'urn', 'inhumation', 'obsequies'
+            ];
+            foreach ($posthumousKeywords as $kw) {
+                if (str_contains($label, $kw)) continue 2;
+            }
+            
+            // Check User-defined ignored types
+            if (!empty($ignoredTypes)) {
+                $customIgnored = array_filter(array_map('trim', explode(',', strtolower($ignoredTypes))));
+                foreach ($customIgnored as $ci) {
+                    if ($label === $ci || str_contains($label, $ci)) continue 2;
+                }
             }
 
             // Extract Year

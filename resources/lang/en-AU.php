@@ -397,4 +397,10 @@ return [
     'Dates swapped successfully' => 'Dates swapped successfully',
     'Tags not found for swapping' => 'Tags not found for swapping',
     'Dates are empty' => 'Dates are empty',
+    'Lenient Spanish name matching for duplicates' => 'Lenient Spanish name matching for duplicates',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).',
+    'Ignored Fact Types' => 'Ignored Fact Types',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Comma-separated list of fact types (labels) to ignore during date sequence checks.',
+    'Yes' => 'Yes',
+    'No' => 'No',
 ];

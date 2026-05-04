@@ -395,4 +395,10 @@ return [
     'Alternative name' => 'Alternatywne imię',
     'Verify given name' => 'Zweryfikuj imię',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Wykryto różne imiona: "%s" (%s) vs "%s" (imię rodowe)',
+    'Lenient Spanish name matching for duplicates' => 'Elastyczne dopasowanie hiszpańskich nazwisk w celu wykrycia duplikatów',
+    'Flags potential duplicates if ANY part of the given name or surname matches (Spanish pattern).' => 'Oznacza potencjalne duplikaty, jeśli DOWOLNA część imienia lub nazwiska pasuje (wzór hiszpański).',
+    'Ignored Fact Types' => 'Ignorowane typy zdarzeń',
+    'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Rozdzielona przecinkami lista typów zdarzeń (etykiet), które należy ignorować podczas sprawdzania sekwencji dat.',
+    'Yes' => 'Tak',
+    'No' => 'Nie',
 ];

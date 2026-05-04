@@ -1,5 +1,15 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9] - 2026-05-04
+### Hinzugefügt
+- **Spanische Namenskonventionen**: Neue Option für "Lenientes Matching" bei Dubletten. Ermöglicht Übereinstimmungen, wenn nur Teile des Vor- oder Nachnamens übereinstimmen (wichtig für komplexe spanische Doppelnamen).
+- **Akzent-Toleranz**: Die Namenssuche ist nun unempfindlich gegenüber Akzenten (z. B. Bernát = Bernat).
+- **Ignorierte Fakt-Typen**: Benutzer können nun eine Liste von Fakt-Labels (z. B. `Ashes Interred`, `Probate`) definieren, die bei der chronologischen Prüfung ignoriert werden sollen.
+- **Moderne Bestätigungsdialoge**: Alle Browser-Dialoge (OK/Abbrechen) wurden durch webtrees-konforme Bootstrap-Modale mit klaren "Ja/Nein"-Schaltflächen ersetzt.
+### Geändert
+- **Robuste Namensextraktion**: Optimierte Trennung von Vor- und Nachnamen aus GEDCOM-Daten (Unterstützung von /Slashes/).
+- **Fehlerbehandlung**: Verbesserte API-Antworten bei unvollständigen Datensätzen.
+
 ## [1.6.8] - 2026-04-01
 ### Geändert
 - **Premium Menü-Integration**: Vollständige Überarbeitung der Menü-Icons nach webtrees-Best-Practices. Die Steuerung von Icon-Größe und Sichtbarkeit erfolgt nun ausschließlich über das Theme, während das Plugin nur noch die semantische Klasse und das SVG-Icon bereitstellt. Dies sorgt für eine perfekte Integration in alle Themes (z.B. Xenea, Modern, Clouds).

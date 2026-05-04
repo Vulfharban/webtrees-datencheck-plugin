@@ -135,7 +135,8 @@ class ValidationService
             if ($issue) $issues[] = $issue;
 
             if ($person) {
-                $issues = array_merge($issues, Validators\TemporalValidator::checkOrphanedFacts($person));
+                $ignoredTypes = $module ? $module->getSetting('ignored_fact_types', '') : '';
+                $issues = array_merge($issues, Validators\TemporalValidator::checkOrphanedFacts($person, $ignoredTypes));
             }
 
             // NEW: Check for future dates
