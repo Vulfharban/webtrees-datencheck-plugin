@@ -1,5 +1,9 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9.1] - 2026-05-05
+### Behoben
+- **Datenbank-Fehler beim Speichern**: Behebung eines kritischen Fehlers (`SQLSTATE[22001]: Data too long for column 'setting_name'`), der beim Speichern der Einstellungen auftrat. Der interne Schlüssel `DC_enable_spanish_lenient_duplicates` (38 Zeichen) überschritt das Webtrees-Limit von 32 Zeichen für `wt_user_setting.setting_name`. Gekürzt auf `DC_enable_es_lenient_dupes` (27 Zeichen).
+
 ## [1.6.9] - 2026-05-04
 ### Hinzugefügt
 - **Spanische Namenskonventionen**: Neue Option für "Lenientes Matching" bei Dubletten. Ermöglicht Übereinstimmungen, wenn nur Teile des Vor- oder Nachnamens übereinstimmen (wichtig für komplexe spanische Doppelnamen).

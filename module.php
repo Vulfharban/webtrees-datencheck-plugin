@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.9';
+        return '1.6.9.1';
     }
 
     public function getVersion(): string
@@ -609,7 +609,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 $tree, $given, $surname, $birth,
                 $fuzzyDiffHighAge, $fuzzyDiffDefault,
                 $death, $baptism, $sex, $marriedSurname,
-                $this->getSetting('enable_spanish_lenient_duplicates', '0') === '1'
+                $this->getSetting('enable_es_lenient_dupes', '0') === '1'
             );
 
             return response(json_encode($data))
@@ -779,7 +779,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         $this->setSetting('enable_scand_patronym', isset($params['enable_scandinavian_patronymics']) ? '1' : '0');
         $this->setSetting('enable_slavic_surnames', isset($params['enable_slavic_surnames']) ? '1' : '0');
         $this->setSetting('enable_spanish_surnames', isset($params['enable_spanish_surnames']) ? '1' : '0');
-        $this->setSetting('enable_spanish_lenient_duplicates', isset($params['enable_spanish_lenient_duplicates']) ? '1' : '0');
+        $this->setSetting('enable_es_lenient_dupes', isset($params['enable_spanish_lenient_duplicates']) ? '1' : '0');
         $this->setSetting('enable_dutch_tussenvoegsels', isset($params['enable_dutch_tussenvoegsels']) ? '1' : '0');
         $this->setSetting('enable_greek_surnames', isset($params['enable_greek_surnames']) ? '1' : '0');
         $this->setSetting('enable_genannt_names', isset($params['enable_genannt_names']) ? '1' : '0');
