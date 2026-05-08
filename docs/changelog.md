@@ -1,5 +1,11 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9.2] - 2026-05-08
+### Behoben
+- **Fehlerbehandlung (Fetch API)**: Behebung des Fehlers `Response.text: Body has already been consumed` im JavaScript, der bei ungültigen Serverantworten auftrat. Die API-Antworten werden nun robuster verarbeitet und Details im Fehlerfall in der Konsole ausgegeben.
+- **Kategorien-Filterung**: Korrektur der Logik für die Auswahl von Analysekategorien. Das Deaktivieren aller Kategorien führt nun korrekt dazu, dass keine Prüfungen ausgeführt werden, statt fälschlicherweise alle Prüfungen zu starten.
+- **Stabilität**: Entfernung redundanter Code-Pfade und verbesserte Typ-Sicherheit bei der Batch-Verarbeitung.
+
 ## [1.6.9.1] - 2026-05-05
 ### Behoben
 - **Datenbank-Fehler beim Speichern**: Behebung eines kritischen Fehlers (`SQLSTATE[22001]: Data too long for column 'setting_name'`), der beim Speichern der Einstellungen auftrat. Der interne Schlüssel `DC_enable_spanish_lenient_duplicates` (38 Zeichen) überschritt das Webtrees-Limit von 32 Zeichen für `wt_user_setting.setting_name`. Gekürzt auf `DC_enable_es_lenient_dupes` (27 Zeichen).

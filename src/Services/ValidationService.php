@@ -85,7 +85,7 @@ class ValidationService
     public static function validatePerson(?Individual $person, ?object $module = null, string $overrideBirth = '', string $overrideDeath = '', string $overrideBurial = '', string $overrideHusb = '', string $overrideWife = '', string $overrideFam = '', ?Tree $tree = null, string $marrOverride = '', string $relType = 'child',        string $overrideGiven = '', 
         string $overrideSurname = '', 
         string $overrideBap = '', 
-        array $filters = [],
+        ?array $filters = null,
         string $overrideSex = ''
     ): array
     {
@@ -93,7 +93,7 @@ class ValidationService
         $debug = [];
         $tree = $tree ?: ($person ? $person->tree() : \Fisharebest\Webtrees\Registry::treeFactory()->all()->first());
         
-        $useFilters = !empty($filters);
+        $useFilters = ($filters !== null);
 
         // 0. Get Ignored Errors (if person exists)
         $ignoredCodes = [];

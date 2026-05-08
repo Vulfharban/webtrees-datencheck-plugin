@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.9.1';
+        return '1.6.9.2';
     }
 
     public function getVersion(): string
@@ -1162,11 +1162,6 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 throw new HttpAccessDeniedException();
             }
             $params = $request->getQueryParams();
-
-            if (!$tree) {
-                return response(json_encode(['error' => 'Tree not found']))
-                    ->withHeader('Content-Type', 'application/json');
-            }
             
             // Batch-Limit Einstellung, akt. 100er Schritte
             // Pagination using last ID for better performance on large tables
@@ -1196,7 +1191,15 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                  $totalCount = DB::table('individuals')->where('i_file', '=', $tree->id())->count();
             }
 
-            $categories = !empty($params['categories']) ? explode(',', $params['categories']) : [];
+            // We use 'all' or empty string to indicate "use general settings"
+            // If the parameter is present but empty, it might mean "no categories selected"
+            // But we prefer to default to 'all' if not specified.
+            $categories = null;
+            if (isset($params['categories']) && $params['categories'] !== '') {
+                $categories = explode(',', $params['categories']);
+            } elseif (isset($params['categories']) && $params['categories'] === '') {
+                $categories = []; // Truly empty list
+            }
 
             foreach ($totalXrefs as $xref) {
                 $person = $registry->make($xref, $tree);

@@ -844,12 +844,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 100)}...`);
             }
             
+            const text = await response.text();
             let data;
             try {
-                data = await response.json();
+                data = JSON.parse(text);
             } catch (e) {
-                console.error('Server response was not JSON:', await response.text());
-                throw new Error(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Server response was not valid JSON.')) ?>);
+                console.error('Server response was not JSON:', text);
+                throw new Error(<?= json_encode(\Fisharebest\Webtrees\I18N::translate('Server response was not valid JSON.')) ?> + ' ' + e.message);
             }
 
             if (data.error) {
@@ -1013,7 +1014,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentTree = getSelectedTree();
             const url = '<?= $mark_as_dead_url ?>'.replace('TREE0', currentTree) + ( '<?= $mark_as_dead_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref;
             const response = await fetch(url);
-            const data = await response.json();
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Server response was not JSON:', text);
+                throw new Error('Server response was not valid JSON.');
+            }
             
             if (data.success) {
                 btn.className = 'btn btn-sm btn-success ms-2';
@@ -1048,7 +1056,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentTree = getSelectedTree();
             const url = '<?= $apply_fix_url ?>'.replace('TREE0', currentTree) + ( '<?= $apply_fix_url ?>'.includes('?') ? '&' : '?' ) + 'xref=' + xref + '&fix_type=' + fixType;
             const response = await fetch(url);
-            const data = await response.json();
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('Server response was not JSON:', text);
+                throw new Error('Server response was not valid JSON.');
+            }
             
             if (data.success) {
                 btn.className = 'btn btn-sm btn-success ms-2';
