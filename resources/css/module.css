@@ -1,30 +1,100 @@
-/* Theme-compatible menu icon style for Data Check */
-/* The theme should decide the size, but we provide standard defaults for webtrees compatibility */
-.menu-datencheck .nav-link::before {
-    content: "";
-    background-image: url('../images/icon.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    
-    /* Standard webtrees desktop theme expectations: block above text */
-    display: block;
-    width: 50px; 
-    height: 50px;
-    margin: 0 auto 4px auto;
-}
+/* Theme-specific styles for Datencheck menu icon */
 
-/* Adjustments for specific themes or layouts where the theme explicitly overrides display */
+/* 1. Base / Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native Webtrees box model) */
+.menu-datencheck .nav-link::before,
+.menu-datencheck > a::before,
 .wt-theme-webtrees .menu-datencheck .nav-link::before,
-.wt-theme-modern .menu-datencheck .nav-link::before,
-.wt-theme-xenea .menu-datencheck .nav-link::before {
-    width: 3.4rem; /* Matching the standard 3D icon size for these themes */
-    height: 3.4rem;
+.wt-theme-modern .menu-datencheck .nav-link::before {
+    content: "";
+    display: block;
+    width: 57.2px;
+    height: 56.2px;
+    margin: 0 auto;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    background-image: url('../images/icon.svg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
 }
 
-/* For themes that use small inline icons (e.g. Minimal or mobile views) */
-/* We let the theme's natural CSS for .nav-link::before take over if it sets display: inline-block */
-.menu-datencheck .nav-link:not([display="block"])::before {
-    width: 1.5rem;
-    height: 1.5rem;
+/* 2. Xenea Theme: 28x28px white tile with gray border and 6px margin-bottom */
+.wt-theme-xenea .menu-datencheck .nav-link::before,
+.wt-theme-xenea .menu-datencheck > a::before {
+    content: "" !important;
+    display: block !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 auto 6px auto !important;
+    background-color: #ffffff !important;
+    border: 1px solid #a6a6a6 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    background-image: url('../images/icon.svg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 22px 18px !important;
+}
+
+/* 3. Clouds Theme: 22x22px white tile with blue border and 4px margin-bottom */
+.wt-theme-clouds .menu-datencheck .nav-link::before,
+.wt-theme-clouds .menu-datencheck > a::before {
+    content: "" !important;
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 auto 4px auto !important;
+    background-color: #ffffff !important;
+    border: 1px solid #5b82a6 !important;
+    border-radius: 3px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+    background-image: url('../images/icon.svg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 18px 15px !important;
+}
+
+/* 4. Colors Theme: exact 40x40px white tile with dark border */
+.wt-theme-colors .menu-datencheck .nav-link::before,
+.wt-theme-colors .menu-datencheck > a::before {
+    content: "" !important;
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    margin: 0 auto !important;
+    background-color: #ffffff !important;
+    border: 1px solid #555555 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    background-image: url('../images/icon.svg') !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 32px 26px !important;
+}
+
+/* 5. Text-only compact themes (Minimal, F.A.B, Paper): hide navbar icon */
+.wt-theme-minimal .menu-datencheck .nav-link::before,
+.wt-theme-minimal .menu-datencheck > a::before,
+.wt-theme-fab .menu-datencheck .nav-link::before,
+.wt-theme-fab .menu-datencheck > a::before,
+.wt-theme-paper .menu-datencheck .nav-link::before,
+.wt-theme-paper .menu-datencheck > a::before {
+    display: none !important;
+}
+
+/* 6. Mobile / Collapsed navbar */
+@media (max-width: 767.98px) {
+    .navbar-collapse .menu-datencheck .nav-link::before,
+    .navbar-collapse .menu-datencheck > a::before {
+        display: inline-block !important;
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        vertical-align: middle !important;
+        margin-right: 0.4rem !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
 }

@@ -1,11 +1,11 @@
-$version = "v1.6.9.2"
+$version = "v1.6.9.4"
 $zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = (Get-Item .).FullName
 $tempDir = Join-Path $env:TEMP "webtrees-datencheck-build"
 $targetDir = Join-Path $tempDir "webtrees-datencheck-plugin"
 
 # Clean up previous builds
-if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
+if (Test-Path -LiteralPath $tempDir) { Remove-Item -Recurse -Force -LiteralPath $tempDir }
 if (Test-Path (Join-Path $sourceDir $zipName)) { Remove-Item -Force (Join-Path $sourceDir $zipName) }
 
 # Create directory structure
@@ -75,6 +75,6 @@ foreach ($file in $files) {
 $archive.Dispose()
 
 # Cleanup temp build materials
-if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
+if (Test-Path -LiteralPath $tempDir) { Remove-Item -Recurse -Force -LiteralPath $tempDir }
 
 Write-Host "Done! created $zipName" -ForegroundColor Green

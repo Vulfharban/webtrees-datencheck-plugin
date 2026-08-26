@@ -321,7 +321,7 @@
                             id="enable_missing_data_checks" 
                             name="enable_missing_data_checks" 
                             value="1"
-                            <?= $module->getSetting('enable_missing_data_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_missing_data_checks', '1') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_missing_data_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check missing data') ?></strong><br>
@@ -336,7 +336,7 @@
                             id="enable_geographic_checks" 
                             name="enable_geographic_checks" 
                             value="1"
-                            <?= $module->getSetting('enable_geographic_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_geographic_checks', '1') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_geographic_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check geographic plausibility') ?></strong><br>
@@ -351,7 +351,7 @@
                             id="enable_name_consistency_checks" 
                             name="enable_name_consistency_checks" 
                             value="1"
-                            <?= $module->getSetting('enable_name_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_name_checks', '1') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_name_consistency_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check name consistency') ?></strong><br>
@@ -504,7 +504,7 @@
                             id="enable_source_checks" 
                             name="enable_source_checks" 
                             value="1"
-                            <?= $module->getSetting('enable_source_checks', '0') === '1' ? 'checked' : '' ?>
+                            <?= $module->getSetting('enable_source_checks', '1') === '1' ? 'checked' : '' ?>
                         >
                         <label class="form-check-label" for="enable_source_checks">
                             <strong><?= \Fisharebest\Webtrees\I18N::translate('Check source requirement') ?></strong><br>

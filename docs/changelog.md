@@ -1,5 +1,22 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9.4] - 2026-08-26
+### Behoben
+- **Pixelgenaue Menü-Icon Integration über alle Webtrees-Themes**:
+  - *Webtrees / Modern / Drittanbieter-Themes*: Box-Modell exakt an native Webtrees-Berechnungsmaße angepasst (`57.2px × 56.2px`, `margin: 0 auto`), womit Text-Grundlinie, Icon-Oberkante und vertikaler Rhythmus auf den Subpixel genau mit den Standard-Menüpunkten harmonieren.
+  - *Xenea*: Maßgeschneiderte `28px × 28px` Kachel mit `1px solid #a6a6a6` Rand und zentriertem Vektor-Icon.
+  - *Clouds*: Blaue Kachel-Integration mit angepasstem Farbrahmen (`#5b82a6`).
+  - *Colors*: Exakte `40px × 40px` Kachel mit dunklem Rand (`#555555`) passend zum Header-Grid.
+  - *Text-Themes (Minimal, FAB, Paper)*: Korrektes Ausblenden ohne Layout-Verschiebung.
+  - *SVG-Optimierung*: Bounding-Box verlustfrei und ohne inneren Versatz (`viewBox="94 128 467 392"`) auf die Vektorgrenzen zugeschnitten.
+
+## [1.6.9.3] - 2026-08-06
+### Behoben
+- **Menü-Icon Skalierung & Ausrichtung**: Gezieltes Styling für 3D-Desktop-Themes (`Xenea`, `Modern`, `Webtrees`, `Clouds`) mit zentriertem 3,4rem-Block über dem Text sowie korrekter Inline-Darstellung für Kompakt-Themes (`Minimal`, `Colors`, `Paper`).
+- **Prüfungs-Standardwerte**: Aktivierung der Standardwerte (`'1'`) für *Fehlende Daten*, *Namenskonsistenz*, *Geografische Plausibilität* und *Quellenpflicht*, damit Warnungen (z. B. fehlende Geburts-/Sterbedaten) auch ohne manuelles Speichern der Admin-Einstellungen direkt greifen.
+- **Dublettensuche bei neuem Personeneintrag**: Die Echtzeit-Suche nach möglichen Duplikaten durchsucht nun bei leerem Nachnamensfeld auch Vornamen, sobald mindestens 2 Zeichen eingegeben wurden.
+- **Namensvalidierung**: Ergänzung der Warnung bei fehlendem Nachnamen (`MISSING_SURNAME`) bei vorhandenem Vornamen.
+
 ## [1.6.9.2] - 2026-05-08
 ### Behoben
 - **Fehlerbehandlung (Fetch API)**: Behebung des Fehlers `Response.text: Body has already been consumed` im JavaScript, der bei ungültigen Serverantworten auftrat. Die API-Antworten werden nun robuster verarbeitet und Details im Fehlerfall in der Konsole ausgegeben.

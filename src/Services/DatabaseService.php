@@ -58,10 +58,15 @@ class DatabaseService
         
         $rows = DB::table('name')
             ->where('n_file', '=', $treeId)
-            ->where(function($query) use ($surnameParts, $marriedPattern) {
+            ->where(function($query) use ($surnameParts, $inputGivenNormalized, $marriedPattern) {
                 if (empty($surnameParts)) {
-                    // Fallback to avoid empty where clause
-                    $query->whereRaw('0=1');
+                    if (mb_strlen($inputGivenNormalized) >= 2) {
+                        $pattern = '%' . mb_strtolower($inputGivenNormalized) . '%';
+                        $query->orWhere(DB::raw('LOWER(n_givn)'), 'LIKE', $pattern)
+                              ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $pattern);
+                    } else {
+                        $query->whereRaw('0=1');
+                    }
                 } else {
                     foreach ($surnameParts as $part) {
                         if (mb_strlen($part) < 2) continue; // Skip very short parts

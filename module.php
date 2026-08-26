@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.9.2';
+        return '1.6.9.4';
     }
 
     public function getVersion(): string
@@ -170,52 +170,112 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
      */
     public function headContent(): string
     {
-        // Load the SVG dynamically from the filesystem to allow user overrides, but serve as Base64 for stability
-        $svg_path = $this->resourcesFolder() . 'images/icon.svg';
-        $svg_b64 = '';
-        if (file_exists($svg_path)) {
-            $svg_b64 = base64_encode(file_get_contents($svg_path));
+        // Check if user disabled menu icon in settings
+        if ($this->getSetting('menu_icon', '1') === '0') {
+            return '';
         }
 
+        $svg_path = $this->resourcesFolder() . 'images/icon.svg';
+        if (!file_exists($svg_path)) {
+            return '';
+        }
+
+        $svg_b64 = base64_encode(file_get_contents($svg_path));
+
+        // Theme-specific menu icon rules matching native Webtrees theme design perfectly
         return '<style>' .
-               /* Webtrees & Modern: 50px (mit 90% Skalierung für optimalen Sitz) */
+               '/* 1. Base / Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
+               '.menu-datencheck .nav-link::before, ' .
+               '.menu-datencheck > a::before, ' .
                '.wt-theme-webtrees .menu-datencheck .nav-link::before, ' .
                '.wt-theme-modern .menu-datencheck .nav-link::before { ' .
-               '    content: "" !important; ' .
-               '    display: block !important; ' .
-               '    width: 50px !important; ' .
-               '    height: 50px !important; ' .
-               '    margin: 0 auto 4px auto !important; ' .
-               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
-               '    background-size: 90% !important; ' .
-               '    background-repeat: no-repeat !important; ' .
-               '    background-position: center !important; ' .
+               '    content: ""; ' .
+               '    display: block; ' .
+               '    width: 57.2px; ' .
+               '    height: 56.2px; ' .
+               '    margin: 0 auto; ' .
+               '    background-color: transparent; ' .
+               '    border: none; ' .
+               '    box-shadow: none; ' .
+               '    border-radius: 0; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
+               '    background-repeat: no-repeat; ' .
+               '    background-position: center center; ' .
+               '    background-size: contain; ' .
                '} ' .
-               /* Xenea & Clouds: 30px (waren bei 40px/50px zu wuchtig) */
+               '/* 2. Xenea Theme: 28x28px white tile with gray border and 6px margin-bottom */ ' .
                '.wt-theme-xenea .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-clouds .menu-datencheck .nav-link::before { ' .
+               '.wt-theme-xenea .menu-datencheck > a::before { ' .
                '    content: "" !important; ' .
                '    display: block !important; ' .
-               '    width: 30px !important; ' .
-               '    height: 30px !important; ' .
-               '    margin: 0 auto 4px auto !important; ' .
-               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
-               '    background-size: contain !important; ' .
+               '    width: 28px !important; ' .
+               '    height: 28px !important; ' .
+               '    margin: 0 auto 6px auto !important; ' .
+               '    background-color: #ffffff !important; ' .
+               '    border: 1px solid #a6a6a6 !important; ' .
+               '    border-radius: 4px !important; ' .
+               '    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
                '    background-repeat: no-repeat !important; ' .
-               '    background-position: center !important; ' .
+               '    background-position: center center !important; ' .
+               '    background-size: 22px 18px !important; ' .
                '} ' .
-               /* Colors: 3rem (war bei 2rem noch zu klein für die Leiste) */
-               '.wt-theme-colors .menu-datencheck .nav-link::before { ' .
+               '/* 3. Clouds Theme: 22x22px white tile with blue border and 4px margin-bottom */ ' .
+               '.wt-theme-clouds .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-clouds .menu-datencheck > a::before { ' .
                '    content: "" !important; ' .
-               '    display: inline-block !important; ' .
-               '    width: 3rem !important; ' .
-               '    height: 3rem !important; ' .
-               '    vertical-align: middle !important; ' .
-               '    margin: 0 0.5rem 0 0 !important; ' .
-               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
-               '    background-size: contain !important; ' .
+               '    display: block !important; ' .
+               '    width: 22px !important; ' .
+               '    height: 22px !important; ' .
+               '    margin: 0 auto 4px auto !important; ' .
+               '    background-color: #ffffff !important; ' .
+               '    border: 1px solid #5b82a6 !important; ' .
+               '    border-radius: 3px !important; ' .
+               '    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
                '    background-repeat: no-repeat !important; ' .
-               '    background-position: center !important; ' .
+               '    background-position: center center !important; ' .
+               '    background-size: 18px 15px !important; ' .
+               '} ' .
+               '/* 4. Colors Theme: exact 40x40px white tile with dark border */ ' .
+               '.wt-theme-colors .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-colors .menu-datencheck > a::before { ' .
+               '    content: "" !important; ' .
+               '    display: block !important; ' .
+               '    width: 40px !important; ' .
+               '    height: 40px !important; ' .
+               '    margin: 0 auto !important; ' .
+               '    background-color: #ffffff !important; ' .
+               '    border: 1px solid #555555 !important; ' .
+               '    border-radius: 4px !important; ' .
+               '    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
+               '    background-repeat: no-repeat !important; ' .
+               '    background-position: center center !important; ' .
+               '    background-size: 32px 26px !important; ' .
+               '} ' .
+               '/* 5. Text-only compact themes (Minimal, F.A.B, Paper) */ ' .
+               '.wt-theme-minimal .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-minimal .menu-datencheck > a::before, ' .
+               '.wt-theme-fab .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-fab .menu-datencheck > a::before, ' .
+               '.wt-theme-paper .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-paper .menu-datencheck > a::before { ' .
+               '    display: none !important; ' .
+               '} ' .
+               '/* 6. Mobile / Collapsed navbar */ ' .
+               '@media (max-width: 767.98px) { ' .
+               '    .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .navbar-collapse .menu-datencheck > a::before { ' .
+               '        display: inline-block !important; ' .
+               '        width: 1.25rem !important; ' .
+               '        height: 1.25rem !important; ' .
+               '        vertical-align: middle !important; ' .
+               '        margin-right: 0.4rem !important; ' .
+               '        background-color: transparent !important; ' .
+               '        border: none !important; ' .
+               '        box-shadow: none !important; ' .
+               '    } ' .
                '} ' .
                '</style>';
     }
@@ -394,32 +454,21 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             return null;
         }
 
-        $menu_id = 'menu-datencheck';
-        
-        // Use pure text as label. 
-        // Themes like Xenea or Modern add the icon via CSS ::before targeting the parent class "menu-datencheck".
-        // This matches webtrees core modules like "Suche" or "Sammelbehälter".
-        $label = $this->title();
-
-        // Create main menu item (Dropdown)
-        $menu = new Menu($label, '#', $menu_id, [
-            'class' => 'dropdown-toggle menu-datencheck', 
-            'data-bs-toggle' => 'dropdown'
-        ]);
-
         // 1. Analyse / Dashboard
         $url_dashboard = route('module', [
             'module' => $this->name(),
             'action' => 'Admin',
             'tree'   => $tree->name(),
         ]);
-        
-        $menu->addSubmenu(new Menu(
-            '<i class="fas fa-chart-line fa-fw"></i> ' . \Fisharebest\Webtrees\I18N::translate('Overview & Analysis'), 
-            $url_dashboard, 
-            'menu-datencheck-dashboard',
-            ['class' => 'dropdown-item']
-        ));
+
+        $submenus = [
+            new Menu(
+                \Fisharebest\Webtrees\I18N::translate('Overview & Analysis'),
+                $url_dashboard,
+                'menu-datencheck-dashboard',
+                ['rel' => 'nofollow']
+            ),
+        ];
 
         // 2. Ignorierte Fehler (für Moderatoren)
         if (Auth::isModerator($tree)) {
@@ -428,16 +477,22 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 'action' => 'AdminIgnored',
                 'tree'   => $tree->name(),
             ]);
-            
-            $menu->addSubmenu(new Menu(
-                '<i class="fas fa-eye-slash fa-fw"></i> ' . \Fisharebest\Webtrees\I18N::translate('Ignored Entries'), 
-                $url_ignored, 
+
+            $submenus[] = new Menu(
+                \Fisharebest\Webtrees\I18N::translate('Ignored Entries'),
+                $url_ignored,
                 'menu-datencheck-ignored',
-                ['class' => 'dropdown-item']
-            ));
+                ['rel' => 'nofollow']
+            );
         }
-        
-        return $menu;
+
+        return new Menu(
+            $this->title(),
+            '#',
+            'menu-datencheck',
+            ['rel' => 'nofollow'],
+            $submenus
+        );
     }
 
     /**

@@ -156,38 +156,36 @@ class ValidationService
         }
 
         // 4. Optional / Category-based checks
-        if ($module) {
-            if ($person) {
-                // Missing Data
-                if (in_array('missing_data', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_missing_data_checks', '0') === '1')) {
-                    $issues = array_merge($issues, self::checkMissingData($person));
-                }
-
-                // Geographic
-                if (in_array('geographic', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_geographic_checks', '0') === '1')) {
-                    $issues = array_merge($issues, self::checkGeographicPlausibility($person));
-                }
-
-                // Sources
-                if (in_array('sources', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_source_checks', '0') === '1')) {
-                    $issues = array_merge($issues, self::checkSourceQuality($person));
-                }
-
-                // Date Format (Month Names)
-                if (in_array('date_format', $filters) || !$useFilters) {
-                    $issues = array_merge($issues, self::checkInvalidMonths($person));
-                }
-
-                // Multiple Tags (BIRT, DEAT, SEX)
-                if (in_array('gedcom_standard', $filters) || !$useFilters) {
-                    $issues = array_merge($issues, self::checkMultipleGedcomTags($person));
-                }
+        if ($person) {
+            // Missing Data
+            if (!$useFilters || in_array('missing_data', $filters) || self::getModuleSetting($module, 'enable_missing_data_checks', '1') === '1') {
+                $issues = array_merge($issues, self::checkMissingData($person));
             }
 
-            // Names (handles null person via overrides)
-            if (in_array('names', $filters) || (!$useFilters && self::getModuleSetting($module, 'enable_name_checks', '0') === '1')) {
-                $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
+            // Geographic
+            if (!$useFilters || in_array('geographic', $filters) || self::getModuleSetting($module, 'enable_geographic_checks', '1') === '1') {
+                $issues = array_merge($issues, self::checkGeographicPlausibility($person));
             }
+
+            // Sources
+            if (!$useFilters || in_array('sources', $filters) || self::getModuleSetting($module, 'enable_source_checks', '1') === '1') {
+                $issues = array_merge($issues, self::checkSourceQuality($person));
+            }
+
+            // Date Format (Month Names)
+            if (!$useFilters || in_array('date_format', $filters)) {
+                $issues = array_merge($issues, self::checkInvalidMonths($person));
+            }
+
+            // Multiple Tags (BIRT, DEAT, SEX)
+            if (!$useFilters || in_array('gedcom_standard', $filters)) {
+                $issues = array_merge($issues, self::checkMultipleGedcomTags($person));
+            }
+        }
+
+        // Names (handles null person via overrides)
+        if (!$useFilters || in_array('names', $filters) || self::getModuleSetting($module, 'enable_name_checks', '1') === '1') {
+            $issues = array_merge($issues, self::checkNameConsistency($person, $overrideGiven, $overrideSurname, $detectedParents, $module));
         }
 
         // 5. Gender check
@@ -1412,6 +1410,16 @@ class ValidationService
                 'type' => 'missing_given_name',
                 'severity' => 'warning',
                 'message' => \Fisharebest\Webtrees\I18N::translate('Person has a surname, but no given name'),
+            ];
+        }
+
+        if (!empty($givenNamePrimary) && empty($surnamePrimary)) {
+            $issues[] = [
+                'code' => 'MISSING_SURNAME',
+                'label' => \Fisharebest\Webtrees\I18N::translate('Surname missing'),
+                'type' => 'missing_surname',
+                'severity' => 'warning',
+                'message' => \Fisharebest\Webtrees\I18N::translate('Person has a given name, but no surname'),
             ];
         }
 
