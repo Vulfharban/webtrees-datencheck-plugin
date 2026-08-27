@@ -184,31 +184,31 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         // Theme-specific menu icon rules matching native Webtrees theme design perfectly
         return '<style>' .
-               '/* 0. Auto-detected text-only themes */ ' .
-               '.wt-no-menu-icons .menu-datencheck .nav-link::before, ' .
-               '.wt-no-menu-icons .menu-datencheck > a::before { ' .
+               '/* 1. Default: Hide icon for all text-only & 3rd-party themes (JustLight, Minimal, FAB, Paper, etc.) */ ' .
+               '.menu-datencheck .nav-link::before, ' .
+               '.menu-datencheck > a::before { ' .
                '    display: none !important; ' .
                '} ' .
-               '/* 1. Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
+               '/* 2. Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
                '.wt-theme-webtrees .menu-datencheck .nav-link::before, ' .
                '.wt-theme-webtrees .menu-datencheck > a::before, ' .
                '.wt-theme-modern .menu-datencheck .nav-link::before, ' .
                '.wt-theme-modern .menu-datencheck > a::before { ' .
-               '    content: ""; ' .
-               '    display: block; ' .
-               '    width: 57.2px; ' .
-               '    height: 56.2px; ' .
-               '    margin: 0 auto; ' .
-               '    background-color: transparent; ' .
-               '    border: none; ' .
-               '    box-shadow: none; ' .
-               '    border-radius: 0; ' .
-               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
-               '    background-repeat: no-repeat; ' .
-               '    background-position: center center; ' .
-               '    background-size: contain; ' .
+               '    content: "" !important; ' .
+               '    display: block !important; ' .
+               '    width: 57.2px !important; ' .
+               '    height: 56.2px !important; ' .
+               '    margin: 0 auto !important; ' .
+               '    background-color: transparent !important; ' .
+               '    border: none !important; ' .
+               '    box-shadow: none !important; ' .
+               '    border-radius: 0 !important; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '") !important; ' .
+               '    background-repeat: no-repeat !important; ' .
+               '    background-position: center center !important; ' .
+               '    background-size: contain !important; ' .
                '} ' .
-               '/* 2. Xenea Theme: 28x28px white tile with gray border and 6px margin-bottom */ ' .
+               '/* 3. Xenea Theme: 28x28px white tile with gray border and 6px margin-bottom */ ' .
                '.wt-theme-xenea .menu-datencheck .nav-link::before, ' .
                '.wt-theme-xenea .menu-datencheck > a::before { ' .
                '    content: "" !important; ' .
@@ -225,7 +225,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '    background-position: center center !important; ' .
                '    background-size: 22px 18px !important; ' .
                '} ' .
-               '/* 3. Clouds Theme: 22x22px white tile with blue border and 4px margin-bottom */ ' .
+               '/* 4. Clouds Theme: 22x22px white tile with blue border and 4px margin-bottom */ ' .
                '.wt-theme-clouds .menu-datencheck .nav-link::before, ' .
                '.wt-theme-clouds .menu-datencheck > a::before { ' .
                '    content: "" !important; ' .
@@ -242,7 +242,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '    background-position: center center !important; ' .
                '    background-size: 18px 15px !important; ' .
                '} ' .
-               '/* 4. Colors Theme: exact 40x40px white tile with dark border */ ' .
+               '/* 5. Colors Theme: exact 40x40px white tile with dark border */ ' .
                '.wt-theme-colors .menu-datencheck .nav-link::before, ' .
                '.wt-theme-colors .menu-datencheck > a::before { ' .
                '    content: "" !important; ' .
@@ -259,41 +259,18 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '    background-position: center center !important; ' .
                '    background-size: 32px 26px !important; ' .
                '} ' .
-               '/* 5. Text-only / Compact Themes (JustLight, JustBlack, Minimal, F.A.B, Paper, Rural, Subtitles) */ ' .
-               '.wt-theme-justlight .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-justlight .menu-datencheck > a::before, ' .
-               '.wt-theme-justblack .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-justblack .menu-datencheck > a::before, ' .
-               '.wt-theme-minimal .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-minimal .menu-datencheck > a::before, ' .
-               '.wt-theme-fab .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-fab .menu-datencheck > a::before, ' .
-               '.wt-theme-paper .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-paper .menu-datencheck > a::before, ' .
-               '.wt-theme-rural .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-rural .menu-datencheck > a::before, ' .
-               '.wt-theme-subtitles .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-subtitles .menu-datencheck > a::before { ' .
-               '    display: none !important; ' .
-               '} ' .
-               '/* 6. Generic Fallback for other 3rd-party themes: subtle inline icon */ ' .
-               '.menu-datencheck .nav-link::before, ' .
-               '.menu-datencheck > a::before { ' .
-               '    content: ""; ' .
-               '    display: inline-block; ' .
-               '    width: 1.15em; ' .
-               '    height: 1.15em; ' .
-               '    vertical-align: -0.15em; ' .
-               '    margin-right: 0.35rem; ' .
-               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
-               '    background-repeat: no-repeat; ' .
-               '    background-position: center center; ' .
-               '    background-size: contain; ' .
-               '} ' .
-               '/* 7. Mobile / Collapsed navbar */ ' .
+               '/* 6. Mobile / Collapsed navbar (when theme uses icons) */ ' .
                '@media (max-width: 767.98px) { ' .
-               '    .navbar-collapse .menu-datencheck .nav-link::before, ' .
-               '    .navbar-collapse .menu-datencheck > a::before { ' .
+               '    .wt-theme-webtrees .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .wt-theme-webtrees .navbar-collapse .menu-datencheck > a::before, ' .
+               '    .wt-theme-modern .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .wt-theme-modern .navbar-collapse .menu-datencheck > a::before, ' .
+               '    .wt-theme-xenea .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .wt-theme-xenea .navbar-collapse .menu-datencheck > a::before, ' .
+               '    .wt-theme-clouds .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .wt-theme-clouds .navbar-collapse .menu-datencheck > a::before, ' .
+               '    .wt-theme-colors .navbar-collapse .menu-datencheck .nav-link::before, ' .
+               '    .wt-theme-colors .navbar-collapse .menu-datencheck > a::before { ' .
                '        display: inline-block !important; ' .
                '        width: 1.25rem !important; ' .
                '        height: 1.25rem !important; ' .
@@ -304,24 +281,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '        box-shadow: none !important; ' .
                '    } ' .
                '} ' .
-               '</style>' .
-               '<script>' .
-               'document.addEventListener("DOMContentLoaded", function() {' .
-               '    try {' .
-               '        var navLinks = document.querySelectorAll(".navbar-nav > li:not(.menu-datencheck) > a, .navbar-nav > .nav-item:not(.menu-datencheck) > a");' .
-               '        if (navLinks.length > 0) {' .
-               '            var firstLink = navLinks[0];' .
-               '            var style = window.getComputedStyle(firstLink, "::before");' .
-               '            var bgImg = style ? style.backgroundImage : "";' .
-               '            var content = style ? style.content : "";' .
-               '            var hasIcon = (content && content !== "none" && content !== "normal" && content !== \'""\') || (bgImg && bgImg !== "none");' .
-               '            if (!hasIcon && !firstLink.querySelector("img, svg")) {' .
-               '                document.body.classList.add("wt-no-menu-icons");' .
-               '            }' .
-               '        }' .
-               '    } catch(e) {}' .
-               '});' .
-               '</script>';
+               '</style>';
     }
 
     /**
