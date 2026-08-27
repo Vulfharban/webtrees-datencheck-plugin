@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.9.4';
+        return '1.6.9.5';
     }
 
     public function getVersion(): string
@@ -184,11 +184,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         // Theme-specific menu icon rules matching native Webtrees theme design perfectly
         return '<style>' .
-               '/* 1. Base / Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
-               '.menu-datencheck .nav-link::before, ' .
-               '.menu-datencheck > a::before, ' .
+               '/* 1. Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
                '.wt-theme-webtrees .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-modern .menu-datencheck .nav-link::before { ' .
+               '.wt-theme-webtrees .menu-datencheck > a::before, ' .
+               '.wt-theme-modern .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-modern .menu-datencheck > a::before { ' .
                '    content: ""; ' .
                '    display: block; ' .
                '    width: 57.2px; ' .
@@ -254,16 +254,38 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '    background-position: center center !important; ' .
                '    background-size: 32px 26px !important; ' .
                '} ' .
-               '/* 5. Text-only compact themes (Minimal, F.A.B, Paper) */ ' .
+               '/* 5. Text-only / Compact Themes (JustLight, JustBlack, Minimal, F.A.B, Paper, Rural, Subtitles) */ ' .
+               '.wt-theme-justlight .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-justlight .menu-datencheck > a::before, ' .
+               '.wt-theme-justblack .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-justblack .menu-datencheck > a::before, ' .
                '.wt-theme-minimal .menu-datencheck .nav-link::before, ' .
                '.wt-theme-minimal .menu-datencheck > a::before, ' .
                '.wt-theme-fab .menu-datencheck .nav-link::before, ' .
                '.wt-theme-fab .menu-datencheck > a::before, ' .
                '.wt-theme-paper .menu-datencheck .nav-link::before, ' .
-               '.wt-theme-paper .menu-datencheck > a::before { ' .
+               '.wt-theme-paper .menu-datencheck > a::before, ' .
+               '.wt-theme-rural .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-rural .menu-datencheck > a::before, ' .
+               '.wt-theme-subtitles .menu-datencheck .nav-link::before, ' .
+               '.wt-theme-subtitles .menu-datencheck > a::before { ' .
                '    display: none !important; ' .
                '} ' .
-               '/* 6. Mobile / Collapsed navbar */ ' .
+               '/* 6. Generic Fallback for other 3rd-party themes: subtle inline icon */ ' .
+               '.menu-datencheck .nav-link::before, ' .
+               '.menu-datencheck > a::before { ' .
+               '    content: ""; ' .
+               '    display: inline-block; ' .
+               '    width: 1.15em; ' .
+               '    height: 1.15em; ' .
+               '    vertical-align: -0.15em; ' .
+               '    margin-right: 0.35rem; ' .
+               '    background-image: url("data:image/svg+xml;base64,' . $svg_b64 . '"); ' .
+               '    background-repeat: no-repeat; ' .
+               '    background-position: center center; ' .
+               '    background-size: contain; ' .
+               '} ' .
+               '/* 7. Mobile / Collapsed navbar */ ' .
                '@media (max-width: 767.98px) { ' .
                '    .navbar-collapse .menu-datencheck .nav-link::before, ' .
                '    .navbar-collapse .menu-datencheck > a::before { ' .
