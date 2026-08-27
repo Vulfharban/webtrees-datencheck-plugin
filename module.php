@@ -184,6 +184,11 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
         // Theme-specific menu icon rules matching native Webtrees theme design perfectly
         return '<style>' .
+               '/* 0. Auto-detected text-only themes */ ' .
+               '.wt-no-menu-icons .menu-datencheck .nav-link::before, ' .
+               '.wt-no-menu-icons .menu-datencheck > a::before { ' .
+               '    display: none !important; ' .
+               '} ' .
                '/* 1. Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native box model) */ ' .
                '.wt-theme-webtrees .menu-datencheck .nav-link::before, ' .
                '.wt-theme-webtrees .menu-datencheck > a::before, ' .
@@ -299,7 +304,24 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                '        box-shadow: none !important; ' .
                '    } ' .
                '} ' .
-               '</style>';
+               '</style>' .
+               '<script>' .
+               'document.addEventListener("DOMContentLoaded", function() {' .
+               '    try {' .
+               '        var navLinks = document.querySelectorAll(".navbar-nav > li:not(.menu-datencheck) > a, .navbar-nav > .nav-item:not(.menu-datencheck) > a");' .
+               '        if (navLinks.length > 0) {' .
+               '            var firstLink = navLinks[0];' .
+               '            var style = window.getComputedStyle(firstLink, "::before");' .
+               '            var bgImg = style ? style.backgroundImage : "";' .
+               '            var content = style ? style.content : "";' .
+               '            var hasIcon = (content && content !== "none" && content !== "normal" && content !== \'""\') || (bgImg && bgImg !== "none");' .
+               '            if (!hasIcon && !firstLink.querySelector("img, svg")) {' .
+               '                document.body.classList.add("wt-no-menu-icons");' .
+               '            }' .
+               '        }' .
+               '    } catch(e) {}' .
+               '});' .
+               '</script>';
     }
 
     /**

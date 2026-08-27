@@ -1,5 +1,11 @@
 /* Theme-specific styles for Datencheck menu icon */
 
+/* 0. Auto-detected text-only themes */
+.wt-no-menu-icons .menu-datencheck .nav-link::before,
+.wt-no-menu-icons .menu-datencheck > a::before {
+    display: none !important;
+}
+
 /* 1. Webtrees default & Modern: 57.2px wide x 56.2px tall with margin: 0 auto (1:1 match to native Webtrees box model) */
 .wt-theme-webtrees .menu-datencheck .nav-link::before,
 .wt-theme-webtrees .menu-datencheck > a::before,
