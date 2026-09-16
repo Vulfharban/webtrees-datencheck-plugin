@@ -1,7 +1,7 @@
-$version = "v1.6.9.6"
+$version = "v1.6.9.7"
 $zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = (Get-Item .).FullName
-$tempDir = Join-Path $env:TEMP "webtrees-datencheck-build"
+$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "webtrees-datencheck-build"
 $targetDir = Join-Path $tempDir "webtrees-datencheck-plugin"
 
 # Clean up previous builds
