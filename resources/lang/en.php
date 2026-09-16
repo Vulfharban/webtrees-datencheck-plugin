@@ -399,6 +399,7 @@ return [
     'Person has a surname, but no given name' => 'Person has a surname, but no given name',
     'Married name' => 'Married name',
     'Alternative name' => 'Alternative name',
+    'Name in the form' => 'Name in the form',
     'Verify given name' => 'Verify given name',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Different given names detected: "%s" (%s) vs. "%s" (Birth name)',
     'Missing parameters' => 'Missing parameters',
