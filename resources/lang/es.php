@@ -393,6 +393,7 @@ return [
     'Person has a surname, but no given name' => 'La persona tiene apellido, pero no tiene nombre',
     'Married name' => 'Nombre de casada',
     'Alternative name' => 'Nombre alternativo',
+    'Name in the form' => 'Nombre en el formulario',
     'Verify given name' => 'Verificar el nombre',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Se han detectado diferentes nombres: "%s" (%s) vs. "%s" (Nombre de nacimiento)',
     'Lenient Spanish name matching for duplicates' => 'Coincidencia flexible de nombres españoles para duplicados',

@@ -401,6 +401,7 @@ return [
     'Person has a surname, but no given name' => 'Person hat einen Nachnamen, aber keinen Vornamen',
     'Married name' => 'Ehename',
     'Alternative name' => 'Alternativer Name',
+    'Name in the form' => 'Name im Formular',
     'Verify given name' => 'Vorname prüfen',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'Unterschiedliche Vornamen entdeckt: "%s" (%s) vs. "%s" (Geburtsname)',
     'Missing parameters' => 'Fehlende Parameter',

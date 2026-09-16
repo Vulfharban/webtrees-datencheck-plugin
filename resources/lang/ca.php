@@ -387,6 +387,7 @@ return [
     'Person has a surname, but no given name' => 'La persona té cognom, però no nom propi',
     'Married name' => 'Nom de casat/ada',
     'Alternative name' => 'Nom alternatiu',
+    'Name in the form' => 'Nom al formulari',
     'Verify given name' => 'Verificar el nom propi',
     'Different given names detected: "%s" (%s) vs. "%s" (Birth name)' => 'S\'han detectat noms propis diferents: "%s" (%s) vs. "%s" (Nom de naixement)',
     'Lenient Spanish name matching for duplicates' => 'Coincidència flexible de noms espanyols per a duplicats',

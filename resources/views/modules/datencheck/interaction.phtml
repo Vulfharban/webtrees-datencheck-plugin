@@ -1554,39 +1554,64 @@ document.addEventListener("DOMContentLoaded", function() {
             return "";
         };
 
-        const getNames = (keywords) => {
-            const values = allElements
-                .filter(el => {
-                    const id = (el.id || "").toUpperCase();
-                    const name = (el.name || "").toUpperCase();
-                    const type = (el.type || "").toLowerCase();
-                    
-                    if (type === 'hidden' || type === 'submit' || type === 'button') return false;
-                    if (id.includes("FILE") || name.includes("FILE") || id.includes("TREE") || name.includes("TREE")) return false;
-                    if (el.offsetParent === null) return false; // Skip invisible fields
-
-                    const matchesKeyword = keywords.some(k => id.includes(k) || name.includes(k));
-                    const isExclusion = (id.includes("DATE") || name.includes("DATE") || 
-                                       id.includes("PLAC") || name.includes("PLAC") ||
-                                       id.includes("SEX") || name.includes("SEX") ||
-                                       id.includes("GEND") || name.includes("GEND") ||
-                                       id.includes("XREF") || name.includes("XREF") ||
-                                       id.includes("NOTE") || name.includes("NOTE"));
-                    return matchesKeyword && !isExclusion;
-                })
-                .map(el => (el.value || "").replace(/\//g, "").trim()) // Remove slashes commonly used in GEDCOM fields
-                .filter(val => val.length > 0 && val.toUpperCase() !== 'Y' && val.length < 50);
-            
-            // Deduplicate
-            return [...new Set(values)];
+        // Classify a form field by the GEDCOM name piece it holds.
+        // webtrees ids look like "<uid>-INDI-NAME", "<uid>-INDI-NAME-GIVN", "<uid>-INDI-NAME-SURN",
+        // "<uid>-INDI-NAME-NICK", "<uid>-INDI-NAME-TYPE" ... so a plain substring test for "NAME"
+        // would also collect the surname, the nickname, the suffix and the type select as "given names".
+        const namePieceOf = (el) => {
+            const key = ((el.id || "") + " " + (el.name || "")).toUpperCase();
+            const type = (el.type || "").toLowerCase();
+            if (type === 'hidden' || type === 'submit' || type === 'button' || type === 'radio' || type === 'checkbox') return null;
+            if (el.offsetParent === null) return null; // Skip invisible fields
+            if (/FILE|TREE|DATE|PLAC|SEX|GEND|XREF|NOTE|SOUR|REPO|OBJE/.test(key)) return null;
+            const has = (tags) => tags.some(t => new RegExp('(^|[^A-Z])' + t + '([^A-Z]|$)').test(key));
+            if (has(['GIVN', 'GIVEN', '_GNAME'])) return 'givn';
+            if (has(['SURN', 'SURNAME', '_SNAME'])) return 'surn';
+            // Name pieces that are not a name of their own
+            if (has(['NICK', 'NPFX', 'SPFX', 'NSFX', 'TYPE', '_RUFNAME'])) return null;
+            if (has(['NAME', '_MARNM', '_AKA'])) return 'full';
+            return null;
         };
+
+        const cleanVal = (el) => (el.value || "").replace(/\|/g, ' ').replace(/\s+/g, ' ').trim();
+
+        // Names are collected as (given, surname) PAIRS so that position i of both lists
+        // always describes the same name.
+        const pairs = [];
+        const addPair = (givn, surn) => {
+            givn = givn.trim();
+            surn = surn.trim();
+            if ((givn.length === 0 && surn.length === 0) || givn.length >= 50 || surn.length >= 50) return;
+            if (givn.toUpperCase() === 'Y') return;
+            if (!pairs.some(p => p.givn === givn && p.surn === surn)) pairs.push({ givn, surn });
+        };
+
+        // 1. The structured pieces GIVN + SURN of the fact being edited form ONE name
+        const givnFields = allElements.filter(el => namePieceOf(el) === 'givn');
+        const surnFields = allElements.filter(el => namePieceOf(el) === 'surn');
+        const pieceCount = Math.max(givnFields.length, surnFields.length);
+        for (let i = 0; i < pieceCount; i++) {
+            addPair(givnFields[i] ? cleanVal(givnFields[i]) : "", surnFields[i] ? cleanVal(surnFields[i]) : "");
+        }
+
+        // 2. Full-name fields ("Roque /Morató Vives/") are split at the slashes, like webtrees does
+        allElements.filter(el => namePieceOf(el) === 'full').forEach(el => {
+            const full = cleanVal(el);
+            if (!full) return;
+            const m = full.match(/^(.*?)\/([^\/]*)\/(.*)$/);
+            if (m) {
+                addPair((m[1] + ' ' + m[3]).replace(/\s+/g, ' '), m[2]);
+            } else {
+                addPair(full, "");
+            }
+        });
 
         const birth = getBestDate(['BIRT', 'BIRTH'], ['CHR', 'BAPM', 'BAPTISM']);
         const baptism = getVal(['CHR', 'BAPM', 'BAPTISM']);
         const death = getBestDate(['DEAT', 'DEATH'], ['BURI', 'BURIAL', 'CREM']);
         const burial = getVal(['BURI', 'BURIAL', 'CREM']);
-        const givens = getNames(['GIVN', 'GIVEN', 'NAME']);
-        const surnames = getNames(['SURN', 'SURNAME', 'NAME']);
+        const givens = pairs.map(p => p.givn);
+        const surnames = pairs.map(p => p.surn);
         const currentSex = getSex();
 
         if (!context.xref && !context.husb && !context.wife && !context.fam && givens.length === 0 && surnames.length === 0) {

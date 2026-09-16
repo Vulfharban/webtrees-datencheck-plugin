@@ -1379,18 +1379,34 @@ class ValidationService
         $issues = [];
         $allNames = $person ? $person->getAllNames() : [];
         
-        // If we have overrides, incorporate them (might be multiple pipe-separated)
-        if (!empty($overrideGiven)) {
+        // If we have overrides, incorporate them (might be multiple pipe-separated).
+        // Position i of both lists describes the same name (given + surname pair).
+        if (!empty($overrideGiven) || !empty($overrideSurname)) {
             $givenList = explode('|', $overrideGiven);
             $surnameList = explode('|', $overrideSurname);
             foreach ($givenList as $i => $g) {
+                $g = trim($g);
+                $s = trim($surnameList[$i] ?? '');
+                if ($g === '' && $s === '') {
+                    continue;
+                }
+
+                // The name currently stored as primary must not be reported as "alternative name"
+                // when it is simply typed again in the edit form.
+                if (!empty($allNames)) {
+                    $stored = $allNames[0];
+                    if (mb_strtolower($stored['givn'] ?? '') === mb_strtolower($g) && mb_strtolower($stored['surn'] ?? '') === mb_strtolower($s)) {
+                        continue;
+                    }
+                }
+
                 // For new individuals or those without names, the first override becomes "primary"
                 // For existing ones, it's just one of the names to check
                 $allNames[] = [
-                    'type' => $i === 0 ? 'NAME' : 'NAME_OVERRIDE',
+                    'type' => empty($allNames) ? 'NAME' : 'NAME_OVERRIDE',
                     'givn' => $g,
-                    'surn' => $surnameList[$i] ?? ($surnameList[0] ?? ''),
-                    'full' => $g . ' ' . ($surnameList[$i] ?? ($surnameList[0] ?? ''))
+                    'surn' => $s,
+                    'full' => trim($g . ' ' . $s)
                 ];
             }
         }
@@ -1460,7 +1476,13 @@ class ValidationService
                 
                 // If more than 30% or 40% different
                 if ($maxLen > 0 && ($lev / $maxLen) > 0.4) {
-                    $typeName = ($type === '_MARNM' || str_contains($type, 'MARRIED')) ? \Fisharebest\Webtrees\I18N::translate('Married name') : \Fisharebest\Webtrees\I18N::translate('Alternative name');
+                    if ($type === '_MARNM' || str_contains($type, 'MARRIED')) {
+                        $typeName = \Fisharebest\Webtrees\I18N::translate('Married name');
+                    } elseif ($type === 'NAME_OVERRIDE') {
+                        $typeName = \Fisharebest\Webtrees\I18N::translate('Name in the form');
+                    } else {
+                        $typeName = \Fisharebest\Webtrees\I18N::translate('Alternative name');
+                    }
                     $issues[] = [
                         'code' => 'NAME_MISMATCH',
                         'type' => 'name_mismatch',
