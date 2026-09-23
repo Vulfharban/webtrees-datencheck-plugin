@@ -53,55 +53,103 @@ class DatabaseService
             $surnameParts = [$surname];
         }
 
-        $marriedPattern = $marriedSurname ? '%' . $marriedSurname . '%' : null;
+        // Generate accented and unaccented search patterns for surnames (ensures matches across all DB collations)
+        $surnamePatterns = [];
+        foreach ($surnameParts as $part) {
+            if (mb_strlen($part) < 2) continue;
+            $lower = mb_strtolower($part, 'UTF-8');
+            $surnamePatterns[] = '%' . $lower . '%';
+            $norm = StringHelper::normalizeName($part);
+            if ($norm !== $lower && mb_strlen($norm) >= 2) {
+                $surnamePatterns[] = '%' . $norm . '%';
+            }
+        }
+        $surnamePatterns = array_unique($surnamePatterns);
+
+        // Generate accented and unaccented search patterns for given names
+        $rawGivenParts = preg_split('/\s+/', trim($given), -1, PREG_SPLIT_NO_EMPTY);
+        $givenPatterns = [];
+        foreach ($rawGivenParts as $gp) {
+            if (mb_strlen($gp) < 2) continue;
+            $lower = mb_strtolower($gp, 'UTF-8');
+            $givenPatterns[] = '%' . $lower . '%';
+            $norm = StringHelper::normalizeName($gp);
+            if ($norm !== $lower && mb_strlen($norm) >= 2) {
+                $givenPatterns[] = '%' . $norm . '%';
+            }
+        }
+        $givenPatterns = array_unique($givenPatterns);
+
+        $marriedPattern = $marriedSurname ? '%' . mb_strtolower($marriedSurname, 'UTF-8') . '%' : null;
         $treeId         = (int)$tree->id();
         
-        $rows = DB::table('name')
-            ->where('n_file', '=', $treeId)
-            ->where(function($query) use ($surnameParts, $inputGivenNormalized, $marriedPattern) {
-                if (empty($surnameParts)) {
-                    if (mb_strlen($inputGivenNormalized) >= 2) {
-                        $pattern = '%' . mb_strtolower($inputGivenNormalized) . '%';
-                        $query->orWhere(DB::raw('LOWER(n_givn)'), 'LIKE', $pattern)
-                              ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $pattern);
-                    } else {
-                        $query->whereRaw('0=1');
-                    }
-                } else {
-                    foreach ($surnameParts as $part) {
-                        if (mb_strlen($part) < 2) continue; // Skip very short parts
-                        $pattern = '%' . mb_strtolower($part) . '%';
-                        $query->orWhere(DB::raw('LOWER(n_surname)'), 'LIKE', $pattern)
-                              ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $pattern);
-                    }
-                }
-                
-                if ($marriedPattern) {
-                    $query->orWhere('n_surname', 'LIKE', $marriedPattern)
-                          ->orWhere('n_full', 'LIKE', $marriedPattern);
-                }
+        // Single query joining individuals: eliminates N+1 query problem that previously caused
+        // timeouts and execution limits on common surnames (e.g. Sánchez, Müller)
+        $query = DB::table('name')
+            ->join('individuals', function($join) {
+                $join->on('n_file', '=', 'i_file')
+                     ->on('n_id', '=', 'i_id');
             })
-            ->select(['n_id', 'n_full'])
+            ->where('n_file', '=', $treeId);
+
+        if (!empty($surnamePatterns)) {
+            $query->where(function($q) use ($surnamePatterns, $marriedPattern) {
+                foreach ($surnamePatterns as $sp) {
+                    $q->orWhere(DB::raw('LOWER(n_surname)'), 'LIKE', $sp)
+                      ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $sp);
+                }
+                if ($marriedPattern) {
+                    $q->orWhere('n_surname', 'LIKE', $marriedPattern)
+                      ->orWhere('n_full', 'LIKE', $marriedPattern);
+                }
+            });
+
+            // When given name is ALSO provided, filter by given name in SQL to avoid loading thousands
+            // of candidates with common surnames (drastically speeds up check and avoids PHP timeouts)
+            if (!empty($givenPatterns) && !$lenient) {
+                $query->where(function($q) use ($givenPatterns) {
+                    foreach ($givenPatterns as $gp) {
+                        $q->orWhere(DB::raw('LOWER(n_givn)'), 'LIKE', $gp)
+                          ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $gp);
+                    }
+                });
+            }
+        } elseif (!empty($givenPatterns)) {
+            $query->where(function($q) use ($givenPatterns) {
+                foreach ($givenPatterns as $gp) {
+                    $q->orWhere(DB::raw('LOWER(n_givn)'), 'LIKE', $gp)
+                      ->orWhere(DB::raw('LOWER(n_full)'), 'LIKE', $gp);
+                }
+            });
+        } else {
+            return [
+                'check_type' => 'interactive_duplicates',
+                'description' => \Fisharebest\Webtrees\I18N::translate('Found %d potential matches', 0),
+                'data' => [],
+            ];
+        }
+
+        $rows = $query->select(['n_id', 'n_full', 'n_givn', 'n_surname', 'i_gedcom'])
+            ->limit(150)
             ->get();
         
         $possibleDuplicates = [];
+        $seenIds = [];
         
         foreach ($rows as $row) {
             $candidateId = $row->n_id;
-            $candidateName = $row->n_full;
-            
-            // 1. Fetch GEDCOM to check sex and other dates
-            $gedcomRow = DB::table('individuals')
-                ->where('i_file', '=', $treeId)
-                ->where('i_id', '=', $candidateId)
-                ->select(['i_gedcom'])
-                ->first();
-                
-            if (!$gedcomRow) {
+            if (isset($seenIds[$candidateId])) {
                 continue;
             }
+            $seenIds[$candidateId] = true;
+
+            $candidateName = $row->n_full;
+            $normalizedCandidate = StringHelper::normalizeName($candidateName);
+            $gedcom = $row->i_gedcom;
             
-            $gedcom = $gedcomRow->i_gedcom;
+            if (empty($gedcom)) {
+                continue;
+            }
 
             // 2. Gender Check
             $sex = strtoupper($sex);
@@ -113,16 +161,23 @@ class DatabaseService
                 continue;
             }
 
-            // 3. Given Name Check (At least one given name must match or have phonetic overlap)
             // 3. Given Name Check
-            $split = self::splitFullName($candidateName);
-            $candGiven = $split['given'];
-            $candSurname = $split['surname'];
+            $candGiven = !empty($row->n_givn) ? $row->n_givn : '';
+            $candSurname = !empty($row->n_surname) ? $row->n_surname : '';
+            if ($candGiven === '' && $candSurname === '') {
+                if (preg_match('/1 NAME (.*?)(?:\n|\r|$)/', $gedcom, $nameMatch)) {
+                    $split = self::splitFullName($nameMatch[1]);
+                } else {
+                    $split = self::splitFullName($candidateName);
+                }
+                $candGiven = $split['given'];
+                $candSurname = $split['surname'];
+            }
             
             $normalizedCandGiven = StringHelper::normalizeName($candGiven);
             $candGivenParts = array_filter(explode(' ', $normalizedCandGiven));
             
-            $nameOverlap = false;
+            $nameOverlap = empty($inputGivenParts); // True if no given name was provided
             
             // Prepare phonetics for input parts
             $inputPartPhonetics = [];

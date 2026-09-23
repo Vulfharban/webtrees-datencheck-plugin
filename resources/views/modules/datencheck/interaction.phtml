@@ -170,6 +170,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const baptism = document.querySelector('[id*="BAPM"][id*="DATE"], [id*="CHR"][id*="DATE"]')?.value || "";
         const sex = document.querySelector('select[id*="SEX"], input[name*="SEX"]:checked')?.value || "";
 
+        // Avoid premature duplicate flood on short given names before surname is entered
+        if (surname.length < 2 && given.length < 3 && !birth && !death && !baptism) {
+            const w = document.getElementById("datencheck-warning");
+            if (w) w.style.display = "none";
+            return;
+        }
+
         let marriedSurname = "";
         if (sex === "F") {
             const husbName = document.querySelector('[id*="HUSB"]')?.parentElement?.innerText || 
@@ -191,6 +198,10 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                if (data.error) {
+                    console.warn("[Datencheck] CheckPerson error:", data.error);
+                }
+
                 let warningArea = document.getElementById("datencheck-warning");
                 if (!warningArea) {
                     warningArea = document.createElement("div");

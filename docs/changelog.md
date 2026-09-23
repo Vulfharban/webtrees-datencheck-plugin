@@ -1,5 +1,32 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9.8] - 2026-09-23
+### Behoben
+- **Dubletten-Prüfung TypeError behoben**: Wiederherstellung der Variablen `$normalizedCandidate = StringHelper::normalizeName($candidateName);` in `DatabaseService::findDuplicatePerson()`. Zuvor stürzte die Duplikatprüfung mit einem `TypeError` in `PhoneticHelper::cologneEncode()` bzw. `StringHelper::levenshteinDistance()` ab, sobald ein echter Kandidat gefunden wurde, wodurch das Frontend fälschlicherweise "Keine Duplikate" anzeigte.
+- **Akzent- und Diakritika-Normalisierung (Spanisch / Katalanisch / International)**:
+  - Erweiterung von `StringHelper::normalizeName()` um spanische/katalanische und mitteleuropäische Sonderzeichen (z. B. `ñ` -> `n`, `ç` -> `c`, `à/è/ò` -> `a/e/o`, `ß` -> `ss` u. v. m.).
+  - Generierung von SQL-Suchmustern sowohl in Kleinbuchstaben mit Akzenten als auch normalisiert ohne Akzente, sodass Treffer unabhängig von der Datenbank-Kollation (MySQL, MariaDB, SQLite, PostgreSQL) zuverlässig gefunden werden (z. B. "José" findet "José" und "Jose", "Sánchez" findet "Sánchez" und "Sanchez").
+- **Performance & N+1-Query-Eliminierung bei häufigen Nachnamen**:
+  - `DB::table('name')` wird nun direkt mit `individuals` gejoint, anstatt für jeden Kandidaten eine separate Abfrage nach `i_gedcom` auszuführen.
+  - Wenn sowohl Vor- als auch Nachname eingegeben wurden, wird die SQL-Abfrage nach beiden Kriterien vorgefiltert, anstatt Tausende von Personen mit gleichem Nachnamen zu laden.
+  - `LIMIT 150` und ID-Deduplizierung verhindern Timeouts und Speicherüberläufe bei sehr großen Stammbäumen und häufigen Familiennamen.
+- **Frontend-Interaktion**:
+  - Wenn noch kein Nachname eingegeben wurde, wird die Suche erst ab mindestens 3 Zeichen im Vornamen oder bei Vorhandensein von Datumsangaben ausgelöst, um unnötige Trefferfluten bei kurzen Eingaben (z. B. 1–2 Buchstaben) zu vermeiden.
+  - Fehlerhafte API-Antworten werden im Frontend geloggt (`console.warn`), um Probleme transparent nachvollziehbar zu machen.
+
+## [1.6.9.7] - 2026-09-21
+### Behoben
+- **Namenskonsistenz & Formularfeld-Erkennung**: Behebung von Fehlalarmen bei der Prüfung auf Namenskonsistenz durch gezielte Erfassung tatsächlicher Namensfelder im Eingabeformular (PR #45).
+- **Übersetzungen**: Fehlender englischer Sprachschlüssel für "Name in the form" ergänzt.
+
+## [1.6.9.6] - 2026-09-17
+### Behoben
+- **Theme-Kompatibilität**: Reine Text-Menüs für Drittanbieter-Themes ohne Icon-Konflikte.
+
+## [1.6.9.5] - 2026-09-15
+### Behoben
+- **Icon-Darstellung JustLight & Drittanbieter**: Dynamische Client-seitige Erkennung für textbasierte Themes.
+
 ## [1.6.9.4] - 2026-08-26
 ### Behoben
 - **Pixelgenaue Menü-Icon Integration über alle Webtrees-Themes**:

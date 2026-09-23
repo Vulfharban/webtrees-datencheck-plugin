@@ -11,3 +11,4 @@ build_release.ps1
 
 # Documentation (not needed in repo)
 docs/
+!docs/changelog.md
