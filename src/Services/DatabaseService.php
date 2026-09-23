@@ -77,6 +77,16 @@ class DatabaseService
             if ($norm !== $lower && mb_strlen($norm) >= 2) {
                 $givenPatterns[] = '%' . $norm . '%';
             }
+            // Also include equivalents from NameHelper (e.g. Josef <-> Joseph, Elisabeth <-> Elizabeth, Karl <-> Carl)
+            foreach (NameHelper::getEquivalentNames($gp) as $eq) {
+                if (mb_strlen($eq) < 2) continue;
+                $eqLower = mb_strtolower($eq, 'UTF-8');
+                $givenPatterns[] = '%' . $eqLower . '%';
+                $eqNorm = StringHelper::normalizeName($eq);
+                if ($eqNorm !== $eqLower && mb_strlen($eqNorm) >= 2) {
+                    $givenPatterns[] = '%' . $eqNorm . '%';
+                }
+            }
         }
         $givenPatterns = array_unique($givenPatterns);
 
@@ -151,27 +161,27 @@ class DatabaseService
                 continue;
             }
 
-            // 2. Gender Check
-            $sex = strtoupper($sex);
+            // 2. Gender Check (only filter out if BOTH candidate and input specify conflicting known genders)
+            $sex = strtoupper(trim($sex));
             $candidateSex = '';
             if (preg_match('/^1 SEX (.+)$/m', $gedcom, $sexMatch)) {
                 $candidateSex = strtoupper(trim($sexMatch[1]));
             }
-            if ($candidateSex !== '' && $candidateSex !== 'U' && $sex !== 'U' && $candidateSex !== $sex) {
+            if ($sex !== '' && $sex !== 'U' && $candidateSex !== '' && $candidateSex !== 'U' && $candidateSex !== $sex) {
                 continue;
             }
 
             // 3. Given Name Check
             $candGiven = !empty($row->n_givn) ? $row->n_givn : '';
             $candSurname = !empty($row->n_surname) ? $row->n_surname : '';
-            if ($candGiven === '' && $candSurname === '') {
+            if ($candGiven === '' || $candSurname === '') {
                 if (preg_match('/1 NAME (.*?)(?:\n|\r|$)/', $gedcom, $nameMatch)) {
                     $split = self::splitFullName($nameMatch[1]);
                 } else {
                     $split = self::splitFullName($candidateName);
                 }
-                $candGiven = $split['given'];
-                $candSurname = $split['surname'];
+                if ($candGiven === '') $candGiven = $split['given'];
+                if ($candSurname === '') $candSurname = $split['surname'];
             }
             
             $normalizedCandGiven = StringHelper::normalizeName($candGiven);
@@ -293,7 +303,7 @@ class DatabaseService
                         'date' => $extract('DEAT', 'DATE', $gedcom),
                         'place' => $extract('DEAT', 'PLAC', $gedcom)
                     ],
-                    'distance' => StringHelper::levenshteinDistance($inputGivenNormalized . ' ' . $inputSurnameNormalized, $normalizedCandidate),
+                    'distance' => StringHelper::levenshteinDistance(trim($inputGivenNormalized . ' ' . $inputSurnameNormalized), $normalizedCandidate),
                     'phonetic_match' => $phoneticMatch,
                     'families' => self::getPersonFamilies($tree, $candidateId),
                 ];

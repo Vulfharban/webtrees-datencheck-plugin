@@ -395,6 +395,25 @@ class NameHelper
         return false;
     }
 
+    /**
+     * Get all equivalent names for a given name variant.
+     */
+    public static function getEquivalentNames(string $name): array
+    {
+        $norm = self::normalize($name);
+        $map = self::getNormalizedMap();
+        if (!isset($map[$norm])) {
+            return [];
+        }
+        $result = [];
+        foreach ($map[$norm] as $groupId) {
+            foreach (self::$equivalents[$groupId] as $variant) {
+                $result[] = $variant;
+            }
+        }
+        return array_unique($result);
+    }
+
     private static function getNormalizedMap(): array
     {
         if (self::$normalizedMap === null) {
