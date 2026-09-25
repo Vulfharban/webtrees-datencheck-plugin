@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Списък с типове факти (етикети), разделени със запетая, които да се игнорират по време на проверки на последователността на датите.',
     'Yes' => 'Да',
     'No' => 'Не',
+    'Page' => 'Страница',
+    'Per page:' => 'На страница:',
 ];

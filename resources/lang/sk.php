@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Čiarkami oddelený zoznam typov faktov (štítkov), ktoré sa majú ignorovať pri kontrole sekvencie dát.',
     'Yes' => 'Áno',
     'No' => 'Nie',
+    'Page' => 'Strana',
+    'Per page:' => 'Na stranu:',
 ];

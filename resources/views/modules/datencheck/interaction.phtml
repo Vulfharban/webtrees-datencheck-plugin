@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (given.length < 2 && surname.length < 2) {
             const w = document.getElementById("datencheck-warning");
-            if (w && !given && !surname) w.style.display = "none"; 
+            if (w) w.style.display = "none"; 
             return;
         }
 
@@ -170,8 +170,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const baptism = document.querySelector('[id*="BAPM"][id*="DATE"], [id*="CHR"][id*="DATE"]')?.value || "";
         const sex = document.querySelector('select[id*="SEX"], input[name*="SEX"]:checked')?.value || "";
 
-        // Avoid premature duplicate flood on short given names before surname is entered
-        if (surname.length < 2 && given.length < 3 && !birth && !death && !baptism) {
+        // If surname is not entered yet, do NOT warn or search unless a date is provided
+        // (Allows typing given name peacefully, but checks duplicates if birth/death/baptism is known)
+        if (surname.length < 2 && !birth && !death && !baptism) {
             const w = document.getElementById("datencheck-warning");
             if (w) w.style.display = "none";
             return;
@@ -213,67 +214,29 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (target) target.parentNode.insertBefore(warningArea, target);
                 }
 
-                // Add close button to header
-                const closeBtnHtml = '<button type="button" class="btn-close float-end" onclick="this.parentElement.style.display=\'none\'" aria-label="Close" style="font-size: 0.8rem; margin-top: -5px;"></button>';
-
                 if (data.data && data.data.length > 0) {
                     const ctx = getContext();
                     const currentXref = (ctx.isAdd) ? "NEW" : getXref();
                     
-                    let html = closeBtnHtml + "<strong><i class='fa fa-copy'></i> " + "<?= \Fisharebest\Webtrees\I18N::translate('Possible duplicates found:') ?>" + "</strong><ul class='list-unstyled mt-2'>";
-                    data.data.forEach(item => {
-                        let label = item.name2 + " (" + item.id2 + ")";
-                        if (item.phonetic_match) {
-                            label += " <small class='text-muted'>(<?= \Fisharebest\Webtrees\I18N::translate('phonetically') ?>)</small>";
-                        }
-                        
-                        let details = "";
-                        if (item.birth || item.death) {
-                            const b = item.birth ? (item.birth.date || "").trim() : "";
-                            const bp = item.birth ? (item.birth.place || "").trim() : "";
-                            const d = item.death ? (item.death.date || "").trim() : "";
-                            const dp = item.death ? (item.death.place || "").trim() : "";
-                            
-                            let bStr = b;
-                            if (bp) bStr += (b ? ", " : "") + bp;
-                            let dStr = d;
-                            if (dp) dStr += (d ? ", " : "") + dp;
-                            
-                            details = " <small class='text-muted d-block' style='margin-left: 1.5rem'>(" + (bStr || "?") + " - " + (dStr || "?") + ")</small>";
-                        }
-                        
-                        html += "<li class='mb-2 border-bottom pb-1 px-1'>" + label + details + 
-                                " <div class='mt-1 d-flex flex-wrap gap-1'>" +
-                                " <button type='button' class='btn btn-xs btn-outline-primary' " +
-                                "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowComparison(\"" + (currentXref || "NEW") + "\", \"" + item.id2 + "\")'>" +
-                                "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button>";
-                        
-                        if (item.families && item.families.length > 0) {
-                            html += " <button type='button' class='btn btn-xs btn-outline-info' " +
-                                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowFamilyComparison(\"" + item.families[0] + "\")'>" +
-                                    "👨‍👩‍👧‍👦 " + "<?= \Fisharebest\Webtrees\I18N::translate('Compare Family') ?></button>";
-                        }
-                        
-                        html += " <button type='button' class='btn btn-xs btn-outline-success' " +
-                                  "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckFillPerson(\"" + item.id2 + "\")'>" +
-                                  "👤 " + "<?= \Fisharebest\Webtrees\I18N::translate('Use this person') ?></button>";
-                        
-                        if (item.families && item.families.length > 0) {
-                            html += " <button type='button' class='btn btn-xs btn-outline-danger' " +
-                                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckJoinFamily(\"" + item.families[0] + "\")'>" +
-                                    "👨‍👩‍👧‍👦 " + "<?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>";
-                        }
-                        
-                        html += "</div></li>";
+                    const dupePageSize = (data.data.length <= 25) ? 25 : ((window._dcDupeState && window._dcDupeState.pageSize) ? window._dcDupeState.pageSize : 25);
+                    window._dcDupeState = {
+                        data: data.data,
+                        page: 1,
+                        pageSize: dupePageSize,
+                        currentXref: currentXref
+                    };
+                    renderDuplicateList();
 
-                        // Spouse already in form check
-                        const husbId = document.getElementById("HUSB")?.value || "";
-                        const wifeId = document.getElementById("WIFE")?.value || "";
-                        let testHusb = "";
-                        let testWife = "";
+                    // Spouse already in form check for top candidates
+                    const husbId = document.getElementById("HUSB")?.value || "";
+                    const wifeId = document.getElementById("WIFE")?.value || "";
+                    let testHusb = "";
+                    let testWife = "";
 
-                        if (husbId && !wifeId) { testHusb = husbId; testWife = item.id2; }
-                        else if (!husbId && wifeId) { testHusb = item.id2; testWife = wifeId; }
+                    const topItem = data.data[0];
+                    if (topItem) {
+                        if (husbId && !wifeId) { testHusb = husbId; testWife = topItem.id2; }
+                        else if (!husbId && wifeId) { testHusb = topItem.id2; testWife = wifeId; }
 
                         if (testHusb && testWife) {
                             fetch("<?= $family_url ?>?husb=" + encodeURIComponent(testHusb) + "&wife=" + encodeURIComponent(testWife))
@@ -284,15 +247,139 @@ document.addEventListener("DOMContentLoaded", function() {
                                     }
                                 });
                         }
-                    });
-                    html += "</ul>";
-                    warningArea.innerHTML = html;
-                    warningArea.style.display = "block";
+                    }
                 } else {
                     // No duplicates found, hide warning area
                     if (warningArea) warningArea.style.display = "none";
                 }
             });
+    };
+
+    window.renderDuplicateList = () => {
+        const state = window._dcDupeState;
+        const warningArea = document.getElementById("datencheck-warning");
+        if (!state || !warningArea || !state.data || state.data.length === 0) {
+            if (warningArea) warningArea.style.display = "none";
+            return;
+        }
+
+        const total = state.data.length;
+        const totalPages = Math.ceil(total / state.pageSize) || 1;
+        state.page = Math.max(1, Math.min(state.page, totalPages));
+        const startIndex = (state.page - 1) * state.pageSize;
+        const endIndex = Math.min(startIndex + state.pageSize, total);
+        const pageItems = state.data.slice(startIndex, endIndex);
+
+        const closeBtnHtml = '<button type="button" class="btn-close float-end" onclick="this.parentElement.style.display=\'none\'" aria-label="Close" style="font-size: 0.8rem; margin-top: -3px;"></button>';
+
+        let html = closeBtnHtml + 
+                   "<div class='d-flex align-items-center flex-wrap gap-2 mb-2'>" +
+                   "<strong><i class='fa fa-copy'></i> " + "<?= \Fisharebest\Webtrees\I18N::translate('Possible duplicates found:') ?>" + "</strong> " +
+                   "<span class='badge bg-warning text-dark border border-warning'>" + total + "</span>";
+
+        if (total > state.pageSize) {
+            html += "<span class='text-muted' style='font-size: 0.82rem;'>(" + (startIndex + 1) + "–" + endIndex + ")</span>";
+        }
+        html += "</div>";
+
+        const escapeHtml = (str) => {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        html += "<ul class='list-unstyled mb-0'>";
+        pageItems.forEach(item => {
+            let label = escapeHtml(item.name2);
+            let xrefBadge = " <span class='badge bg-light text-secondary border' style='font-size:0.75rem; font-weight:normal;'>" + escapeHtml(item.id2) + "</span>";
+            let phon = item.phonetic_match ? " <small class='text-muted'>(<?= \Fisharebest\Webtrees\I18N::translate('phonetically') ?>)</small>" : "";
+            
+            let dates = "";
+            if (item.birth || item.death) {
+                const b = item.birth ? (item.birth.date || "").trim() : "";
+                const bp = item.birth ? (item.birth.place || "").trim() : "";
+                const d = item.death ? (item.death.date || "").trim() : "";
+                const dp = item.death ? (item.death.place || "").trim() : "";
+                
+                let bStr = escapeHtml(b);
+                if (bp) bStr += (b ? ", " : "") + escapeHtml(bp);
+                let dStr = escapeHtml(d);
+                if (dp) dStr += (d ? ", " : "") + escapeHtml(dp);
+                
+                if (bStr || dStr) {
+                    dates = "<small class='text-muted d-inline-block ms-1'>(" + (bStr || "?") + " – " + (dStr || "?") + ")</small>";
+                }
+            }
+            
+            html += "<li class='py-1 px-1 border-bottom d-flex flex-column gap-1'>" +
+                    "<div class='d-flex flex-wrap align-items-baseline justify-content-between'>" +
+                    "<div><strong>" + label + "</strong>" + xrefBadge + phon + " " + dates + "</div>" +
+                    "</div>" +
+                    "<div class='d-flex flex-wrap gap-1 mt-0'>" +
+                    "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-primary' style='font-size:0.78rem;' " +
+                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowComparison(\"" + (state.currentXref || "NEW") + "\", \"" + item.id2 + "\")'>" +
+                    "<?= \Fisharebest\Webtrees\I18N::translate('Compare') ?></button>";
+            
+            if (item.families && item.families.length > 0) {
+                html += "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-info' style='font-size:0.78rem;' " +
+                        "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckShowFamilyComparison(\"" + item.families[0] + "\")'>" +
+                        "👨‍👩‍👧‍👦 <?= \Fisharebest\Webtrees\I18N::translate('Compare Family') ?></button>";
+            }
+            
+            html += "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-success' style='font-size:0.78rem;' " +
+                    "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckFillPerson(\"" + item.id2 + "\")'>" +
+                    "👤 <?= \Fisharebest\Webtrees\I18N::translate('Use this person') ?></button>";
+            
+            if (item.families && item.families.length > 0) {
+                html += "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-danger' style='font-size:0.78rem;' " +
+                        "onclick='event.preventDefault(); event.stopPropagation(); window.datencheckJoinFamily(\"" + item.families[0] + "\")'>" +
+                        "👨‍👩‍👧‍👦 <?= \Fisharebest\Webtrees\I18N::translate('Use this family') ?></button>";
+            }
+            
+            html += "</div></li>";
+        });
+        html += "</ul>";
+
+        // Pagination and page size bar: only show if more than 25 total results
+        if (total > 25) {
+            html += "<div class='d-flex justify-content-between align-items-center mt-2 pt-2 border-top flex-wrap gap-2 text-muted' style='font-size:0.8rem;'>" +
+                    "<div class='d-flex align-items-center gap-1'>" +
+                    "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-secondary' style='font-size:0.75rem;' onclick='window.datencheckSetDupePage(1)' " + (state.page === 1 ? "disabled" : "") + ">&laquo;</button>" +
+                    "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-secondary' style='font-size:0.75rem;' onclick='window.datencheckSetDupePage(" + (state.page - 1) + ")' " + (state.page === 1 ? "disabled" : "") + ">&lsaquo;</button>" +
+                    "<span class='mx-1'>" + "<?= \Fisharebest\Webtrees\I18N::translate('Page') ?> " + state.page + " / " + totalPages + "</span>" +
+                    "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-secondary' style='font-size:0.75rem;' onclick='window.datencheckSetDupePage(" + (state.page + 1) + ")' " + (state.page >= totalPages ? "disabled" : "") + ">&rsaquo;</button>" +
+                    "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-secondary' style='font-size:0.75rem;' onclick='window.datencheckSetDupePage(" + totalPages + ")' " + (state.page >= totalPages ? "disabled" : "") + ">&raquo;</button>" +
+                    "</div>" +
+                    "<div class='d-flex align-items-center gap-1'>" +
+                    "<span>" + "<?= \Fisharebest\Webtrees\I18N::translate('Per page:') ?>" + "</span>" +
+                    "<select class='form-select form-select-sm py-0 px-1' style='width:auto; height:24px; font-size:0.75rem; line-height:1;' onchange='window.datencheckSetDupePageSize(this.value)'>" +
+                    "<option value='25'" + (state.pageSize === 25 ? " selected" : "") + ">25</option>" +
+                    "<option value='50'" + (state.pageSize === 50 ? " selected" : "") + ">50</option>" +
+                    "<option value='100'" + (state.pageSize === 100 ? " selected" : "") + ">100</option>" +
+                    "</select>" +
+                    "</div>" +
+                    "</div>";
+        }
+
+        warningArea.innerHTML = html;
+        warningArea.style.display = "block";
+    };
+
+    window.datencheckSetDupePage = (p) => {
+        if (!window._dcDupeState) return;
+        window._dcDupeState.page = p;
+        window.renderDuplicateList();
+    };
+
+    window.datencheckSetDupePageSize = (sz) => {
+        if (!window._dcDupeState) return;
+        window._dcDupeState.pageSize = parseInt(sz, 10) || 25;
+        window._dcDupeState.page = 1;
+        window.renderDuplicateList();
     };
 
     const checkSibling = () => {
@@ -1869,11 +1956,15 @@ document.addEventListener("DOMContentLoaded", function() {
         const name = (e.target.name || "").toUpperCase();
         const value = (e.target.value || "");
 
-        // Trigger on Given Name, Surname, Suffix or full NAME field
+        // Trigger on Given Name, Surname, Suffix, full NAME field, OR Date fields
         if (id.includes("GIVN") || name.includes("GIVN") || 
             id.includes("SURN") || name.includes("SURN") ||
             id.includes("NSFX") || name.includes("NSFX") ||
-            id.includes("NAME") || name.includes("NAME")) {
+            id.includes("NAME") || name.includes("NAME") ||
+            id.includes("BIRT") || name.includes("BIRT") ||
+            id.includes("DEAT") || name.includes("DEAT") ||
+            id.includes("BAPM") || name.includes("BAPM") ||
+            id.includes("DATE") || name.includes("DATE")) {
             
             // Only search if we have some meat to work with
             if (value.length > 1) {
@@ -1912,6 +2003,19 @@ document.addEventListener("DOMContentLoaded", function() {
     document.addEventListener("change", (e) => {
         const tagName = e.target.tagName;
         if (tagName === "INPUT" || tagName === "SELECT" || tagName === "TEXTAREA") {
+            const id = (e.target.id || "").toUpperCase();
+            const name = (e.target.name || "").toUpperCase();
+            if (id.includes("GIVN") || name.includes("GIVN") ||
+                id.includes("SURN") || name.includes("SURN") ||
+                id.includes("BIRT") || name.includes("BIRT") ||
+                id.includes("DEAT") || name.includes("DEAT") ||
+                id.includes("BAPM") || name.includes("BAPM") ||
+                id.includes("DATE") || name.includes("DATE") ||
+                id.includes("SEX") || name.includes("SEX")) {
+                clearTimeout(personTimeout);
+                personTimeout = setTimeout(() => checkDuplicate(e), 300);
+            }
+
             clearTimeout(siblingTimeout);
             siblingTimeout = setTimeout(checkSibling, 400);
 

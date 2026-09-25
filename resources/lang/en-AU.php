@@ -403,4 +403,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Comma-separated list of fact types (labels) to ignore during date sequence checks.',
     'Yes' => 'Yes',
     'No' => 'No',
+    'Page' => 'Page',
+    'Per page:' => 'Per page:',
 ];

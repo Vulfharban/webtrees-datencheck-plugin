@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Danh sách các loại sự kiện (nhãn) cách nhau bằng dấu phẩy cần bỏ qua trong quá trình kiểm tra trình tự ngày tháng.',
     'Yes' => 'Có',
     'No' => 'Không',
+    'Page' => 'Trang',
+    'Per page:' => 'Mỗi trang:',
 ];

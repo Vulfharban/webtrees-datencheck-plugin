@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Λίστα τύπων γεγονότων (ετικετών) χωρισμένη με κόμμα που πρέπει να αγνοούνται κατά τους ελέγχους αλληλουχίας ημερομηνιών.',
     'Yes' => 'Ναι',
     'No' => 'Όχι',
+    'Page' => 'Σελίδα',
+    'Per page:' => 'Ανά σελίδα:',
 ];

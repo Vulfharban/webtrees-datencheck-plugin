@@ -41,6 +41,7 @@ class DatabaseService
         $inputGivenNormalized = StringHelper::normalizeName($given);
         $inputGivenParts = array_filter(explode(' ', $inputGivenNormalized));
         $inputSurnameNormalized = StringHelper::normalizeName($surname);
+        $inputSurnameParts = array_filter(explode(' ', $inputSurnameNormalized));
         
         $parsedBirth = DateParser::parseGedcomDate($birthDate);
         $parsedDeath = DateParser::parseGedcomDate($deathDate);
@@ -49,13 +50,15 @@ class DatabaseService
         // Search for candidates with similar surname or matching full name
         // Support double surnames by splitting input by common separators (space, hyphen, slash)
         $surnameParts = preg_split('/[\s\-\/]/', $surname, -1, PREG_SPLIT_NO_EMPTY);
-        if (empty($surnameParts) && !empty($surname)) {
-            $surnameParts = [$surname];
+        $allSurnameTerms = $surnameParts;
+        $trimmedSurname = trim($surname);
+        if (!empty($trimmedSurname) && mb_strlen($trimmedSurname) >= 2 && !in_array($trimmedSurname, $allSurnameTerms)) {
+            $allSurnameTerms[] = $trimmedSurname;
         }
 
         // Generate accented and unaccented search patterns for surnames (ensures matches across all DB collations)
         $surnamePatterns = [];
-        foreach ($surnameParts as $part) {
+        foreach ($allSurnameTerms as $part) {
             if (mb_strlen($part) < 2) continue;
             $lower = mb_strtolower($part, 'UTF-8');
             $surnamePatterns[] = '%' . $lower . '%';
@@ -140,7 +143,7 @@ class DatabaseService
         }
 
         $rows = $query->select(['n_id', 'n_full', 'n_givn', 'n_surname', 'i_gedcom'])
-            ->limit(150)
+            ->limit(300)
             ->get();
         
         $possibleDuplicates = [];
@@ -186,6 +189,8 @@ class DatabaseService
             
             $normalizedCandGiven = StringHelper::normalizeName($candGiven);
             $candGivenParts = array_filter(explode(' ', $normalizedCandGiven));
+            $normalizedCandSurname = StringHelper::normalizeName($candSurname);
+            $candSurnameParts = array_filter(explode(' ', $normalizedCandSurname));
             
             $nameOverlap = empty($inputGivenParts); // True if no given name was provided
             
@@ -292,6 +297,73 @@ class DatabaseService
                     return '';
                 };
 
+                $distance = StringHelper::levenshteinDistance(trim($inputGivenNormalized . ' ' . $inputSurnameNormalized), $normalizedCandidate);
+
+                // Calculate relevance score
+                $score = 0;
+                
+                // 1. Surname scoring (highest genealogical importance)
+                if ($inputSurnameNormalized !== '') {
+                    if ($normalizedCandSurname === $inputSurnameNormalized) {
+                        $score += 600; // Complete surname match (e.g. "SALA LLOBELL")
+                    } else {
+                        $matchedSurnameParts = 0;
+                        foreach ($inputSurnameParts as $sp) {
+                            if (in_array($sp, $candSurnameParts)) {
+                                $matchedSurnameParts++;
+                            }
+                        }
+                        if (!empty($inputSurnameParts)) {
+                            $ratio = $matchedSurnameParts / count($inputSurnameParts);
+                            if ($ratio >= 1.0) {
+                                $score += 450;
+                            } else {
+                                $score += (int)($ratio * 300); // Partial surname match (e.g. "SALA")
+                            }
+                        }
+                    }
+                }
+                
+                // 2. Given name scoring
+                if ($inputGivenNormalized !== '') {
+                    if ($normalizedCandGiven === $inputGivenNormalized) {
+                        $score += 400; // Complete given name match (e.g. "JUAN BAUTISTA")
+                    } else {
+                        $matchedGivenParts = 0;
+                        foreach ($inputGivenParts as $gp) {
+                            if (in_array($gp, $candGivenParts)) {
+                                $matchedGivenParts++;
+                            }
+                        }
+                        if (!empty($inputGivenParts)) {
+                            $ratio = $matchedGivenParts / count($inputGivenParts);
+                            if ($ratio >= 1.0) {
+                                $score += 300;
+                            } else {
+                                $score += (int)($ratio * 200); // Partial given name match (e.g. "JUAN")
+                            }
+                        }
+                    }
+                }
+                
+                // 3. Bonus for combined exact full name
+                if ($inputSurnameNormalized !== '' && $inputGivenNormalized !== '' && 
+                    $normalizedCandSurname === $inputSurnameNormalized && $normalizedCandGiven === $inputGivenNormalized) {
+                    $score += 200;
+                }
+                
+                // 4. Date match bonus
+                if ($parsedBirth['year'] || $parsedDeath['year'] || $parsedBaptism['year']) {
+                    $score += 150;
+                }
+                
+                if ($phoneticMatch) {
+                    $score += 50;
+                }
+                
+                // Fine-tuning distance penalty
+                $score -= min(50, $distance);
+
                 $possibleDuplicates[] = [
                     'id2' => $candidateId,
                     'name2' => $candidateName,
@@ -303,12 +375,21 @@ class DatabaseService
                         'date' => $extract('DEAT', 'DATE', $gedcom),
                         'place' => $extract('DEAT', 'PLAC', $gedcom)
                     ],
-                    'distance' => StringHelper::levenshteinDistance(trim($inputGivenNormalized . ' ' . $inputSurnameNormalized), $normalizedCandidate),
+                    'distance' => $distance,
+                    'score' => $score,
                     'phonetic_match' => $phoneticMatch,
                     'families' => self::getPersonFamilies($tree, $candidateId),
                 ];
             }
         }
+
+        // Sort duplicates by score descending, then by distance ascending
+        usort($possibleDuplicates, function($a, $b) {
+            if ($b['score'] !== $a['score']) {
+                return $b['score'] <=> $a['score'];
+            }
+            return $a['distance'] <=> $b['distance'];
+        });
         
         return [
             'check_type' => 'interactive_duplicates',

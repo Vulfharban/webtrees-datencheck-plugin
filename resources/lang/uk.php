@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Список типів фактів (міток) через кому, які слід ігнорувати під час перевірки послідовності дат.',
     'Yes' => 'Так',
     'No' => 'Ні',
+    'Page' => 'Сторінка',
+    'Per page:' => 'На сторінку:',
 ];

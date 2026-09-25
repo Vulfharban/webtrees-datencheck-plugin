@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Z vejico ločen seznam vrst dejstev (oznak), ki jih je treba prezreti med preverjanjem zaporedja datumov.',
     'Yes' => 'Da',
     'No' => 'Ne',
+    'Page' => 'Stran',
+    'Per page:' => 'Na stran:',
 ];

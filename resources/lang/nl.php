@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Door komma\'s gescheiden lijst met feittypes (labels) die moeten worden genegeerd tijdens datumvolgordecontroles.',
     'Yes' => 'Ja',
     'No' => 'Nee',
+    'Page' => 'Pagina',
+    'Per page:' => 'Per pagina:',
 ];

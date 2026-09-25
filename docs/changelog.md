@@ -1,5 +1,27 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.9.9] - 2026-09-25
+### Hinzugefügt / Verbessert
+- **Paginierung & Trefferanzahl-Auswahl bei Dubletten**:
+  - Paginierung (Standard: 25 Treffer pro Seite) mit Blätter-Buttons (`<<`, `<`, `>`, `>>`) und Seitenanzeige.
+  - Auswahl der Trefferanzahl je Seite (25 / 50 / 100).
+  - Bei 25 oder weniger Treffern (z. B. 22) werden sofort alle Treffer vollständig angezeigt und die Paginierungs- sowie Größenauswahlleiste automatisch ausgeblendet.
+  - Anzeige der Gesamttrefferzahl direkt im Header (`Mögliche Duplikate gefunden: X (Zeige 1–25)`).
+  - Schlankes, platzsparendes Layout für die Dublettenliste mit kompakten Aktionsbuttons.
+- **Intelligentes Relevanz-Scoring & Sortierung für Dubletten**:
+  - Exakte Übereinstimmungen bei Vor- und Nachname (z. B. "JUAN BAUTISTA" + "SALA LLOBELL") werden priorisiert ganz oben angezeigt.
+  - Relevanz-Gewichtung: 1. Vollständiger Name > 2. Vollständiger Nachname + Vorname > 3. Zusammengesetzte Nachnamensteile (z. B. 1. Nachname bei spanischen Doppelnamen) > 4. Phonetische Treffer.
+  - Suche schließt nun auch den unzerlegten vollständigen Doppelnamen in die SQL-Muster ein.
+  - SQL-Trefferlimit auf 300 erhöht und absteigende Sortierung nach Relevanz-Score in PHP eingeführt.
+- **Optimiertes Trigger-Verhalten bei neuen Einträgen**:
+  - Bei der Eingabe des Vornamens wird die Dubletten-Warnung solange zurückgehalten, bis auch ein Nachname oder ein Datum (Geburt/Taufe/Tod) eingegeben wurde. Dadurch wird das vorzeitige Aufploppen langer Trefferlisten während des Tippens von Vornamen verhindert.
+  - Wenn der Nachname unbekannt ist, filtert die Dublettenprüfung gezielt nach Personen mit gleichem Vornamen und passendem Geburts-/Sterbejahr, sobald ein Datum eingegeben wird.
+  - Live-Reaktivität bei Eingabe oder Auswahl von Datumsfeldern (BIRT, DEAT, BAPM, DATE) und Geschlecht.
+- **Übersetzungen & Lokalisierung**:
+  - Neue Sprachschlüssel für 'Page' und 'Per page:' in allen 49 unterstützten Sprachen (u. a. Katalanisch, Spanisch, Deutsch, Französisch, Niederländisch, Polnisch, Italienisch etc.) hinterlegt.
+- **Sicherheit & Robustheit**:
+  - HTML-Escaping bei der dynamischen Duplikatausgabe und zuverlässiges Ausblenden der Warnbox bei geleerten Formularfeldern.
+
 ## [1.6.9.8] - 2026-09-23
 ### Behoben
 - **Dubletten-Prüfung TypeError behoben**: Wiederherstellung der Variablen `$normalizedCandidate = StringHelper::normalizeName($candidateName);` in `DatabaseService::findDuplicatePerson()`. Zuvor stürzte die Duplikatprüfung mit einem `TypeError` in `PhoneticHelper::cologneEncode()` bzw. `StringHelper::levenshteinDistance()` ab, sobald ein echter Kandidat gefunden wurde, wodurch das Frontend fälschlicherweise "Keine Duplikate" anzeigte.

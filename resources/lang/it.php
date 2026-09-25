@@ -593,4 +593,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Elenco di tipi di fatti (etichette) separati da virgole da ignorare durante i controlli della sequenza temporale.',
     'Yes' => 'Sì',
     'No' => 'No',
+    'Page' => 'Pagina',
+    'Per page:' => 'Per pagina:',
 ];

@@ -402,4 +402,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Tarih sırası kontrolleri sırasında yoksayılacak olay türlerinin (etiketlerin) virgülle ayrılmış listesi.',
     'Yes' => 'Evet',
     'No' => 'Hayır',
+    'Page' => 'Sayfa',
+    'Per page:' => 'Sayfa başına:',
 ];

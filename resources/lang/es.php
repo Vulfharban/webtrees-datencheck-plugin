@@ -402,4 +402,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Lista de tipos de hechos (etiquetas) separados por comas que se deben ignorar durante las comprobaciones de secuencia de fechas.',
     'Yes' => 'Sí',
     'No' => 'No',
+    'Page' => 'Página',
+    'Per page:' => 'Por página:',
 ];

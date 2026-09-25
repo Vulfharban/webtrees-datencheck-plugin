@@ -110,7 +110,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
 
     public function customModuleVersion(): string
     {
-        return '1.6.9.8';
+        return '1.6.9.9';
     }
 
     public function getVersion(): string

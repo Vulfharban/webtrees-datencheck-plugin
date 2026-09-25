@@ -394,4 +394,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Ténytípusok (címkék) vesszővel elválasztott listája, amelyeket figyelmen kívül kell hagyni a dátumsorrend-ellenőrzések során.',
     'Yes' => 'Igen',
     'No' => 'Nem',
+    'Page' => 'Oldal',
+    'Per page:' => 'Oldalanként:',
 ];

@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => '日付シーケンスのチェック中に無視する事実タイプ（ラベル）のカンマ区切りリスト。',
     'Yes' => 'はい',
     'No' => 'いいえ',
+    'Page' => 'ページ',
+    'Per page:' => '1ページあたり:',
 ];

@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => '날짜 순서 확인 중에 무시할 사실 유형(레이블)의 쉼표로 구분된 목록입니다.',
     'Yes' => '예',
     'No' => '아니요',
+    'Page' => '페이지',
+    'Per page:' => '페이지당:',
 ];

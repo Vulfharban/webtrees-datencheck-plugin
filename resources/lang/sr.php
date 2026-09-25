@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Листа врста чињеница (ознака) одвојена зарезима које треба занемарити током провере редоследа датума.',
     'Yes' => 'Да',
     'No' => 'Не',
+    'Page' => 'Страница',
+    'Per page:' => 'По страници:',
 ];

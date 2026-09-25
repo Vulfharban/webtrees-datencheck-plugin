@@ -398,4 +398,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Daftar tipe fakta (label) yang dipisahkan koma untuk diabaikan selama pemeriksaan urutan tanggal.',
     'Yes' => 'Ya',
     'No' => 'Tidak',
+    'Page' => 'Halaman',
+    'Per page:' => 'Per halaman:',
 ];

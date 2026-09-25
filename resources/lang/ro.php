@@ -396,4 +396,6 @@ return [
     'Comma-separated list of fact types (labels) to ignore during date sequence checks.' => 'Listă separată prin virgulă de tipuri de fapte (etichete) de ignorat în timpul verificărilor secvenței de date.',
     'Yes' => 'Da',
     'No' => 'Nu',
+    'Page' => 'Pagină',
+    'Per page:' => 'Pe pagină:',
 ];
