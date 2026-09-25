@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     const ctx = getContext();
                     const currentXref = (ctx.isAdd) ? "NEW" : getXref();
                     
-                    const dupePageSize = (data.data.length <= 25) ? 25 : ((window._dcDupeState && window._dcDupeState.pageSize) ? window._dcDupeState.pageSize : 25);
+                    const dupePageSize = (window._dcDupeState && window._dcDupeState.pageSize) ? window._dcDupeState.pageSize : 10;
                     window._dcDupeState = {
                         data: data.data,
                         page: 1,
@@ -344,8 +344,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         html += "</ul>";
 
-        // Pagination and page size bar: only show if more than 25 total results
-        if (total > 25) {
+        // Pagination and page size bar: only show if more than 10 total results
+        if (total > 10) {
             html += "<div class='d-flex justify-content-between align-items-center mt-2 pt-2 border-top flex-wrap gap-2 text-muted' style='font-size:0.8rem;'>" +
                     "<div class='d-flex align-items-center gap-1'>" +
                     "<button type='button' class='btn btn-xs py-0 px-2 btn-outline-secondary' style='font-size:0.75rem;' onclick='window.datencheckSetDupePage(1)' " + (state.page === 1 ? "disabled" : "") + ">&laquo;</button>" +
@@ -357,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     "<div class='d-flex align-items-center gap-1'>" +
                     "<span>" + "<?= \Fisharebest\Webtrees\I18N::translate('Per page:') ?>" + "</span>" +
                     "<select class='form-select form-select-sm py-0 px-1' style='width:auto; height:24px; font-size:0.75rem; line-height:1;' onchange='window.datencheckSetDupePageSize(this.value)'>" +
+                    "<option value='10'" + (state.pageSize === 10 ? " selected" : "") + ">10</option>" +
                     "<option value='25'" + (state.pageSize === 25 ? " selected" : "") + ">25</option>" +
                     "<option value='50'" + (state.pageSize === 50 ? " selected" : "") + ">50</option>" +
                     "<option value='100'" + (state.pageSize === 100 ? " selected" : "") + ">100</option>" +
@@ -377,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     window.datencheckSetDupePageSize = (sz) => {
         if (!window._dcDupeState) return;
-        window._dcDupeState.pageSize = parseInt(sz, 10) || 25;
+        window._dcDupeState.pageSize = parseInt(sz, 10) || 10;
         window._dcDupeState.page = 1;
         window.renderDuplicateList();
     };

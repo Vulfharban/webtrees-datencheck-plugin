@@ -3,10 +3,10 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 ## [1.6.9.9] - 2026-09-25
 ### Hinzugefügt / Verbessert
 - **Paginierung & Trefferanzahl-Auswahl bei Dubletten**:
-  - Paginierung (Standard: 25 Treffer pro Seite) mit Blätter-Buttons (`<<`, `<`, `>`, `>>`) und Seitenanzeige.
-  - Auswahl der Trefferanzahl je Seite (25 / 50 / 100).
-  - Bei 25 oder weniger Treffern (z. B. 22) werden sofort alle Treffer vollständig angezeigt und die Paginierungs- sowie Größenauswahlleiste automatisch ausgeblendet.
-  - Anzeige der Gesamttrefferzahl direkt im Header (`Mögliche Duplikate gefunden: X (Zeige 1–25)`).
+  - Paginierung (Standard: 10 Treffer pro Seite) mit Blätter-Buttons (`<<`, `<`, `>`, `>>`) und Seitenanzeige.
+  - Auswahl der Trefferanzahl je Seite (10 / 25 / 50 / 100).
+  - Bei 10 oder weniger Treffern werden sofort alle Treffer vollständig angezeigt und die Paginierungs- sowie Größenauswahlleiste automatisch ausgeblendet.
+  - Anzeige der Gesamttrefferzahl direkt im Header (`Mögliche Duplikate gefunden: X (Zeige 1–10)`).
   - Schlankes, platzsparendes Layout für die Dublettenliste mit kompakten Aktionsbuttons.
 - **Intelligentes Relevanz-Scoring & Sortierung für Dubletten**:
   - Exakte Übereinstimmungen bei Vor- und Nachname (z. B. "JUAN BAUTISTA" + "SALA LLOBELL") werden priorisiert ganz oben angezeigt.
