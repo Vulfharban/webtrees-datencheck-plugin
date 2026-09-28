@@ -66,6 +66,11 @@
     .dc-issue-info { background: #d1e7dd; color: #0f5132; border-left: 4px solid #198754; }
     #comparison-current { background-color: #f0f7ff; border-color: #cce3ff !important; }
     #comparison-duplicate { background-color: #fff9eb; border-color: #ffecd1 !important; }
+    /* Duplicate warning must always span the full form width, never be crammed into a grid column */
+    #datencheck-warning {
+        width: 100%;
+        box-sizing: border-box;
+    }
 </style>
 
 <script>
@@ -210,8 +215,41 @@ document.addEventListener("DOMContentLoaded", function() {
                     warningArea.className = "alert alert-warning mt-2 shadow-sm border-warning";
                     warningArea.style.display = "none";
                     warningArea.style.position = "relative";
-                    const target = document.querySelector('[id*="INDI-NAME"]')?.closest(".card") || document.querySelector('form');
-                    if (target) target.parentNode.insertBefore(warningArea, target);
+                    // Walk up from the name card to find a full-width row/container,
+                    // so the warning is never crammed into a narrow Bootstrap column
+                    // (happens when editing an alias/married name on an existing person).
+                    const nameCard = document.querySelector('[id*="INDI-NAME"]')?.closest(".card");
+                    let insertTarget = null;
+                    let insertParent = null;
+                    if (nameCard) {
+                        // Climb up until we leave any col-* grid column
+                        let ancestor = nameCard.parentNode;
+                        while (ancestor && ancestor !== document.body) {
+                            if (/\brow\b/.test(ancestor.className) ||
+                                ancestor.tagName === 'FORM' ||
+                                ancestor.id === 'main-content' ||
+                                ancestor.tagName === 'MAIN') {
+                                insertTarget = nameCard;
+                                insertParent = ancestor;
+                                break;
+                            }
+                            insertTarget = ancestor;
+                            ancestor = ancestor.parentNode;
+                        }
+                    }
+                    // Fallback: prepend inside the form element itself
+                    if (!insertParent) {
+                        const form = document.querySelector('form');
+                        if (form) {
+                            insertParent = form;
+                            insertTarget = form.firstChild;
+                        }
+                    }
+                    if (insertParent && insertTarget) {
+                        insertParent.insertBefore(warningArea, insertTarget);
+                    } else if (insertParent) {
+                        insertParent.prepend(warningArea);
+                    }
                 }
 
                 if (data.data && data.data.length > 0) {
