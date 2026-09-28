@@ -1,5 +1,11 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.10.0] - 2026-09-28
+### Behoben
+- **Dupletten-Liste beim Bearbeiten von Alias- oder Ehenamen quetscht sich nicht mehr an den Rand** (`interaction.phtml`):
+  - *Problem:* Beim Hinzufügen eines Alias- oder Ehenamens zu einer **bestehenden Person** erschien die Warnbox „Mögliche Duplikate gefunden" an den rechten Seitenrand gedrückt, da das `datencheck-warning`-Div direkt als Geschwisterelement einer `.card` eingefügt wurde, die innerhalb einer schmalen Bootstrap-Grid-Spalte (`col-sm-9` o. ä.) lag. Bei **neuen Personen** war die Anzeige korrekt, weil der Formularkontext dort anders strukturiert ist.
+  - *Lösung:* Der DOM-Einfügepunkt klettert jetzt vom Namens-Card-Element aufwärts durch die Elternknoten, bis ein echter Full-Width-Container gefunden wird (erstes `.row`-, `<form>`-, `<main>`- oder `#main-content`-Element). Das `datencheck-warning`-Div wird dort eingehängt und erhält zusätzlich per CSS `width: 100%; box-sizing: border-box;`, sodass es immer die gesamte Formularbreite einnimmt.
+
 ## [1.6.9.9] - 2026-09-25
 ### Hinzugefügt / Verbessert
 - **Paginierung & Trefferanzahl-Auswahl bei Dubletten**:
