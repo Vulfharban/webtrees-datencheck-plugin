@@ -1,5 +1,18 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.10.1] - 2026-09-30
+### Behoben & Verbessert
+- **Keine vorzeitige Dubletten-Liste bei alleiniger Nachnamenseingabe**:
+  - Wenn ausschließlich der Nachname eingegeben wird (ohne Vorname und ohne Datumsangaben), erscheint die Trefferliste nicht mehr störend beim Tippen.
+  - Die Dublettenliste wird erst eingeblendet, sobald auch ein Vorname ODER ein Datum (Geburts-, Sterbe-, Tauf- oder Heiratsdatum) eingegeben wurde.
+  - Auch backend-seitig in `DatabaseService::findDuplicatePerson` abgesichert, damit keine unvollständigen Suchanfragen ohne Vorname und Daten mehr ausgeführt werden.
+- **Volle Formularbreite für Dubletten-Box auf allen Seiten (u. a. `EditFactPage`)**:
+  - *Ursache des Darstellungsfehlers:* Auf Seiten zum Hinzufügen/Bearbeiten von Fakten (wie 2. Name, Alias, Ehename) existierte kein `[id*="INDI-NAME"]`-Element. Der Fallback griff auf das erste `<form>` der Seite zu – welches in Webtrees das Schnellsuche-Formular im Header (`wt-header-search-form`) in einer schmalen Header-Spalte war. Dadurch wurde die gelbe Dublettenbox ganz oben rechts in die Suche gequetscht.
+  - *Lösung:* Einführung der Funktion `attachWarningArea()`, die Header- und Suchformulare strikt ausschließt und die Warnbox zuverlässig im Hauptformular des Inhaltsbereichs (`main`, `#content`, Modaldialog) direkt nach der Namenskarte bzw. am Formularanfang über die volle Zeilenbreite (`100% !important`) platziert.
+- **Unterstützung für Heiratsdaten bei Dublettenprüfung**:
+  - Formularfelder für Heiratsdaten (`MARR`) werden nun im Frontend erkannt und an die interaktive Personenprüfung übergeben.
+  - `DatabaseService` gleicht bei Vorhandensein eines Heiratsdatums die Heiratsdaten bestehender Familien (`families`) des Kandidaten ab und vergibt entsprechende Relevanz-Boni.
+
 ## [1.6.10.0] - 2026-09-28
 ### Behoben
 - **Dupletten-Liste beim Bearbeiten von Alias- oder Ehenamen quetscht sich nicht mehr an den Rand** (`interaction.phtml`):

@@ -657,6 +657,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $birth = $params['birth_date'] ?? '';
             $death = $params['death_date'] ?? '';
             $baptism = $params['baptism_date'] ?? '';
+            $marriage = $params['marriage_date'] ?? '';
             $sex = $params['sex'] ?? '';
 
             $marriedSurname = $params['married_surname'] ?? '';
@@ -668,7 +669,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 $tree, $given, $surname, $birth,
                 $fuzzyDiffHighAge, $fuzzyDiffDefault,
                 $death, $baptism, $sex, $marriedSurname,
-                $this->getSetting('enable_es_lenient_dupes', '0') === '1'
+                $this->getSetting('enable_es_lenient_dupes', '0') === '1',
+                $marriage
             );
 
             return response(json_encode($data))

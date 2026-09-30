@@ -67,13 +67,14 @@ class InteractionService
      * @param int    $fuzzyDiffDefault
      * @return array
      */
-    public static function runInteractiveCheck(Tree $tree, string $given, string $surname, string $birth, int $fuzzyDiffHighAge, int $fuzzyDiffDefault, string $death = '', string $baptism = '', string $sex = '', string $marriedSurname = '', bool $lenient = false): array
+    public static function runInteractiveCheck(Tree $tree, string $given, string $surname, string $birth, int $fuzzyDiffHighAge, int $fuzzyDiffDefault, string $death = '', string $baptism = '', string $sex = '', string $marriedSurname = '', bool $lenient = false, string $marriage = ''): array
     {
         return DatabaseService::findDuplicatePerson(
             $tree, $given, $surname, $birth,
             $fuzzyDiffHighAge, $fuzzyDiffDefault,
             $death, $baptism, $sex, $marriedSurname,
-            $lenient
+            $lenient,
+            $marriage
         );
     }
 

@@ -36,7 +36,8 @@ class DatabaseService
         string $baptismDate = '',
         string $sex = '',
         string $marriedSurname = '',
-        bool $lenient = false
+        bool $lenient = false,
+        string $marriageDate = ''
     ): array {
         $inputGivenNormalized = StringHelper::normalizeName($given);
         $inputGivenParts = array_filter(explode(' ', $inputGivenNormalized));
@@ -46,6 +47,17 @@ class DatabaseService
         $parsedBirth = DateParser::parseGedcomDate($birthDate);
         $parsedDeath = DateParser::parseGedcomDate($deathDate);
         $parsedBaptism = DateParser::parseGedcomDate($baptismDate);
+        $parsedMarriage = DateParser::parseGedcomDate($marriageDate);
+
+        // Safety guard: If no given name is provided AND no dates (birth, death, baptism, marriage)
+        // are provided, do NOT match all persons with the surname alone!
+        if (empty($inputGivenParts) && !$parsedBirth['year'] && !$parsedDeath['year'] && !$parsedBaptism['year'] && !$parsedMarriage['year']) {
+            return [
+                'check_type' => 'interactive_duplicates',
+                'description' => \Fisharebest\Webtrees\I18N::translate('Found %d potential matches', 0),
+                'data' => [],
+            ];
+        }
         
         // Search for candidates with similar surname or matching full name
         // Support double surnames by splitting input by common separators (space, hyphen, slash)
@@ -242,8 +254,8 @@ class DatabaseService
             }
 
             // 4. Date Check (Month and Year must match for AT LEAST ONE date)
-            // If NO birth/baptism/death dates are provided in input, we allow matching by name only.
-            $dateOverlap = (!$parsedBirth['year'] && !$parsedDeath['year'] && !$parsedBaptism['year']);
+            // If NO birth/baptism/death/marriage dates are provided in input, we allow matching by name only.
+            $dateOverlap = (!$parsedBirth['year'] && !$parsedDeath['year'] && !$parsedBaptism['year'] && !$parsedMarriage['year']);
             
             if (!$dateOverlap) {
             
@@ -272,6 +284,31 @@ class DatabaseService
             if (!$dateOverlap && $parsedDeath['year'] && $parsedDeath['month'] && $candDeath['year'] && $candDeath['month']) {
                 if ($parsedDeath['year'] === $candDeath['year'] && $parsedDeath['month'] === $candDeath['month']) {
                     $dateOverlap = true;
+                }
+            }
+
+            // Compare Marriage (look up spouse families for candidate)
+            if (!$dateOverlap && $parsedMarriage['year']) {
+                $famGedcoms = DB::table('families')
+                    ->where('f_file', '=', $treeId)
+                    ->where(function($q) use ($candidateId) {
+                        $q->where('f_husb', '=', $candidateId)
+                          ->orWhere('f_wife', '=', $candidateId);
+                    })
+                    ->pluck('f_gedcom');
+                foreach ($famGedcoms as $fGedcom) {
+                    $candMarr = self::extractDateFromGedcom($fGedcom, 'MARR');
+                    if ($candMarr['year']) {
+                        if ($parsedMarriage['month'] && $candMarr['month']) {
+                            if ($parsedMarriage['year'] === $candMarr['year'] && $parsedMarriage['month'] === $candMarr['month']) {
+                                $dateOverlap = true;
+                                break;
+                            }
+                        } elseif ($parsedMarriage['year'] === $candMarr['year']) {
+                            $dateOverlap = true;
+                            break;
+                        }
+                    }
                 }
             }
             
@@ -353,7 +390,7 @@ class DatabaseService
                 }
                 
                 // 4. Date match bonus
-                if ($parsedBirth['year'] || $parsedDeath['year'] || $parsedBaptism['year']) {
+                if ($parsedBirth['year'] || $parsedDeath['year'] || $parsedBaptism['year'] || $parsedMarriage['year']) {
                     $score += 150;
                 }
                 
