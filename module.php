@@ -108,9 +108,19 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         return 'Christian Wolfrum';
     }
 
+    public const CUSTOM_VERSION = '1.6.10.2';
+
     public function customModuleVersion(): string
     {
-        return '1.6.9.9';
+        $versionFile = __DIR__ . '/latest-version.txt';
+        if (file_exists($versionFile)) {
+            $ver = trim((string) @file_get_contents($versionFile));
+            if ($ver !== '') {
+                return $ver;
+            }
+        }
+
+        return self::CUSTOM_VERSION;
     }
 
     public function getVersion(): string

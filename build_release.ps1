@@ -1,6 +1,12 @@
-$version = "v1.6.10.1"
-$zipName = "webtrees-datencheck-$version.zip"
 $sourceDir = (Get-Item .).FullName
+$latestVersionFile = Join-Path $sourceDir "latest-version.txt"
+if (Test-Path $latestVersionFile) {
+    $rawVer = (Get-Content $latestVersionFile -Raw).Trim()
+    $version = if ($rawVer.StartsWith("v")) { $rawVer } else { "v$rawVer" }
+} else {
+    $version = "v1.6.10.2"
+}
+$zipName = "webtrees-datencheck-$version.zip"
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "webtrees-datencheck-build"
 $targetDir = Join-Path $tempDir "webtrees-datencheck-plugin"
 

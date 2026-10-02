@@ -1,5 +1,12 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.10.2] - 2026-10-02
+### Behoben
+- **Versionsanzeige im Custom Module Manager nach Update korrigiert (#49)**:
+  - *Ursache:* In `module.php` lieferte die Methode `customModuleVersion()` noch statisch `'1.6.9.9'` zurück, da sie bei den Versionen 1.6.10.0 und 1.6.10.1 nicht nachgezogen worden war. Nach dem Entpacken des Release-Archivs meldete der Custom Module Manager weiterhin Version 1.6.9.9 als installiert.
+  - *Lösung:* `customModuleVersion()` liest nun dynamisch aus der mitgelieferten `latest-version.txt` (mit Fallback auf die Klassenkonstante `CUSTOM_VERSION = '1.6.10.2'`), sodass Versionsnummern künftig immer synchron und konsistent bleiben.
+  - *Release-Skript:* `build_release.ps1` liest die Versionsnummer nun automatisch aus `latest-version.txt` aus und validiert `module.php`.
+
 ## [1.6.10.1] - 2026-09-30
 ### Behoben & Verbessert
 - **Keine vorzeitige Dubletten-Liste bei alleiniger Nachnamenseingabe**:
