@@ -1,11 +1,24 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
 ## [1.6.10.2] - 2026-10-02
-### Behoben
+### Behoben & Optimiert
 - **Versionsanzeige im Custom Module Manager nach Update korrigiert (#49)**:
   - *Ursache:* In `module.php` lieferte die Methode `customModuleVersion()` noch statisch `'1.6.9.9'` zurück, da sie bei den Versionen 1.6.10.0 und 1.6.10.1 nicht nachgezogen worden war. Nach dem Entpacken des Release-Archivs meldete der Custom Module Manager weiterhin Version 1.6.9.9 als installiert.
   - *Lösung:* `customModuleVersion()` liest nun dynamisch aus der mitgelieferten `latest-version.txt` (mit Fallback auf die Klassenkonstante `CUSTOM_VERSION = '1.6.10.2'`), sodass Versionsnummern künftig immer synchron und konsistent bleiben.
   - *Release-Skript:* `build_release.ps1` liest die Versionsnummer nun automatisch aus `latest-version.txt` aus und validiert `module.php`.
+- **Performance: N+1-Datenbankabfragen bei Kandidatenprüfung eliminiert (`DatabaseService`)**:
+  - In `findDuplicatePerson()` wurden zuvor für jeden gefundenen Kandidaten (bis zu 300 Personen) separate SQL-Abfragen auf die Tabelle `families` ausgeführt, um Familien-IDs abzufragen.
+  - Familien-Referenzen (`1 FAMS`) werden nun direkt in-memory aus dem bereits geladenen GEDCOM-Datensatz extrahiert. Dadurch entfallen bis zu 300 redundante Datenbank-Roundtrips pro Prüfung komplett.
+  - Bei Heiratsdatums-Abgleichen werden nur noch vorhandene Familien über indexierte `f_id`-Lookups geladen anstatt ungefilterter Tabellenscans.
+- **Intelligente Erkennung von Doppel- und Mehrfachvornamen (`NameHelper`)**:
+  - `NameHelper::areNamesEquivalent()` erkennt Äquivalenzen (z. B. Johann / Hans) nun auch in zusammengesetzten Vornamen (z. B. "Johann Friedrich" vs. "Hans") und bei der Geschwisterprüfung zuverlässig, ohne Fehlalarme zu erzeugen.
+- **Robustheit & Kompatibilität (`module.php`, `StringHelper`)**:
+  - Rückwärtskompatible Polyfills für `str_starts_with`, `str_ends_with` und `str_contains` für PHP 7.4 Umgebungen.
+  - Zentralisierte UTF-8-sichere JSON-Serialisierung mit `JSON_INVALID_UTF8_SUBSTITUTE`, um JavaScript-Parsefehler bei Sonderzeichen im GEDCOM zu verhindern.
+  - GitHub-Versionsabfrage mit User-Agent und pfad-spezifischem Cache gegen CDN-Sperren und Datei-Zugriffskonflikte.
+- **Frontend-Reaktivität & Race-Condition-Schutz (`interaction.phtml`)**:
+  - Einsatz von `AbortController` bricht veraltete Dublettenabfragen bei schnellem Tippen sauber ab, sodass spätere Antworten frühere niemals überholen können.
+  - Fehlerabsicherung mit `.catch()` bei Hintergrund-Fetch-Aufrufen.
 
 ## [1.6.10.1] - 2026-09-30
 ### Behoben & Verbessert

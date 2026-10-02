@@ -50,10 +50,40 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+// PHP 7.4 compatibility polyfills for str_starts_with, str_ends_with, str_contains
+if (!function_exists('str_starts_with')) {
+    function str_starts_with(string $haystack, string $needle): bool {
+        return $needle === '' || strncmp($haystack, $needle, strlen($needle)) === 0;
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with(string $haystack, string $needle): bool {
+        return $needle === '' || substr($haystack, -strlen($needle)) === $needle;
+    }
+}
+if (!function_exists('str_contains')) {
+    function str_contains(string $haystack, string $needle): bool {
+        return $needle === '' || strpos($haystack, $needle) !== false;
+    }
+}
+
 class DatencheckModule extends AbstractModule implements ModuleCustomInterface, ModuleMenuInterface, ModuleFooterInterface, ModuleConfigInterface, ModuleGlobalInterface
 {
     use ModuleConfigTrait;
     use ModuleCustomTrait;
+
+    /**
+     * Helper to return UTF-8 safe JSON responses across all environments
+     *
+     * @param array $data
+     * @param int $status
+     * @return ResponseInterface
+     */
+    private function jsonResponse(array $data, int $status = 200): ResponseInterface
+    {
+        return response((string) json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE), $status)
+            ->withHeader('Content-Type', 'application/json');
+    }
 
     /**
      * Get a setting, preferring user-specific settings if available.
@@ -138,7 +168,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
     {
         // URL to the raw file containing the version number
         $url = 'https://raw.githubusercontent.com/Vulfharban/webtrees-datencheck-plugin/main/latest-version.txt';
-        $cacheFile = sys_get_temp_dir() . '/datencheck_version_cache.txt';
+        $cacheFile = sys_get_temp_dir() . '/datencheck_ver_' . substr(md5(__DIR__), 0, 8) . '.txt';
 
         // Cache for 1 hour
         if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < 3600)) {
@@ -149,11 +179,16 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         }
 
         try {
-            $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+            $ctx = stream_context_create([
+                'http' => [
+                    'timeout' => 3,
+                    'header'  => "User-Agent: Webtrees-Datencheck-Plugin/" . $this->customModuleVersion() . "\r\n",
+                ],
+            ]);
             $latest = @file_get_contents($url, false, $ctx);
             
             if ($latest) {
-                file_put_contents($cacheFile, $latest);
+                @file_put_contents($cacheFile, $latest);
                 return trim($latest);
             }
         } catch (\Throwable $e) {
@@ -683,11 +718,9 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 $marriage
             );
 
-            return response(json_encode($data))
-                ->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse($data);
         } catch (\Throwable $e) {
-            return response(json_encode(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]))
-                ->withHeader('Content-Type', 'application/json');
+            return $this->jsonResponse(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
     }
 

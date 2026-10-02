@@ -289,24 +289,27 @@ class DatabaseService
 
             // Compare Marriage (look up spouse families for candidate)
             if (!$dateOverlap && $parsedMarriage['year']) {
-                $famGedcoms = DB::table('families')
-                    ->where('f_file', '=', $treeId)
-                    ->where(function($q) use ($candidateId) {
-                        $q->where('f_husb', '=', $candidateId)
-                          ->orWhere('f_wife', '=', $candidateId);
-                    })
-                    ->pluck('f_gedcom');
-                foreach ($famGedcoms as $fGedcom) {
-                    $candMarr = self::extractDateFromGedcom($fGedcom, 'MARR');
-                    if ($candMarr['year']) {
-                        if ($parsedMarriage['month'] && $candMarr['month']) {
-                            if ($parsedMarriage['year'] === $candMarr['year'] && $parsedMarriage['month'] === $candMarr['month']) {
+                $candFamIds = [];
+                if (preg_match_all('/^1\s+FAMS\s+@([^@]+)@/m', $gedcom, $famsMatch)) {
+                    $candFamIds = array_values(array_unique($famsMatch[1]));
+                }
+                if (!empty($candFamIds)) {
+                    $famGedcoms = DB::table('families')
+                        ->where('f_file', '=', $treeId)
+                        ->whereIn('f_id', $candFamIds)
+                        ->pluck('f_gedcom');
+                    foreach ($famGedcoms as $fGedcom) {
+                        $candMarr = self::extractDateFromGedcom($fGedcom, 'MARR');
+                        if ($candMarr['year']) {
+                            if ($parsedMarriage['month'] && $candMarr['month']) {
+                                if ($parsedMarriage['year'] === $candMarr['year'] && $parsedMarriage['month'] === $candMarr['month']) {
+                                    $dateOverlap = true;
+                                    break;
+                                }
+                            } elseif ($parsedMarriage['year'] === $candMarr['year']) {
                                 $dateOverlap = true;
                                 break;
                             }
-                        } elseif ($parsedMarriage['year'] === $candMarr['year']) {
-                            $dateOverlap = true;
-                            break;
                         }
                     }
                 }
@@ -318,11 +321,11 @@ class DatabaseService
                 if ($parsedBirth['year'] && $candBirth['year'] && $parsedBirth['year'] === $candBirth['year']) $yearsMatch = true;
                 if ($parsedDeath['year'] && $candDeath['year'] && $parsedDeath['year'] === $candDeath['year']) $yearsMatch = true;
                 
-                    if ($yearsMatch) {
-                        $dateOverlap = true;
-                    }
+                if ($yearsMatch) {
+                    $dateOverlap = true;
                 }
             }
+        }
 
             if ($dateOverlap) {
                 $extract = function($tag, $subtag, $gedcom) {
@@ -415,7 +418,7 @@ class DatabaseService
                     'distance' => $distance,
                     'score' => $score,
                     'phonetic_match' => $phoneticMatch,
-                    'families' => self::getPersonFamilies($tree, $candidateId),
+                    'families' => self::getPersonFamilies($tree, $candidateId, $gedcom),
                 ];
             }
         }
@@ -980,10 +983,19 @@ class DatabaseService
      *
      * @param Tree   $tree
      * @param string $personId
+     * @param string $gedcom Optional GEDCOM text for fast in-memory extraction
      * @return array
      */
-    private static function getPersonFamilies(Tree $tree, string $personId): array
+    private static function getPersonFamilies(Tree $tree, string $personId, string $gedcom = ''): array
     {
+        // 1. Fast in-memory extraction from GEDCOM text (avoids N+1 SQL queries on candidates)
+        if ($gedcom !== '') {
+            if (preg_match_all('/^1\s+FAMS\s+@([^@]+)@/m', $gedcom, $matches)) {
+                return array_values(array_unique($matches[1]));
+            }
+            return [];
+        }
+
         $personId = trim($personId, '@');
         
         $results = DB::table('families')

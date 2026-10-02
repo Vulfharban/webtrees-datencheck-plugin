@@ -155,8 +155,8 @@ class NameHelper
         ['Jacob', 'Jakob', 'Jacobus', 'James', 'Kuba', 'Iacobus', 'Jakub', 'Giacomo', 'Diego', 'Jaime', 'Jacques', 'Ib'],
         // Joachim variants
         ['Joachim', 'Gioacchino', 'Joaquin'],
-        // John/Johannes variants
-        ['Jan', 'Johann', 'Johannes', 'John', 'Ivan', 'Janek', 'Janko', 'Joannes', 'Jean', 'Janina', 'Giovanni', 'Juan', 'Ioannes', 'Iwan', 'Jens', 'Johan'],
+        // John/Johannes variants (including Hans, Hannes)
+        ['Jan', 'Johann', 'Johannes', 'John', 'Ivan', 'Janek', 'Janko', 'Joannes', 'Jean', 'Janina', 'Giovanni', 'Juan', 'Ioannes', 'Iwan', 'Jens', 'Johan', 'Hans', 'Hannes'],
         // Joseph variants
         ['Joseph', 'Josef', 'Józef', 'Joe', 'Giuseppe', 'José', 'Jose', 'Sepp', 'Pepi', 'Beppo'],
         // Judith variants
@@ -369,8 +369,9 @@ class NameHelper
             }
         }
 
-        // Rule: One side must be a complete subset (equivalence-wise) of the other
-        return ($matchesIn1 === count($words1)) || ($matchesIn2 === count($words2));
+        // Rule: One side must be a complete subset (equivalence-wise) of the other,
+        // OR at least one recognized equivalent name matches (crucial when extra names or surnames are present)
+        return ($matchesIn1 === count($words1)) || ($matchesIn2 === count($words2)) || ($matchesIn1 > 0 && $matchesIn2 > 0);
     }
 
     /**
@@ -378,18 +379,24 @@ class NameHelper
      */
     private static function areSingleNamesEquivalent(string $n1, string $n2): bool
     {
-        $n1 = self::normalize($n1);
-        $n2 = self::normalize($n2);
+        $norm1 = self::normalize($n1);
+        $norm2 = self::normalize($n2);
 
-        if ($n1 === $n2) {
+        if ($norm1 === '' || $norm2 === '') {
+            return false;
+        }
+
+        if ($norm1 === $norm2) {
             return true;
         }
 
         $map = self::getNormalizedMap();
 
-        if (isset($map[$n1]) && isset($map[$n2])) {
-            $intersect = array_intersect($map[$n1], $map[$n2]);
-            return !empty($intersect);
+        if (isset($map[$norm1]) && isset($map[$norm2])) {
+            $intersect = array_intersect($map[$norm1], $map[$norm2]);
+            if (!empty($intersect)) {
+                return true;
+            }
         }
 
         return false;

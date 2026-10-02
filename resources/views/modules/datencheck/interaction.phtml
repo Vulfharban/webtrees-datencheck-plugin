@@ -320,7 +320,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     "&sex=" + encodeURIComponent(sex) +
                     "&married_surname=" + encodeURIComponent(marriedSurname);
 
-        fetch(url)
+        if (window._dcPersonAbortController) {
+            try {
+                window._dcPersonAbortController.abort();
+            } catch (err) {}
+        }
+        window._dcPersonAbortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        const signal = window._dcPersonAbortController ? window._dcPersonAbortController.signal : undefined;
+
+        fetch(url, { signal: signal })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -368,13 +376,18 @@ document.addEventListener("DOMContentLoaded", function() {
                                     if (famData.data && famData.data.length > 0) {
                                         showFamilyWarning(famData.data);
                                     }
-                                });
+                                })
+                                .catch(err => console.debug("[Datencheck] family check failed:", err));
                         }
                     }
                 } else {
                     // No duplicates found, hide warning area
                     if (warningArea) warningArea.style.display = "none";
                 }
+            })
+            .catch(err => {
+                if (err && err.name === 'AbortError') return;
+                console.debug("[Datencheck] checkPerson request aborted or failed:", err);
             });
     };
 
@@ -548,7 +561,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     sibWarning.style.display = "none";
                 }
-            });
+            })
+            .catch(err => console.debug("[Datencheck] checkSibling failed:", err));
     };
 
     const showFamilyWarning = (famIds) => {
@@ -587,7 +601,8 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(data => {
                 showFamilyWarning(data.data);
-            });
+            })
+            .catch(err => console.debug("[Datencheck] checkFamily failed:", err));
     };
 
     const checkSource = (e) => {

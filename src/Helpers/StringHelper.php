@@ -71,7 +71,8 @@ class StringHelper
             return self::levenshteinLong($str1, $str2);
         }
         
-        return levenshtein($str1, $str2);
+        $dist = levenshtein($str1, $str2);
+        return $dist >= 0 ? $dist : self::levenshteinLong($str1, $str2);
     }
 
     /**
