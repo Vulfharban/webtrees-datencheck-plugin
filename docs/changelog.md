@@ -11,7 +11,10 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
 - **Erkennung von Groß-/Kleinschreibungsfehlern in Namen (Data-Entry-Checks: Feature B)**:
   - *Vollständige Großschreibung (`NAME_ALL_CAPS`):* Warnt, wenn Vorname oder Nachname komplett in Großbuchstaben erfasst wurden (z. B. `JOHANN`, `MÜLLER`). Vornamen werden standardmäßig geprüft (`check_given_caps = 1`), Nachnamen optional (`check_surname_caps = 0`, um Massenmeldungen bei importierten GEDCOMs zu vermeiden).
   - *Versehentliche Kleinschreibung (`NAME_ALL_LOWERCASE`):* Erkennt Namen, die komplett mit Kleinbuchstaben beginnen (z. B. `johann`, `müller`).
-  - *Robuste Ausnahmen:* Berücksichtigt Namenspartikel (`von`, `van der`, `de`, `du` etc.), Kurzformen/Initialen (`J.`, `H.-P.`), römische Ziffern (`II`, `III`), Präfixnamen (`McDonald`, `O'Brien`) und Platzhalter (`@N.N.`, `@P.N.`) sowie Schriften ohne Groß-/Kleinschreibung.
+- **Erkennung von verdächtigen Sonderzeichen & Platzhaltern in Namen (Data-Entry-Checks: Feature C)**:
+  - *Verdächtige Sonderzeichen (`NAME_SUSPICIOUS_CHARS`):* Warnt bei Notizen, Klammern oder Sonderzeichen im Vornamen oder Nachnamen (z. B. `Johann (?)`, `Maria / Anna`, `Johann "Hans"`). Gibt gezielte Hilfestellungen aus (z. B. Hinweis auf das Webtrees-Feld „Spitzname (NICK)“ oder Auslagerung in Notizen/Quellen).
+  - *Erlaubter Rufnamen-Stern (`*`):* Ein Sternchen an Vornamen (z. B. `Jonathan*`) ist in Webtrees der offizielle Indikator für den unterstrichenen Rufnamen und wird **nicht** als verdächtiges Sonderzeichen gemeldet.
+  - *Erkennung informeller Platzhalter (`NAME_PLACEHOLDER_HINT`):* Besteht ein Vor- oder Nachname lediglich aus Behelfskonstrukten wie `?`, `??`, `NN`, `N.N.`, `unbekannt` oder `-`, wird ein gezielter Hinweis ausgegeben, die offiziellen Webtrees-GEDCOM-Platzhalter `@P.N.` bzw. `@N.N.` zu nutzen (ohne Doppelmeldung zu Sonderzeichen).
 
 ## [1.6.10.3] - 2026-10-07
 ### Behoben

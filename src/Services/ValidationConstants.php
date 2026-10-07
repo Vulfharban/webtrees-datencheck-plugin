@@ -60,6 +60,8 @@ class ValidationConstants
         'DATE_CONTAINS_TEXT'            => 'Text im Datumsfeld',
         'NAME_ALL_CAPS'                 => 'Name komplett in Großbuchstaben',
         'NAME_ALL_LOWERCASE'            => 'Name in Kleinbuchstaben',
+        'NAME_SUSPICIOUS_CHARS'         => 'Verdächtige Zeichen im Namen',
+        'NAME_PLACEHOLDER_HINT'         => 'Platzhalter für unbekannten Namen',
     ];
 
     private static array $labels_en = [
@@ -118,6 +120,8 @@ class ValidationConstants
         'DATE_CONTAINS_TEXT'            => 'Text in date field',
         'NAME_ALL_CAPS'                 => 'Name in all capitals',
         'NAME_ALL_LOWERCASE'            => 'Name in lowercase',
+        'NAME_SUSPICIOUS_CHARS'         => 'Suspicious characters in name',
+        'NAME_PLACEHOLDER_HINT'         => 'Placeholder for unknown name',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string

@@ -433,4 +433,11 @@ return [
     'Name in lowercase' => 'Name in Kleinbuchstaben',
     'Name "%s" is written entirely in capital letters.' => 'Name „%s“ ist komplett in Großbuchstaben geschrieben.',
     'Name "%s" begins with a lowercase letter.' => 'Name „%s“ beginnt mit einem Kleinbuchstaben.',
+    'Suspicious characters in name' => 'Verdächtige Zeichen im Namen',
+    'Placeholder for unknown name' => 'Platzhalter für unbekannten Namen',
+    'Name "%s" contains suspicious characters.' => 'Name „%s“ enthält verdächtige Zeichen.',
+    'Nicknames belong in the nickname field (NICK).' => 'Spitznamen gehören in das Feld „Spitzname“ (NICK).',
+    'Notes or uncertainties should be recorded as a note or source.' => 'Anmerkungen oder Unsicherheiten bitte als Notiz oder Quelle erfassen.',
+    'Unknown given name "%s": please use the placeholder @P.N.' => 'Unbekannter Vorname „%s“: bitte den Platzhalter @P.N. verwenden.',
+    'Unknown surname "%s": please use the placeholder @N.N.' => 'Unbekannter Nachname „%s“: bitte den Platzhalter @N.N. verwenden.',
 ];

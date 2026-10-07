@@ -24,9 +24,59 @@ class DataEntryValidator extends AbstractValidator
         'und', 'auf', 'aus', 'in', "'t",
     ];
 
+    /** Placeholders for unknown names */
+    private const PLACEHOLDERS = [
+        '?', '??', '???', 'nn', 'n.n.', 'n. n.', 'unbekannt', 'unknown', '-', '...', '…',
+    ];
+
     // ---------------------------------------------------------------------
     // Level 1: Pure string analysis (unit testable without DB)
     // ---------------------------------------------------------------------
+
+    /**
+     * Check if a name part is an informal unknown placeholder (e.g. "?", "N.N.", "unbekannt").
+     *
+     * @param string $namePart
+     * @return bool
+     */
+    public static function isPlaceholderName(string $namePart): bool
+    {
+        return in_array(mb_strtolower(trim($namePart), 'UTF-8'), self::PLACEHOLDERS, true);
+    }
+
+    /**
+     * Analyze special characters in a name part.
+     * Note: Asterisk (*) in given names denotes the "Rufname" (preferred name) in Webtrees and is allowed.
+     *
+     * @param string $namePart
+     * @param bool $isGivenName
+     * @return array<string, string> Keyed by category: 'question', 'brackets', 'slash', 'quotes', 'digits', 'symbols'
+     */
+    public static function analyzeSpecialChars(string $namePart, bool $isGivenName = false): array
+    {
+        $namePart = trim($namePart);
+        if ($namePart === '' || str_starts_with($namePart, '@')) {
+            return []; // Skip GEDCOM standard placeholders like @N.N. or @P.N.
+        }
+
+        $groups = [
+            'question' => '/\?/u',
+            'brackets' => '/[()\[\]{}]/u',
+            'slash'    => '/[\/\\\\|]/u',
+            'quotes'   => '/["“”„«»]/u',
+            'digits'   => '/\d/u',
+            'symbols'  => $isGivenName ? '/[#+!=<>@%&;:]/u' : '/[*#+!=<>@%&;:]/u',
+        ];
+
+        $found = [];
+        foreach ($groups as $key => $regex) {
+            if (preg_match($regex, $namePart)) {
+                $found[$key] = $key;
+            }
+        }
+
+        return $found;
+    }
 
     /**
      * Analyze capitalization of a name part (given or surname).
@@ -321,8 +371,34 @@ class DataEntryValidator extends AbstractValidator
                 $seen[$part . '|' . mb_strtolower($value, 'UTF-8')] = true;
 
                 $v = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-                $case = self::analyzeCase($value);
 
+                // a) Informal placeholder for unknown name (takes precedence over suspicious characters)
+                if (self::isPlaceholderName($value)) {
+                    $issues[] = self::issue(
+                        'NAME_PLACEHOLDER_HINT',
+                        'info',
+                        $part === 'given'
+                            ? self::translate('Unknown given name "%s": please use the placeholder @P.N.', $v)
+                            : self::translate('Unknown surname "%s": please use the placeholder @N.N.', $v)
+                    );
+                    continue;
+                }
+
+                // b) Suspicious special characters (asterisk * allowed in given names as Rufname marker)
+                $chars = self::analyzeSpecialChars($value, $part === 'given');
+                if (!empty($chars)) {
+                    $hint = isset($chars['quotes'])
+                        ? self::translate('Nicknames belong in the nickname field (NICK).')
+                        : self::translate('Notes or uncertainties should be recorded as a note or source.');
+                    $issues[] = self::issue(
+                        'NAME_SUSPICIOUS_CHARS',
+                        'warning',
+                        self::translate('Name "%s" contains suspicious characters.', $v) . ' ' . $hint
+                    );
+                }
+
+                // c) Capitalization
+                $case = self::analyzeCase($value);
                 if ($case === 'caps' && (($part === 'given' && $checkGivenCaps) || ($part === 'surname' && $checkSurnameCaps))) {
                     $issues[] = self::issue(
                         'NAME_ALL_CAPS',
