@@ -398,4 +398,23 @@ return [
     'No' => 'Nie',
     'Page' => 'Strana',
     'Per page:' => 'Na stranu:',
+
+    // Data entry checks
+    'Place of %s contains a date or year: "%s". Were date and place swapped?' => 'Place of %s contains a date or year: "%s". Were date and place swapped?',
+    'Date of %s contains a place name: "%s". Were date and place swapped?' => 'Date of %s contains a place name: "%s". Were date and place swapped?',
+    'Date of %s contains text that cannot be interpreted: "%s".' => 'Date of %s contains text that cannot be interpreted: "%s".',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).',
+    'Date in place field' => 'Date in place field',
+    'Text in date field' => 'Text in date field',
+    'Name in all capitals' => 'Name in all capitals',
+    'Name in lowercase' => 'Name in lowercase',
+    'Name "%s" is written entirely in capital letters.' => 'Name "%s" is written entirely in capital letters.',
+    'Name "%s" begins with a lowercase letter.' => 'Name "%s" begins with a lowercase letter.',
+    'Suspicious characters in name' => 'Suspicious characters in name',
+    'Placeholder for unknown name' => 'Placeholder for unknown name',
+    'Name "%s" contains suspicious characters.' => 'Name "%s" contains suspicious characters.',
+    'Nicknames belong in the nickname field (NICK).' => 'Nicknames belong in the nickname field (NICK).',
+    'Notes or uncertainties should be recorded as a note or source.' => 'Notes or uncertainties should be recorded as a note or source.',
+    'Unknown given name "%s": please use the placeholder @P.N.' => 'Unknown given name "%s": please use the placeholder @P.N.',
+    'Unknown surname "%s": please use the placeholder @N.N.' => 'Unknown surname "%s": please use the placeholder @N.N.',
 ];
