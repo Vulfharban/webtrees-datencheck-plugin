@@ -365,10 +365,10 @@ class DataEntryValidator extends AbstractValidator
         foreach ($pairs as [$given, $surname]) {
             foreach (['given' => $given, 'surname' => $surname] as $part => $value) {
                 $value = trim($value);
-                if ($value === '' || isset($seen[$part . '|' . mb_strtolower($value, 'UTF-8')])) {
+                if ($value === '' || isset($seen[$part . '|' . $value])) {
                     continue;
                 }
-                $seen[$part . '|' . mb_strtolower($value, 'UTF-8')] = true;
+                $seen[$part . '|' . $value] = true;
 
                 $v = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 
