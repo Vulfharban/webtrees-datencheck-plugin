@@ -138,7 +138,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         return 'Christian Wolfrum';
     }
 
-    public const CUSTOM_VERSION = '1.6.10.2';
+    public const CUSTOM_VERSION = '1.6.10.3';
 
     public function customModuleVersion(): string
     {
@@ -706,6 +706,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $sex = $params['sex'] ?? '';
 
             $marriedSurname = $params['married_surname'] ?? '';
+            $excludeXref = $params['exclude_xref'] ?? $params['xref'] ?? '';
 
             $fuzzyDiffHighAge = (int)$this->getSetting('fuzzy_diff_high_age', '6');
             $fuzzyDiffDefault = (int)$this->getSetting('fuzzy_diff_default', '2');
@@ -715,7 +716,8 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 $fuzzyDiffHighAge, $fuzzyDiffDefault,
                 $death, $baptism, $sex, $marriedSurname,
                 $this->getSetting('enable_es_lenient_dupes', '0') === '1',
-                $marriage
+                $marriage,
+                $excludeXref
             );
 
             return $this->jsonResponse($data);

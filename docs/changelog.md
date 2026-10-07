@@ -1,5 +1,15 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.10.3] - 2026-10-07
+### Behoben
+- **Bearbeitete Person wird bei Duplikatsprüfung nicht mehr als eigenes Duplikat angezeigt**:
+  - *Problem:* Beim Bearbeiten einer bestehenden Person – insbesondere beim Hinzufügen weiterer Namen (Alias, Geburtsname, Ehename, Adoptivname etc.) oder Fakten – erschien die Person selbst als Treffer („Mögliche Duplikate gefunden: 1“) in der Warnbox.
+  - *Ursache:* Die interaktive Duplikatsprüfung im Backend (`DatabaseService::findDuplicatePerson`, `module.php`) berücksichtigte keinen Ausschluss der aktuellen Personen-ID (`XREF`). Zudem wurde im Frontend (`interaction.phtml`) beim Hinzufügen von Namen durch Formular- und URL-Schlagwörter (`hinzufügen`, `add-name`) fälschlicherweise angenommen, dass eine neue Person (`isAdd = true`) angelegt wird.
+  - *Lösung:*
+    - Backend: `DatabaseService::findDuplicatePerson` und `InteractionService::runInteractiveCheck` akzeptieren nun den Parameter `$excludeXref`. Ist dieser gesetzt, wird der Datensatz per SQL (`n_id != $excludeXref`) sowie über eine Schleifenprüfung sicher ausgeschlossen.
+    - Controller: `getCheckPersonAction` in `module.php` liest `exclude_xref` (bzw. `xref`) aus den Request-Parametern aus und leitet ihn weiter.
+    - Frontend: Neue Erkennung `getEditingIndividualXref(event)` in `interaction.phtml` differenziert präzise zwischen dem Erstellen neuer Verwandter/Personen (wie `add-child`, `add-spouse`, `add-parent`, `add-unlinked`) und dem Bearbeiten bzw. Hinzufügen von Namen/Fakten zu einer bestehenden Person. Die XREF wird an den API-Endpunkt übergeben und die Trefferliste clientseitig redundant gefiltert.
+
 ## [1.6.10.2] - 2026-10-02
 ### Behoben & Optimiert
 - **Versionsanzeige im Custom Module Manager nach Update korrigiert (#49)**:

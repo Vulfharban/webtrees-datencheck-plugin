@@ -37,8 +37,14 @@ class DatabaseService
         string $sex = '',
         string $marriedSurname = '',
         bool $lenient = false,
-        string $marriageDate = ''
+        string $marriageDate = '',
+        string $excludeXref = ''
     ): array {
+        $excludeXref = trim(str_replace('@', '', $excludeXref));
+        if (str_contains($excludeXref, ':')) {
+            $excludeXref = explode(':', $excludeXref)[0];
+        }
+
         $inputGivenNormalized = StringHelper::normalizeName($given);
         $inputGivenParts = array_filter(explode(' ', $inputGivenNormalized));
         $inputSurnameNormalized = StringHelper::normalizeName($surname);
@@ -117,6 +123,10 @@ class DatabaseService
             })
             ->where('n_file', '=', $treeId);
 
+        if (!empty($excludeXref)) {
+            $query->where('n_id', '!=', $excludeXref);
+        }
+
         if (!empty($surnamePatterns)) {
             $query->where(function($q) use ($surnamePatterns, $marriedPattern) {
                 foreach ($surnamePatterns as $sp) {
@@ -163,6 +173,9 @@ class DatabaseService
         
         foreach ($rows as $row) {
             $candidateId = $row->n_id;
+            if (!empty($excludeXref) && $candidateId === $excludeXref) {
+                continue;
+            }
             if (isset($seenIds[$candidateId])) {
                 continue;
             }

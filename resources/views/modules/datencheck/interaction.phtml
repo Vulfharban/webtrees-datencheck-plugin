@@ -226,6 +226,90 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    const getEditingIndividualXref = (event) => {
+        // 1. Detect if this form is explicitly creating a NEW individual / relative
+        const activeEl = (event && event.target) ? event.target : document.activeElement;
+        const form = (activeEl && activeEl.form) ? activeEl.form : document.querySelector('#wt-ajax-modal form, .modal.show form, form:not(.wt-header-search-form)');
+        const formAction = form ? (form.getAttribute('action') || form.action || '').toLowerCase() : '';
+        const url = window.location.href.toLowerCase();
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAction = (urlParams.get('action') || '').toLowerCase();
+        const pageTitle = (document.title || '').toLowerCase();
+
+        // Adding a new person (child, spouse, parent, sibling, unlinked individual)
+        const isAddingNewPerson = formAction.includes('add-child') || formAction.includes('add_child') ||
+                                  formAction.includes('add-spouse') || formAction.includes('add_spouse') ||
+                                  formAction.includes('add-partner') || formAction.includes('add_partner') ||
+                                  formAction.includes('add-parent') || formAction.includes('add_parent') ||
+                                  formAction.includes('add-sibling') || formAction.includes('add_sibling') ||
+                                  formAction.includes('add-unlinked') || formAction.includes('add_unlinked') ||
+                                  formAction.includes('add-indi') || formAction.includes('add_indi') ||
+                                  urlAction.includes('add_child') || urlAction.includes('add_spouse') ||
+                                  urlAction.includes('add_parent') || urlAction.includes('add_sibling') ||
+                                  urlAction.includes('add_indi') || url.includes('add-unlinked') ||
+                                  pageTitle.includes('kind hinzufügen') || pageTitle.includes('partner hinzufügen') || 
+                                  pageTitle.includes('elternteil hinzufügen') || pageTitle.includes('add child') || 
+                                  pageTitle.includes('add spouse') || pageTitle.includes('add partner') || pageTitle.includes('add parent');
+
+        if (isAddingNewPerson) {
+            return '';
+        }
+
+        const cleanXref = (val) => {
+            if (!val || typeof val !== 'string') return '';
+            const c = val.replace(/@/g, '').split(':')[0].trim().toUpperCase();
+            return /^[A-Z]\d+$/.test(c) ? c : '';
+        };
+
+        // Check active form inputs first
+        if (form) {
+            const formInputs = form.querySelectorAll('input[name="xref"], input[name="indi"], input[name="indi_id"], input[name="indi-id"], input[name="pid"], input[name="fact_owner"], input[name="entity_id"], input[name="id"], [data-xref]');
+            for (const el of formInputs) {
+                const val = cleanXref(el.value || el.getAttribute('data-xref'));
+                if (val) return val;
+            }
+            // Check form action URL
+            const actionMatch = formAction.match(/\/individual\/([a-z]\d+)/i) ||
+                                formAction.match(/[?&](xref|indi|pid|id)=([a-z]\d+)/i) ||
+                                formAction.match(/\/(add-name|edit-name|add-fact|edit-fact|quick-edit)\/([a-z]\d+)/i);
+            if (actionMatch) {
+                const val = cleanXref(actionMatch[actionMatch.length - 1]);
+                if (val) return val;
+            }
+        }
+
+        // Check modal container
+        const modal = document.querySelector('#wt-ajax-modal, .modal.show');
+        if (modal) {
+            const modalInputs = modal.querySelectorAll('input[name="xref"], input[name="indi"], input[name="indi_id"], input[name="pid"], input[name="fact_owner"], input[name="entity_id"], [data-xref]');
+            for (const el of modalInputs) {
+                const val = cleanXref(el.value || el.getAttribute('data-xref'));
+                if (val) return val;
+            }
+        }
+
+        // Check page URL
+        const pageMatch = window.location.href.match(/\/individual\/([A-Za-z0-9_]+)/i) ||
+                          decodeURIComponent(window.location.href).match(/\/individual\/([A-Za-z0-9_]+)/i);
+        if (pageMatch) {
+            const slug = pageMatch[1].split('-')[0].split('.')[0];
+            const val = cleanXref(slug);
+            if (val) return val;
+        }
+
+        // Check URL query parameters
+        const qXref = cleanXref(urlParams.get('xref') || urlParams.get('indi') || urlParams.get('pid') || urlParams.get('id') || urlParams.get('key'));
+        if (qXref) return qXref;
+
+        // Fallback to getXref() if available
+        if (typeof getXref === 'function') {
+            const fallback = cleanXref(getXref());
+            if (fallback) return fallback;
+        }
+
+        return '';
+    };
+
     const checkDuplicate = (e) => {
         if (_isSearchPage) return;
 
@@ -311,7 +395,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        const url = "<?= $check_url ?>?given_name=" + encodeURIComponent(given) + 
+        const editingXref = getEditingIndividualXref(e);
+        let url = "<?= $check_url ?>?given_name=" + encodeURIComponent(given) + 
                     "&surname=" + encodeURIComponent(surname) + 
                     "&birth_date=" + encodeURIComponent(birth) +
                     "&death_date=" + encodeURIComponent(death) +
@@ -319,6 +404,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     "&marriage_date=" + encodeURIComponent(marriage) +
                     "&sex=" + encodeURIComponent(sex) +
                     "&married_surname=" + encodeURIComponent(marriedSurname);
+
+        if (editingXref) {
+            url += "&exclude_xref=" + encodeURIComponent(editingXref);
+        }
 
         if (window._dcPersonAbortController) {
             try {
@@ -345,9 +434,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 attachWarningArea(warningArea, e);
 
+                // Client-side safety filter: ensure editing person is NEVER in the duplicate candidates
+                if (data.data && data.data.length > 0 && editingXref) {
+                    data.data = data.data.filter(item => {
+                        const cleanCand = (item.id2 || '').replace(/@/g, '').split(':')[0].trim().toUpperCase();
+                        return cleanCand !== editingXref;
+                    });
+                }
+
                 if (data.data && data.data.length > 0) {
                     const ctx = getContext();
-                    const currentXref = (ctx.isAdd) ? "NEW" : getXref();
+                    const currentXref = editingXref || ((ctx.isAdd) ? "NEW" : getXref());
                     
                     const dupePageSize = (window._dcDupeState && window._dcDupeState.pageSize) ? window._dcDupeState.pageSize : 10;
                     window._dcDupeState = {
@@ -398,6 +495,20 @@ document.addEventListener("DOMContentLoaded", function() {
             if (warningArea) warningArea.style.display = "none";
             return;
         }
+
+        // Safeguard: Ensure currently edited person is never displayed as a duplicate candidate
+        if (state.currentXref && state.currentXref !== 'NEW') {
+            const cleanCurr = state.currentXref.replace(/@/g, '').split(':')[0].trim().toUpperCase();
+            state.data = state.data.filter(item => {
+                const cleanCand = (item.id2 || '').replace(/@/g, '').split(':')[0].trim().toUpperCase();
+                return cleanCand !== cleanCurr;
+            });
+            if (state.data.length === 0) {
+                warningArea.style.display = "none";
+                return;
+            }
+        }
+
         attachWarningArea(warningArea);
 
         const total = state.data.length;
@@ -1607,12 +1718,13 @@ document.addEventListener("DOMContentLoaded", function() {
             // Aggressive scan of all hidden inputs
             const hiddenInputs = document.querySelectorAll('input[type="hidden"]');
             for (const input of hiddenInputs) {
-                if (input.value && input.value.match(idPattern)) {
+                const cleanVal = (input.value || '').replace(/@/g, '').split(':')[0].trim().toUpperCase();
+                if (cleanVal && cleanVal.match(idPattern)) {
                     if (input.name === 'xref' || input.name === 'indi' || input.name === 'id') {
-                        xref = input.value;
+                        xref = cleanVal;
                         break;
                     }
-                    if (!xref) xref = input.value;
+                    if (!xref) xref = cleanVal;
                 }
                 // Special case: "url" hidden field as seen in logs
                 if (input.name === 'url' && input.value) {
@@ -1653,10 +1765,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // 1. Detect if we are adding a NEW relative (and not just data to a person)
         // If we have a form XREF, we are editing/adding data to an EXISTNG person.
-        // If urlAction is edit or contains fact/event, we are not adding a new person.
+        // If urlAction is edit or contains fact/event/name, we are not adding a new person.
         const isEditAction = urlAction.includes('edit') || urlAction.includes('update') || 
                              urlAction.includes('fact') || urlAction.includes('event') ||
-                             urlAction.includes('change');
+                             urlAction.includes('change') || urlAction.includes('name') ||
+                             url.includes('add-name') || url.includes('add_name');
         
         const isAdd = (url.includes('add-') || url.includes('add_') || urlAction.includes('add') || 
                        pageTitle.includes('hinzufügen') || pageTitle.includes('add ')) && 
