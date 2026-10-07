@@ -417,4 +417,16 @@ return [
     'Notes or uncertainties should be recorded as a note or source.' => 'Notes or uncertainties should be recorded as a note or source.',
     'Unknown given name "%s": please use the placeholder @P.N.' => 'Unknown given name "%s": please use the placeholder @P.N.',
     'Unknown surname "%s": please use the placeholder @N.N.' => 'Unknown surname "%s": please use the placeholder @N.N.',
+
+    // Additional validation & consistency labels
+    'Surname missing' => 'Achternaam ontbreekt',
+    'Person has a given name, but no surname' => 'Persoon heeft een voornaam, maar geen achternaam',
+    'Missing surname' => 'Achternaam ontbreekt',
+    'Date format' => 'Datumnotatie',
+    'Too young at marriage' => 'Te jong bij huwelijk',
+    'Too old at marriage' => 'Te oud bij huwelijk',
+    'Event before birth' => 'Gebeurtenis voor geboorte',
+    'Event after death' => 'Gebeurtenis na overlijden',
+    'Impossible travel' => 'Onmogelijke reis',
+    'Unknown fix type: %s' => 'Unknown fix type: %s',
 ];

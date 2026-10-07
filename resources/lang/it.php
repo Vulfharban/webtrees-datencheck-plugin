@@ -614,4 +614,16 @@ return [
     'Notes or uncertainties should be recorded as a note or source.' => 'Notes or uncertainties should be recorded as a note or source.',
     'Unknown given name "%s": please use the placeholder @P.N.' => 'Unknown given name "%s": please use the placeholder @P.N.',
     'Unknown surname "%s": please use the placeholder @N.N.' => 'Unknown surname "%s": please use the placeholder @N.N.',
+
+    // Additional validation & consistency labels
+    'Surname missing' => 'Cognome mancante',
+    'Person has a given name, but no surname' => 'La persona ha un nome, ma nessun cognome',
+    'Missing surname' => 'Cognome mancante',
+    'Date format' => 'Formato data',
+    'Too young at marriage' => 'Troppo giovane al matrimonio',
+    'Too old at marriage' => 'Troppo anziano al matrimonio',
+    'Event before birth' => 'Evento prima della nascita',
+    'Event after death' => 'Evento dopo la morte',
+    'Impossible travel' => 'Viaggio impossibile',
+    'Unknown fix type: %s' => 'Unknown fix type: %s',
 ];
