@@ -15,6 +15,11 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
   - *Verdächtige Sonderzeichen (`NAME_SUSPICIOUS_CHARS`):* Warnt bei Notizen, Klammern oder Sonderzeichen im Vornamen oder Nachnamen (z. B. `Johann (?)`, `Maria / Anna`, `Johann "Hans"`). Gibt gezielte Hilfestellungen aus (z. B. Hinweis auf das Webtrees-Feld „Spitzname (NICK)“ oder Auslagerung in Notizen/Quellen).
   - *Erlaubter Rufnamen-Stern (`*`):* Ein Sternchen an Vornamen (z. B. `Jonathan*`) ist in Webtrees der offizielle Indikator für den unterstrichenen Rufnamen und wird **nicht** als verdächtiges Sonderzeichen gemeldet.
   - *Erkennung informeller Platzhalter (`NAME_PLACEHOLDER_HINT`):* Besteht ein Vor- oder Nachname lediglich aus Behelfskonstrukten wie `?`, `??`, `NN`, `N.N.`, `unbekannt` oder `-`, wird ein gezielter Hinweis ausgegeben, die offiziellen Webtrees-GEDCOM-Platzhalter `@P.N.` bzw. `@N.N.` zu nutzen (ohne Doppelmeldung zu Sonderzeichen).
+### Behoben & Korrigiert
+- **Fehlende Sprachübersetzungen ergänzt (i18n)**:
+  - Bisher fehlten Übersetzungen für fehlende Nachnamen (`Surname missing` / `Missing surname` / `Person has a given name, but no surname`) sowie bestimmte Datums- und Scheidungsprüfungen im Sprachkatalog. Diese wurden vollständig in allen 49 Sprachdateien nachgepflegt.
+- **Geschlechtsprüfung bei Namensänderung korrigiert**:
+  - Die Warnung `Geschlecht nicht angegeben` (`MISSING_GENDER`) erschien bisher fälschlicherweise auch beim Bearbeiten oder Hinzufügen von Namen bestehender Personen. Die Prüfung wurde präzisiert und greift nun ausschließlich bei der tatsächlichen Neuanlage einer Person mit vorhandenem Geschlechts-Auswahlfeld im Formular.
 
 ## [1.6.10.3] - 2026-10-07
 ### Behoben
