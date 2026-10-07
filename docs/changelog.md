@@ -1,5 +1,14 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.6.11.0] - 2026-10-07
+### Hinzugefügt & Verbessert
+- **Erkennung von Feld-Inhaltsvertauschungen (Data-Entry-Checks: Feature 1)**:
+  - *Neuer Validator `DataEntryValidator`:* Erkennt typische Tipp- und Vertauschungsfehler zwischen Datums- und Ortsfeldern bei Personen- und Familienfakten (Geburt, Taufe, Tod, Bestattung, Heirat etc.).
+  - *Datum im Ortsfeld (`PLACE_CONTAINS_DATE`):* Warnt, wenn ein Ortsbestandteil ausschließlich eine Jahreszahl (z. B. `Hamburg, 1880`), ein formatiertes Datum (`15.08.1890`), GEDCOM-Modifier (`ABT 1880`, `ca. 1880`) oder Monatsnamen mit Zahlen (`Mai 1880`) enthält. Postleitzahlen im Textkontext (`1010 Wien`, `20095 Hamburg`) bleiben unberührt.
+  - *Text/Ort im Datumsfeld (`DATE_CONTAINS_TEXT`):* Warnt, wenn ein Datumsfeld nicht-interpretierbaren Text oder Ortsnamen (geprüft gegen die Stammbaum-Ortsdatenbank) enthält. Gedcom-Datumsphrasen in Klammern `(...)` und Kalender-Escapes `@#D...@` werden dabei toleriert.
+  - *Live-Validierung im Bearbeitungsformular (`interaction.phtml`):* Sichtbare `DATE`- und `PLAC`-Eingabefelder werden bei der Live-Prüfung erfasst und in Echtzeit validiert.
+  - *Labels & Übersetzungen:* Neue Codes `PLACE_CONTAINS_DATE` und `DATE_CONTAINS_TEXT` in `ValidationConstants` und Sprachdateien integriert.
+
 ## [1.6.10.3] - 2026-10-07
 ### Behoben
 - **Bearbeitete Person wird bei Duplikatsprüfung nicht mehr als eigenes Duplikat angezeigt**:

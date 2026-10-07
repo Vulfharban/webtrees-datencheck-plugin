@@ -86,7 +86,8 @@ class ValidationService
         string $overrideSurname = '', 
         string $overrideBap = '', 
         ?array $filters = null,
-        string $overrideSex = ''
+        string $overrideSex = '',
+        array $liveFields = []
     ): array
     {
         $issues = [];
@@ -181,6 +182,11 @@ class ValidationService
             if (!$useFilters || in_array('gedcom_standard', $filters)) {
                 $issues = array_merge($issues, self::checkMultipleGedcomTags($person));
             }
+        }
+
+        // 4b. Data entry errors: Field swaps (plac in date, date in plac)
+        if (!$useFilters || in_array('data_entry', $filters) || self::getModuleSetting($module, 'enable_data_entry_checks', '1') === '1') {
+            $issues = array_merge($issues, Validators\DataEntryValidator::checkFieldSwaps($person, $liveFields, $tree));
         }
 
         // Names (handles null person via overrides)

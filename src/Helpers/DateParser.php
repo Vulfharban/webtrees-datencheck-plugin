@@ -121,7 +121,19 @@ class DateParser
 
         return false;
     }
-    
+
+    /**
+     * Check if a token is a recognizable month name or abbreviation (excluding pure digits).
+     */
+    public static function isMonthName(string $token): bool
+    {
+        $clean = mb_strtolower(trim($token, " .\t\r\n"), 'UTF-8');
+        if ($clean === '' || ctype_digit($clean)) {
+            return false;
+        }
+        return isset(self::MONTH_MAP[$clean]);
+    }
+
     /**
      * Parse age string like "56y 5m 3w 2d" or "56" to years
      *

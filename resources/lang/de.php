@@ -421,4 +421,12 @@ return [
     'No' => 'Nein',
     'Page' => 'Seite',
     'Per page:' => 'Pro Seite:',
+
+    // Data entry checks
+    'Place of %s contains a date or year: "%s". Were date and place swapped?' => 'Ort bei %s enthält ein Datum oder Jahr: „%s“. Wurden Datum und Ort vertauscht?',
+    'Date of %s contains a place name: "%s". Were date and place swapped?'   => 'Datum bei %s enthält einen Ortsnamen: „%s“. Wurden Datum und Ort vertauscht?',
+    'Date of %s contains text that cannot be interpreted: "%s".'             => 'Datum bei %s enthält nicht interpretierbaren Text: „%s“.',
+    'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nicht-standardisierter Monatsname in %s gefunden: „%s“. Erwartet wird der GEDCOM-Standard (z. B. JAN, FEB).',
+    'Date in place field' => 'Datum im Ortsfeld',
+    'Text in date field' => 'Text im Datumsfeld',
 ];

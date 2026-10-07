@@ -138,7 +138,7 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
         return 'Christian Wolfrum';
     }
 
-    public const CUSTOM_VERSION = '1.6.10.3';
+    public const CUSTOM_VERSION = '1.6.11.0';
 
     public function customModuleVersion(): string
     {
@@ -674,7 +674,28 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
             $bap = $params['baptism_date'] ?? '';
             $sex = strtoupper(trim($params['sex'] ?? ''));
 
-            $result = ValidationService::validatePerson($person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree, $marrFormatted, $relType, $given, $surname, $bap, [], $sex);
+            $liveFields = [];
+            $rawFields  = $params['fields'] ?? '';
+            if ($rawFields !== '') {
+                $decoded = json_decode($rawFields, true);
+                if (is_array($decoded)) {
+                    foreach (array_slice($decoded, 0, 50) as $f) {
+                        if (!isset($f['tag'], $f['field'], $f['value'])) continue;
+                        if (!in_array($f['field'], ['DATE', 'PLAC'], true)) continue;
+                        $liveFields[] = [
+                            'tag'   => preg_replace('/[^A-Z_]/', '', strtoupper((string) $f['tag'])),
+                            'field' => $f['field'],
+                            'value' => mb_substr(trim((string) $f['value']), 0, 255),
+                            'label' => mb_substr(trim((string) ($f['label'] ?? '')), 0, 100),
+                        ];
+                    }
+                }
+            }
+
+            $result = ValidationService::validatePerson(
+                $person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree,
+                $marrFormatted, $relType, $given, $surname, $bap, null, $sex, $liveFields
+            );
 
             return response(json_encode($result))
                 ->withHeader('Content-Type', 'application/json');

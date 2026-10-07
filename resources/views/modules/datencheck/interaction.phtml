@@ -1965,7 +1965,25 @@ document.addEventListener("DOMContentLoaded", function() {
         const surnames = pairs.map(p => p.surn);
         const currentSex = getSex();
 
-        if (!context.xref && !context.husb && !context.wife && !context.fam && givens.length === 0 && surnames.length === 0) {
+        // Collect visible DATE and PLAC inputs for data-entry checks
+        const liveFields = [];
+        allElements.forEach(el => {
+            if (el.offsetParent === null || el.type === 'hidden') return;
+            const key = ((el.id || "") + " " + (el.name || "")).toUpperCase();
+            const val = (el.value || "").trim();
+            if (!val || val.toUpperCase() === 'Y') return;
+            const isDate = /(^|[^A-Z])DATE([^A-Z]|$)/.test(key);
+            const isPlac = /(^|[^A-Z])PLAC([^A-Z]|$)/.test(key);
+            if (!isDate && !isPlac) return;
+            const tagMatch = key.match(/(?:INDI|FAM)-([A-Z_]+)-(?:DATE|PLAC)/);
+            liveFields.push({
+                tag: tagMatch ? tagMatch[1] : '',
+                field: isDate ? 'DATE' : 'PLAC',
+                value: val.substring(0, 255)
+            });
+        });
+
+        if (!context.xref && !context.husb && !context.wife && !context.fam && givens.length === 0 && surnames.length === 0 && liveFields.length === 0) {
             return;
         }
 
@@ -1982,7 +2000,8 @@ document.addEventListener("DOMContentLoaded", function() {
             "&fam=" + encodeURIComponent(context.fam || "") +
             "&marr_date=" + encodeURIComponent(context.marr || "") +
             "&rel_type=" + encodeURIComponent(context.rel_type || "child") +
-            "&sex=" + encodeURIComponent(currentSex);
+            "&sex=" + encodeURIComponent(currentSex) +
+            "&fields=" + encodeURIComponent(JSON.stringify(liveFields.slice(0, 50)));
 
         fetch(url)
             .then(response => {

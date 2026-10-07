@@ -56,6 +56,8 @@ class ValidationConstants
         'MULTIPLE_SEX_TAGS'             => 'Mehrfache Geschlechtsangaben (SEX)',
         'LONG_DISTANCE_MIGRATION'       => 'Große Distanz',
         'IMPOSSIBLE_TRAVEL_SPEED'       => 'Unmögliche Reise',
+        'PLACE_CONTAINS_DATE'           => 'Datum im Ortsfeld',
+        'DATE_CONTAINS_TEXT'            => 'Text im Datumsfeld',
     ];
 
     private static array $labels_en = [
@@ -110,6 +112,8 @@ class ValidationConstants
         'MULTIPLE_SEX_TAGS'             => 'Multiple gender tags (SEX)',
         'LONG_DISTANCE_MIGRATION'       => 'Large distance',
         'IMPOSSIBLE_TRAVEL_SPEED'       => 'Impossible travel',
+        'PLACE_CONTAINS_DATE'           => 'Date in place field',
+        'DATE_CONTAINS_TEXT'            => 'Text in date field',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string
