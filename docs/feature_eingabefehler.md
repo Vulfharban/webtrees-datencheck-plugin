@@ -1,7 +1,8 @@
 # Feature-Konzept: Erkennung von Eingabefehlern (Data-Entry-Checks)
 
-## Release Overview (v1.7.0)
+## Release Overview (v1.7.0 & v1.6.10.3)
 
+### Version 1.7.0 - Data Entry Checks & Name Formatting
 This update adds smart detection for common data entry and typo errors in webtrees forms and batch analysis:
 
 - **Swapped Date and Place Fields**:
@@ -18,8 +19,16 @@ This update adds smart detection for common data entry and typo errors in webtre
   - **Preferred Name Support**: An asterisk `*` in given names (e.g. `Jonathan*`) is recognized as the webtrees Rufname marker and is explicitly allowed without warnings.
   - Suggests official GEDCOM placeholders (`@P.N.` / `@N.N.`) if informal placeholders like `?` or `unbekannt` are used.
 
+- **Gender Check Refinement**:
+  - The "Gender not specified" warning is now strictly limited to newly created individuals with a gender selection field; it no longer appears when editing or adding names to existing persons.
+
 - **Full Multilingual Support**:
-  - All 17 new translation phrases are integrated across all 49 supported language files.
+  - All new translation phrases and previously missing consistency labels are fully localized across all 49 supported language files.
+
+### Version 1.6.10.3 - Duplicate Check Refinement
+- **Exclude Current Person from Duplicate Checks**:
+  - Fixed an issue where editing an existing person (especially adding names like married or alternative names, or adding facts) caused the person to appear as their own duplicate in the warning box.
+  - The check now reliably excludes the currently edited individual's XREF both in the backend SQL query and in the interactive frontend form.
 
 ---
 
