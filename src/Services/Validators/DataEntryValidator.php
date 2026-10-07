@@ -17,9 +17,70 @@ class DataEntryValidator extends AbstractValidator
 
     private const GEDCOM_KEYWORDS = ['ABT', 'CAL', 'EST', 'AFT', 'BEF', 'BET', 'AND', 'FROM', 'TO', 'INT', 'B.C.', 'BC'];
 
+    /** Lowercase name particles/prefixes */
+    public const NAME_PARTICLES = [
+        'von', 'vom', 'zu', 'zur', 'van', 'de', 'den', 'der', 'het', 'ten', 'ter',
+        'da', 'do', 'dos', 'das', 'del', 'della', 'di', 'du', 'le', 'la', 'y', 'e',
+        'und', 'auf', 'aus', 'in', "'t",
+    ];
+
     // ---------------------------------------------------------------------
     // Level 1: Pure string analysis (unit testable without DB)
     // ---------------------------------------------------------------------
+
+    /**
+     * Analyze capitalization of a name part (given or surname).
+     *
+     * @param string $namePart
+     * @return 'caps'|'lower'|null
+     */
+    public static function analyzeCase(string $namePart): ?string
+    {
+        $namePart = trim($namePart);
+        if ($namePart === '' || str_starts_with($namePart, '@')) {
+            return null;
+        }
+
+        // Script without uppercase/lowercase (CJK, Arabic, Hebrew, etc.)
+        if (mb_strtoupper($namePart, 'UTF-8') === mb_strtolower($namePart, 'UTF-8')) {
+            return null;
+        }
+
+        // Split by spaces, hyphens and slashes
+        $rawWords = preg_split('/[\s\-\/]+/u', $namePart, -1, PREG_SPLIT_NO_EMPTY);
+        if (!is_array($rawWords) || empty($rawWords)) {
+            return null;
+        }
+
+        $words = array_values(array_filter($rawWords, static function (string $w): bool {
+            $l = mb_strtolower($w, 'UTF-8');
+            $pureLetters = preg_replace('/[^\p{L}]/u', '', $w);
+            return mb_strlen($pureLetters, 'UTF-8') >= 3
+                && !in_array($l, self::NAME_PARTICLES, true)
+                && !preg_match('/^[IVXLCDM]+$/i', $w);
+        }));
+
+        if (empty($words)) {
+            return null;
+        }
+
+        // 1. Check ALL CAPS: all letters in all non-particle words are uppercase
+        $allLetters = preg_replace('/[^\p{L}]/u', '', implode('', $words));
+        if (mb_strlen($allLetters, 'UTF-8') >= 3 && $allLetters === mb_strtoupper($allLetters, 'UTF-8')) {
+            return 'caps';
+        }
+
+        // 2. Check ALL LOWERCASE: every word starts with a lowercase letter
+        // If at least one word has a valid uppercase initial, it's not entirely lowercase.
+        foreach ($words as $w) {
+            $first = mb_substr(preg_replace('/^[^\p{L}]+/u', '', $w), 0, 1, 'UTF-8');
+            if ($first !== '' && $first !== mb_strtolower($first, 'UTF-8')) {
+                return null;
+            }
+        }
+
+        return 'lower';
+    }
 
     /**
      * Analyze a place string for swapped date/year contents.
@@ -210,6 +271,69 @@ class DataEntryValidator extends AbstractValidator
                         'NON_STANDARD_MONTH_NAME',
                         'info',
                         self::translate('Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).', $label, $value)
+                    );
+                }
+            }
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Check name capitalization (Feature B: NAME_ALL_CAPS, NAME_ALL_LOWERCASE).
+     *
+     * @param Individual|null $person
+     * @param string $overrideGiven
+     * @param string $overrideSurname
+     * @param object|null $module
+     * @return array<int, array<string, mixed>>
+     */
+    public static function checkNameFormatting(?Individual $person, string $overrideGiven = '', string $overrideSurname = '', ?object $module = null): array
+    {
+        $checkGivenCaps   = !$module || (method_exists($module, 'getSetting') ? $module->getSetting('check_given_caps', '1') : $module->getPreference('check_given_caps', '1')) === '1';
+        $checkSurnameCaps = $module && (method_exists($module, 'getSetting') ? $module->getSetting('check_surname_caps', '0') : $module->getPreference('check_surname_caps', '0')) === '1';
+
+        $pairs = [];
+        if ($person) {
+            foreach ($person->getAllNames() as $n) {
+                $pairs[] = [$n['givn'] ?? '', $n['surn'] ?? ''];
+            }
+        }
+
+        if (!empty($overrideGiven) || !empty($overrideSurname)) {
+            $gList = explode('|', $overrideGiven);
+            $sList = explode('|', $overrideSurname);
+            $count = max(count($gList), count($sList));
+            for ($i = 0; $i < $count; $i++) {
+                $pairs[] = [trim($gList[$i] ?? ''), trim($sList[$i] ?? '')];
+            }
+        }
+
+        $issues = [];
+        $seen = [];
+
+        foreach ($pairs as [$given, $surname]) {
+            foreach (['given' => $given, 'surname' => $surname] as $part => $value) {
+                $value = trim($value);
+                if ($value === '' || isset($seen[$part . '|' . mb_strtolower($value, 'UTF-8')])) {
+                    continue;
+                }
+                $seen[$part . '|' . mb_strtolower($value, 'UTF-8')] = true;
+
+                $v = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                $case = self::analyzeCase($value);
+
+                if ($case === 'caps' && (($part === 'given' && $checkGivenCaps) || ($part === 'surname' && $checkSurnameCaps))) {
+                    $issues[] = self::issue(
+                        'NAME_ALL_CAPS',
+                        'info',
+                        self::translate('Name "%s" is written entirely in capital letters.', $v)
+                    );
+                } elseif ($case === 'lower') {
+                    $issues[] = self::issue(
+                        'NAME_ALL_LOWERCASE',
+                        'info',
+                        self::translate('Name "%s" begins with a lowercase letter.', $v)
                     );
                 }
             }

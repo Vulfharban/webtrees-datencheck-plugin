@@ -429,4 +429,8 @@ return [
     'Non-standard month name found in %s: "%s". Expected GEDCOM standard (e.g. JAN, FEB).' => 'Nicht-standardisierter Monatsname in %s gefunden: „%s“. Erwartet wird der GEDCOM-Standard (z. B. JAN, FEB).',
     'Date in place field' => 'Datum im Ortsfeld',
     'Text in date field' => 'Text im Datumsfeld',
+    'Name in all capitals' => 'Name komplett in Großbuchstaben',
+    'Name in lowercase' => 'Name in Kleinbuchstaben',
+    'Name "%s" is written entirely in capital letters.' => 'Name „%s“ ist komplett in Großbuchstaben geschrieben.',
+    'Name "%s" begins with a lowercase letter.' => 'Name „%s“ beginnt mit einem Kleinbuchstaben.',
 ];

@@ -8,6 +8,10 @@ Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokument
   - *Text/Ort im Datumsfeld (`DATE_CONTAINS_TEXT`):* Warnt, wenn ein Datumsfeld nicht-interpretierbaren Text oder Ortsnamen (geprüft gegen die Stammbaum-Ortsdatenbank) enthält. Gedcom-Datumsphrasen in Klammern `(...)` und Kalender-Escapes `@#D...@` werden dabei toleriert.
   - *Live-Validierung im Bearbeitungsformular (`interaction.phtml`):* Sichtbare `DATE`- und `PLAC`-Eingabefelder werden bei der Live-Prüfung erfasst und in Echtzeit validiert.
   - *Labels & Übersetzungen:* Neue Codes `PLACE_CONTAINS_DATE` und `DATE_CONTAINS_TEXT` in `ValidationConstants` und Sprachdateien integriert.
+- **Erkennung von Groß-/Kleinschreibungsfehlern in Namen (Data-Entry-Checks: Feature B)**:
+  - *Vollständige Großschreibung (`NAME_ALL_CAPS`):* Warnt, wenn Vorname oder Nachname komplett in Großbuchstaben erfasst wurden (z. B. `JOHANN`, `MÜLLER`). Vornamen werden standardmäßig geprüft (`check_given_caps = 1`), Nachnamen optional (`check_surname_caps = 0`, um Massenmeldungen bei importierten GEDCOMs zu vermeiden).
+  - *Versehentliche Kleinschreibung (`NAME_ALL_LOWERCASE`):* Erkennt Namen, die komplett mit Kleinbuchstaben beginnen (z. B. `johann`, `müller`).
+  - *Robuste Ausnahmen:* Berücksichtigt Namenspartikel (`von`, `van der`, `de`, `du` etc.), Kurzformen/Initialen (`J.`, `H.-P.`), römische Ziffern (`II`, `III`), Präfixnamen (`McDonald`, `O'Brien`) und Platzhalter (`@N.N.`, `@P.N.`) sowie Schriften ohne Groß-/Kleinschreibung.
 
 ## [1.6.10.3] - 2026-10-07
 ### Behoben

@@ -58,6 +58,8 @@ class ValidationConstants
         'IMPOSSIBLE_TRAVEL_SPEED'       => 'Unmögliche Reise',
         'PLACE_CONTAINS_DATE'           => 'Datum im Ortsfeld',
         'DATE_CONTAINS_TEXT'            => 'Text im Datumsfeld',
+        'NAME_ALL_CAPS'                 => 'Name komplett in Großbuchstaben',
+        'NAME_ALL_LOWERCASE'            => 'Name in Kleinbuchstaben',
     ];
 
     private static array $labels_en = [
@@ -114,6 +116,8 @@ class ValidationConstants
         'IMPOSSIBLE_TRAVEL_SPEED'       => 'Impossible travel',
         'PLACE_CONTAINS_DATE'           => 'Date in place field',
         'DATE_CONTAINS_TEXT'            => 'Text in date field',
+        'NAME_ALL_CAPS'                 => 'Name in all capitals',
+        'NAME_ALL_LOWERCASE'            => 'Name in lowercase',
     ];
 
     public static function getLabel(string $code, string $lang = 'en'): string

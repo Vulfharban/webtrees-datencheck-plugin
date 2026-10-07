@@ -184,9 +184,10 @@ class ValidationService
             }
         }
 
-        // 4b. Data entry errors: Field swaps (plac in date, date in plac)
+        // 4b. Data entry errors: Field swaps (plac in date, date in plac) and Name formatting (capitalization)
         if (!$useFilters || in_array('data_entry', $filters) || self::getModuleSetting($module, 'enable_data_entry_checks', '1') === '1') {
             $issues = array_merge($issues, Validators\DataEntryValidator::checkFieldSwaps($person, $liveFields, $tree));
+            $issues = array_merge($issues, Validators\DataEntryValidator::checkNameFormatting($person, $overrideGiven, $overrideSurname, $module));
         }
 
         // Names (handles null person via overrides)
