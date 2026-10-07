@@ -1,6 +1,6 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
-## [1.6.11.0] - 2026-10-07
+## [1.7.0] - 2026-10-07
 ### Hinzugefügt & Verbessert
 - **Erkennung von Feld-Inhaltsvertauschungen (Data-Entry-Checks: Feature 1)**:
   - *Neuer Validator `DataEntryValidator`:* Erkennt typische Tipp- und Vertauschungsfehler zwischen Datums- und Ortsfeldern bei Personen- und Familienfakten (Geburt, Taufe, Tod, Bestattung, Heirat etc.).

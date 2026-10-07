@@ -1,6 +1,6 @@
 # Feature-Konzept: Erkennung von Eingabefehlern (Data-Entry-Checks)
 
-## Release Overview (v1.6.11.0)
+## Release Overview (v1.7.0)
 
 This update adds smart detection for common data entry and typo errors in webtrees forms and batch analysis:
 
@@ -24,11 +24,11 @@ This update adds smart detection for common data entry and typo errors in webtre
 ---
 
 > Status: **In Umsetzung (Teil 1, 2 & 3 abgeschlossen)**
-> - [x] **Feature A (Feld-Inhaltsvertauschung):** Vollständig implementiert & getestet (v1.6.11.0, Commit `4596c23`)
-> - [x] **Feature B (Groß-/Kleinschreibung):** Vollständig implementiert & getestet (v1.6.11.0, Commit `e305447`)
-> - [x] **Feature C (Verdächtige Sonderzeichen & Rufname `*`):** Vollständig implementiert & getestet (v1.6.11.0, Commit `ea89776`)
-> - [x] **Übersetzungen:** Alle 49 Sprachdateien aktualisiert (v1.6.11.0, Commit `c843fc7`)
-> Zielversion: 1.6.11.0
+> - [x] **Feature A (Feld-Inhaltsvertauschung):** Vollständig implementiert & getestet (v1.7.0, Commit `4596c23`)
+> - [x] **Feature B (Groß-/Kleinschreibung):** Vollständig implementiert & getestet (v1.7.0, Commit `e305447`)
+> - [x] **Feature C (Verdächtige Sonderzeichen & Rufname `*`):** Vollständig implementiert & getestet (v1.7.0, Commit `ea89776`)
+> - [x] **Übersetzungen:** Alle 49 Sprachdateien aktualisiert (v1.7.0, Commit `c843fc7`)
+> Zielversion: 1.7.0
 > Betroffene Bereiche: Live-Prüfung im Formular, Batch-Analyse, Ignorier-Funktion
 
 ---
@@ -39,9 +39,9 @@ Drei neue Prüfungen für typische Tippfehler und Fehleingaben:
 
 | # | Prüfung | Beispiel | Code(s) | Status |
 |---|---------|----------|---------|--------|
-| A | **Feld-Inhaltsvertauschung** | `PLAC: 1880`, `DATE: Hamburg` | `PLACE_CONTAINS_DATE`, `DATE_CONTAINS_TEXT` | ✅ **Erledigt (v1.6.11.0)** |
-| B | **Groß-/Kleinschreibung** | `JOHANN`, `müller` | `NAME_ALL_CAPS`, `NAME_ALL_LOWERCASE` | ✅ **Erledigt (v1.6.11.0)** |
-| C | **Verdächtige Sonderzeichen in Namen** | `Johann (?)`, `Maria / Anna`, `Peter*` (Rufname erlaubt) | `NAME_SUSPICIOUS_CHARS`, `NAME_PLACEHOLDER_HINT` | ✅ **Erledigt (v1.6.11.0)** |
+| A | **Feld-Inhaltsvertauschung** | `PLAC: 1880`, `DATE: Hamburg` | `PLACE_CONTAINS_DATE`, `DATE_CONTAINS_TEXT` | ✅ **Erledigt (v1.7.0)** |
+| B | **Groß-/Kleinschreibung** | `JOHANN`, `müller` | `NAME_ALL_CAPS`, `NAME_ALL_LOWERCASE` | ✅ **Erledigt (v1.7.0)** |
+| C | **Verdächtige Sonderzeichen in Namen** | `Johann (?)`, `Maria / Anna`, `Peter*` (Rufname erlaubt) | `NAME_SUSPICIOUS_CHARS`, `NAME_PLACEHOLDER_HINT` | ✅ **Erledigt (v1.7.0)** |
 
 ---
 
@@ -752,10 +752,10 @@ Die Ebene-1-Funktionen sind statisch und ohne webtrees lauffähig → z. B. als 
 | Phase | Inhalt | Status |
 |-------|--------|--------|
 | 1 | `DataEntryValidator` Ebene 1 (`analyzePlace`, `analyzeDate`) + Unit-Tests | ✅ Abgeschlossen |
-| 2 | Prüfung A (Batch & Live): Backend-Einbindung, Live-Formularerfassung (`interaction.phtml`), DB-Ortsabgleich | ✅ Abgeschlossen (v1.6.11.0, Commit `4596c23`) |
-| 3 | Prüfung B (Groß-/Kleinschreibung in Namen): `analyzeCase`, `checkNameFormatting`, Partikel-Liste | ✅ Abgeschlossen (v1.6.11.0, Commit `e305447`) |
-| 4 | Prüfung C (Verdächtige Sonderzeichen & Platzhalter in Namen; `*` bei Vornamen als Rufname erlaubt) | ✅ Abgeschlossen (v1.6.11.0, Commit `ea89776`) |
-| 5 | Übersetzungen in alle 49 Sprachen (`resources/lang/*.php`) | ✅ Abgeschlossen (v1.6.11.0) |
+| 2 | Prüfung A (Batch & Live): Backend-Einbindung, Live-Formularerfassung (`interaction.phtml`), DB-Ortsabgleich | ✅ Abgeschlossen (v1.7.0, Commit `4596c23`) |
+| 3 | Prüfung B (Groß-/Kleinschreibung in Namen): `analyzeCase`, `checkNameFormatting`, Partikel-Liste | ✅ Abgeschlossen (v1.7.0, Commit `e305447`) |
+| 4 | Prüfung C (Verdächtige Sonderzeichen & Platzhalter in Namen; `*` bei Vornamen als Rufname erlaubt) | ✅ Abgeschlossen (v1.7.0, Commit `ea89776`) |
+| 5 | Übersetzungen in alle 49 Sprachen (`resources/lang/*.php`) | ✅ Abgeschlossen (v1.7.0) |
 | 6 | Admin-UI-Schalter (nach Freigabe des UI-Layouts) | ⏳ Offen |
 
 ---
