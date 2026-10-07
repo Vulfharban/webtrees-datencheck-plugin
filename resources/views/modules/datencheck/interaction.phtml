@@ -1804,6 +1804,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 relType = "spouse";
             }
         } else {
+            if (!xref && typeof getEditingIndividualXref === 'function') {
+                xref = getEditingIndividualXref();
+            }
             if (!xref) xref = urlXref;
         }
 
@@ -1965,6 +1968,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const surnames = pairs.map(p => p.surn);
         const currentSex = getSex();
 
+        // Check if active form / modal actually contains a gender input field
+        const activeModalOrForm = document.querySelector('#wt-ajax-modal form, .modal.show form, form:not(.wt-header-search-form)');
+        const scopeEl = activeModalOrForm || document;
+        const sexFieldElements = Array.from(scopeEl.querySelectorAll('input[type="radio"], select')).filter(el => {
+            if (el.offsetParent === null) return false;
+            const key = ((el.id || "") + " " + (el.name || "")).toUpperCase();
+            return /SEX|GEND/.test(key) || (el.type === 'radio' && ['M','F','U'].includes(el.value));
+        });
+        const hasSexField = sexFieldElements.length > 0;
+        const isNewPerson = !context.xref && !!context.isAdd && hasSexField;
+
         // Collect visible DATE and PLAC inputs for data-entry checks
         const liveFields = [];
         allElements.forEach(el => {
@@ -2001,6 +2015,8 @@ document.addEventListener("DOMContentLoaded", function() {
             "&marr_date=" + encodeURIComponent(context.marr || "") +
             "&rel_type=" + encodeURIComponent(context.rel_type || "child") +
             "&sex=" + encodeURIComponent(currentSex) +
+            "&is_new=" + encodeURIComponent(isNewPerson ? "1" : "0") +
+            "&has_sex_field=" + encodeURIComponent(hasSexField ? "1" : "0") +
             "&fields=" + encodeURIComponent(JSON.stringify(liveFields.slice(0, 50)));
 
         fetch(url)

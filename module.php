@@ -692,9 +692,16 @@ class DatencheckModule extends AbstractModule implements ModuleCustomInterface, 
                 }
             }
 
+            $isNew = ($params['is_new'] ?? '') === '1';
+            $hasSexField = ($params['has_sex_field'] ?? '') === '1';
+            if ($person !== null) {
+                $isNew = false;
+            }
+
             $result = ValidationService::validatePerson(
                 $person, $this, $birth, $death, $burial, $husb, $wife, $fam, $tree,
-                $marrFormatted, $relType, $given, $surname, $bap, null, $sex, $liveFields
+                $marrFormatted, $relType, $given, $surname, $bap, null, $sex, $liveFields,
+                $isNew, $hasSexField
             );
 
             return response(json_encode($result))

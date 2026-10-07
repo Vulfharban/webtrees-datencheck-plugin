@@ -87,7 +87,9 @@ class ValidationService
         string $overrideBap = '', 
         ?array $filters = null,
         string $overrideSex = '',
-        array $liveFields = []
+        array $liveFields = [],
+        bool $isNewPerson = false,
+        bool $hasSexField = false
     ): array
     {
         $issues = [];
@@ -197,7 +199,7 @@ class ValidationService
 
         // 5. Gender check
         if (!$useFilters || in_array('names', $filters)) {
-            $issues = array_merge($issues, self::checkGenderInteractive($person, $overrideGiven, $overrideSex));
+            $issues = array_merge($issues, self::checkGenderInteractive($person, $overrideGiven, $overrideSex, $isNewPerson, $hasSexField, $overrideSurname));
         }
 
         // FILTER: Remove imprecise warnings if disabled
@@ -1331,7 +1333,7 @@ class ValidationService
      * @param string $overrideSex
      * @return array
      */
-    private static function checkGenderInteractive(?Individual $person, string $overrideGiven, string $overrideSex): array
+    private static function checkGenderInteractive(?Individual $person, string $overrideGiven, string $overrideSex, bool $isNewPerson = false, bool $hasSexField = false, string $overrideSurname = ''): array
     {
         $issues = [];
         $sex = $overrideSex;
@@ -1343,30 +1345,35 @@ class ValidationService
 
         if (empty($overrideGiven)) return $issues;
 
-        // 1. Missing gender check
-        if ($sex !== 'M' && $sex !== 'F') {
-            $issues[] = [
-                'code' => 'MISSING_GENDER',
-                'severity' => 'warning',
-                'message' => \Fisharebest\Webtrees\I18N::translate('A given name was entered, but the gender is not specified.'),
-                'tag' => 'SEX'
-            ];
-            return $issues;
+        // 1. Missing gender check: ONLY for NEW individual creation where a gender field is present in the form.
+        // Never trigger when editing/adding names to an existing individual or in forms without gender inputs.
+        if ($person === null && $isNewPerson && $hasSexField) {
+            if ($sex !== 'M' && $sex !== 'F') {
+                $issues[] = [
+                    'code' => 'MISSING_GENDER',
+                    'severity' => 'warning',
+                    'message' => \Fisharebest\Webtrees\I18N::translate('A given name was entered, but the gender is not specified.'),
+                    'tag' => 'SEX'
+                ];
+                return $issues;
+            }
         }
 
-        // 2. Name-Gender mismatch check
-        $suggestedGender = NameHelper::getGenderByNames($overrideGiven, $overrideSurname);
-        if ($suggestedGender && $suggestedGender !== $sex) {
-            $issues[] = [
-                'code' => 'GENDER_NAME_MISMATCH',
-                'severity' => 'info',
-                'message' => \Fisharebest\Webtrees\I18N::translate('The given name "%s" is usually %s, but you selected %s.', 
-                    $overrideGiven . ($overrideSurname ? ' ' . $overrideSurname : ''), 
-                    $suggestedGender === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female'),
-                    $sex === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female')
-                ),
-                'tag' => 'SEX'
-            ];
+        // 2. Name-Gender mismatch check (only if sex is known: M or F)
+        if ($sex === 'M' || $sex === 'F') {
+            $suggestedGender = NameHelper::getGenderByNames($overrideGiven, $overrideSurname);
+            if ($suggestedGender && $suggestedGender !== $sex) {
+                $issues[] = [
+                    'code' => 'GENDER_NAME_MISMATCH',
+                    'severity' => 'info',
+                    'message' => \Fisharebest\Webtrees\I18N::translate('The given name "%s" is usually %s, but you selected %s.', 
+                        $overrideGiven . ($overrideSurname ? ' ' . $overrideSurname : ''), 
+                        $suggestedGender === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female'),
+                        $sex === 'M' ? \Fisharebest\Webtrees\I18N::translate('male') : \Fisharebest\Webtrees\I18N::translate('female')
+                    ),
+                    'tag' => 'SEX'
+                ];
+            }
         }
 
         return $issues;
