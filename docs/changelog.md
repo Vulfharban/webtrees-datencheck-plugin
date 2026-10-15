@@ -1,5 +1,15 @@
 Alle nennenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [1.7.1] - 2026-10-15
+### Behoben & Verbessert
+- **Präzisierung der Geschwister-Duplikaterkennung (`ValidationService`)**:
+  - *Nur noch Vornamenvergleich:* Bei der Geschwisterprüfung wurden zuvor versehentlich die vollständigen Namen inklusive Familienname verglichen. Da Geschwister denselben Familiennamen teilen, schlug die Äquivalenzprüfung bei allen Geschwistern an. Es werden nun ausschließlich die Vornamen (`GIVN`) verglichen.
+  - *Eliminierung von Teilstring-Fehlalarmen:* Die Prüfung mittels `str_contains` wurde entfernt und durch Wort-Teilmengen- und Äquivalenzabgleiche ersetzt. Vornamen wie "Leo" und "Leopold" oder "Anna" und "Susanna" werden nicht mehr fälschlich als Dubletten gemeldet.
+  - *Berücksichtigung von Nachbenennungen (Kindstod / Necronym):* Wenn ein älteres gleichnamiges Geschwisterkind nachweislich vor der Geburt des aktuellen Kindes verstorben ist (`DEAT`/`BURI`), wird der Duplikat-Alarm unterdrückt, da die Weitergabe des Vornamens in der Genealogie üblich war.
+- **Umfassende internationale Namensnormalisierung (`StringHelper`, `NameHelper`)**:
+  - *Vereinheitlichung:* Redundante Ersetzungstabellen zusammengeführt; `NameHelper::normalize()` delegiert nun zentral an `StringHelper::normalizeName()`.
+  - *Internationale Sonderzeichen & Akzente:* Vollständige Unterstützung für slawische, iberische und romanische Alphabete (Polnisch `ą, ć, ę, ł, ń, ś, ź, ż`, Tschechisch/Slowakisch `č, ď, ě, ň, ř, š, ť, ž, ů`, Spanisch `ñ, á, é, í, ó, ú`, Katalanisch `ç, l·l`, Skandinavisch `å, æ, ø`, Deutsch `ß` $\to$ `ss` etc.) via Unicode Decomposition (NFD `\p{Mn}`) mit sicherem Transliterations-Fallback.
+
 ## [1.7.0] - 2026-10-07
 ### Hinzugefügt & Verbessert
 - **Erkennung von Feld-Inhaltsvertauschungen (Data-Entry-Checks: Feature 1)**:

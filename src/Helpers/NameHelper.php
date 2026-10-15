@@ -528,14 +528,15 @@ class NameHelper
         return self::$normalizedGenderMap;
     }
 
-    private static function normalize(string $name): string
+    /**
+     * Normalize a name for international comparison.
+     * Delegates to central StringHelper::normalizeName.
+     *
+     * @param string $name
+     * @return string
+     */
+    public static function normalize(string $name): string
     {
-        $name = trim($name);
-        $name = mb_strtolower($name, 'UTF-8');
-        
-        $search  = ['á', 'ä', 'č', 'ď', 'é', 'ě', 'í', 'ň', 'ó', 'ö', 'ř', 'š', 'ť', 'ú', 'ů', 'ü', 'ý', 'ž', 'ł', 'ń', 'ó', 'ś', 'ź', 'ż', 'ą', 'ę', 'å', 'ø'];
-        $replace = ['a', 'a', 'c', 'd', 'e', 'e', 'i', 'n', 'o', 'o', 'r', 's', 't', 'u', 'u', 'u', 'y', 'z', 'l', 'n', 'o', 's', 'z', 'z', 'a', 'e', 'a', 'o'];
-        
-        return str_replace($search, $replace, $name);
+        return str_replace(' ', '', StringHelper::normalizeName($name));
     }
 }

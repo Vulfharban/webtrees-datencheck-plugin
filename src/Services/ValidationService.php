@@ -1783,6 +1783,22 @@ class ValidationService
         $parsed = DateParser::parseGedcomDate($date);
         return $parsed['year'];
     }
+
+
+    /**
+     * Returns the primary given name(s) (GEDCOM GIVN) of an individual, without surname and without HTML.
+     */
+    private static function getPrimaryGivenName(Individual $individual): string
+    {
+        $names = $individual->getAllNames();
+        $primary = $names[$individual->getPrimaryName()] ?? ($names[0] ?? null);
+        $givn = $primary['givn'] ?? '';
+        if ($givn === '' || $givn === '@P.N.') {
+            return '';
+        }
+        return trim(strip_tags($givn));
+    }
+
     /**
      * Check sibling spacing for interactive flow
      */
@@ -1845,22 +1861,50 @@ class ValidationService
 
         // 1. Duplicate detection (same name, same birth date/year)
         // Extract given names for subject
-        $subjGiven = $person ? (method_exists($person, 'givenName') ? $person->givenName() : $person->fullName()) : '';
-        if (empty($subjGiven) && !empty($overrideGiven)) $subjGiven = $overrideGiven;
+        // Only the GIVEN name(s) must be compared - never the full name, otherwise the shared
+        // surname of siblings would always produce a "match".
+        $subjGiven = '';
+        if (!empty($overrideGiven)) {
+            // Live form value (multiple given names may be separated by '|')
+            $subjGiven = trim(explode('|', $overrideGiven)[0]);
+        }
+        if ($subjGiven === '' && $person) {
+            $subjGiven = self::getPrimaryGivenName($person);
+        }
         
-        $sibGiven = method_exists($sib, 'givenName') ? $sib->givenName() : $sib->fullName();
+        $sibGiven = self::getPrimaryGivenName($sib);
         
-        // Normalize for comparison: strip tags and handle special characters
-        $subjNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($subjGiven)), 'UTF-8'));
-        $sibNorm = str_replace('ß', 'ss', mb_strtolower(trim(strip_tags($sibGiven)), 'UTF-8'));
-        
+
         // Also check if they are in the same calendar year
         $subjYear = $person ? self::getEffectiveYear($person, 'BIRT', $overrideBirth) : self::parseYearOnly($overrideBirth);
         $sibYear = self::getEffectiveYear($sib, 'BIRT');
         $sameYear = ($subjYear !== null && $sibYear !== null && $subjYear === $sibYear);
 
-        // Match if one name contains the other (multibyte safe) or if names are equivalent
-        $nameMatch = (!empty($subjNorm) && !empty($sibNorm) && (str_contains($sibNorm, $subjNorm) || str_contains($subjNorm, $sibNorm))) || NameHelper::areNamesEquivalent($subjGiven, $sibGiven);
+        // Normalize given names international (strip Spanish, Czech, Polish, Catalan accents, etc.)
+        $subjWords = preg_split('/[\s,\-\|\\\\\/]+/', $subjGiven, -1, PREG_SPLIT_NO_EMPTY);
+        $sibWords = preg_split('/[\s,\-\|\\\\\/]+/', $sibGiven, -1, PREG_SPLIT_NO_EMPTY);
+
+        $subjNormWords = array_values(array_filter(array_map([NameHelper::class, 'normalize'], $subjWords)));
+        $sibNormWords = array_values(array_filter(array_map([NameHelper::class, 'normalize'], $sibWords)));
+
+        $subjNorm = implode(' ', $subjNormWords);
+        $sibNorm = implode(' ', $sibNormWords);
+
+        // Check name match:
+        // 1. Direct normalized equality (e.g. "Paul" === "Paweł" via normalize or "Jiří" === "Jiri")
+        // 2. High-confidence multi-word equivalent matching via NameHelper
+        // (Avoiding false positives where single common prefixes like "Johann" match different names like "Johann Friedrich" vs "Johann Georg")
+        $nameMatch = false;
+        if (!empty($subjNorm) && !empty($sibNorm)) {
+            if ($subjNorm === $sibNorm) {
+                $nameMatch = true;
+            } elseif (count(array_intersect($subjNormWords, $sibNormWords)) === min(count($subjNormWords), count($sibNormWords))) {
+                // One is an exact full subset of words of the other (e.g. "Paul" in "Paul Johann")
+                $nameMatch = true;
+            } else {
+                $nameMatch = NameHelper::areNamesEquivalent($subjGiven, $sibGiven);
+            }
+        }
 
         // Diagnostic for duplicates
         if (!isset($debug['sibling_comp'])) $debug['sibling_comp'] = [];
@@ -1876,10 +1920,20 @@ class ValidationService
             'name_match' => $nameMatch
         ];
 
-        // If names match and (birth dates very close OR same year OR within 5 years for similar names)
+        // If names match, check if this is an actual duplicate vs. legitimate successor (necronym):
         if ($nameMatch) {
-            // A 5-year window (1825 days) is reasonable for "Check if this is a successor or duplicate"
-            if ($diffDays < 1825 || $sameYear) {
+            // Check if sibling died before the subject was born (traditional re-use of name after child death)
+            $sibDiedBeforeSubj = false;
+            $sibDeatFact = $sib->facts(['DEAT', 'BURI'])->first();
+            if ($sibDeatFact && $sibDeatFact->date()->isOK()) {
+                $sibDeatJD = $sibDeatFact->date()->minimumJulianDay();
+                if ($sibDeatJD && $subjJD && $sibDeatJD <= $subjJD) {
+                    $sibDiedBeforeSubj = true;
+                }
+            }
+
+            // Only flag as possible duplicate if sibling did NOT die before this child was born
+            if (!$sibDiedBeforeSubj && ($diffDays < 1825 || $sameYear)) {
                 $issues[] = [
                     'code' => 'DUPLICATE_SIBLING',
                     'type' => 'duplicate_check',

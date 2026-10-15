@@ -5,50 +5,92 @@ namespace Wolfrum\Datencheck\Helpers;
 class StringHelper
 {
     /**
-     * Normalize a name for comparison by removing slashes, extra spaces, and converting to lowercase.
+
+     * Normalize a name for international comparison:
+     * - Removes GEDCOM slashes (/Surname/) and punctuation.
+     * - Strips accents, diacritics, and special characters from Spanish (ñ), Catalan (ç, l·l),
+     *   Czech/Slovak (č, ď, ě, ř, š, ť, ž, ů), Polish (ą, ć, ę, ł, ń, ś, ź, ż),
+     *   German (ä, ö, ü, ß), Scandinavian (å, æ, ø), French, etc.
+     * - Reduces multiple whitespaces to a single space and converts to lowercase ASCII.
      *
      * @param string $name
      * @return string
      */
     public static function normalizeName(string $name): string
     {
+        $name = trim($name);
+        if ($name === '') {
+            return '';
+        }
+
+        // 1. Remove GEDCOM slashes
         $name = str_replace('/', '', $name);
-        $name = mb_strtolower($name, 'UTF-8');
-        
-        // Remove accents and diacritics for better matching (covers Spanish ñ, Catalan ç/à/è, etc.)
+
+        // 2. Special ligatures and language-specific letter mappings
+        $specialMap = [
+            'ß' => 'ss', 'ẞ' => 'ss',
+            'æ' => 'ae', 'Æ' => 'ae',
+            'œ' => 'oe', 'Œ' => 'oe',
+            'ð' => 'd',  'Ð' => 'd',
+            'þ' => 'th', 'Þ' => 'th',
+            'ł' => 'l',  'Ł' => 'l',
+            'ø' => 'o',  'Ø' => 'o',
+            'đ' => 'd',  'Đ' => 'd',
+            // Catalan middle dot: l·l -> ll
+            '·' => '',
+        ];
+        $name = strtr($name, $specialMap);
+
+        // 3. Canonical Unicode decomposition (NFD) + strip Combining Diacritical Marks
+        if (class_exists(\Normalizer::class)) {
+            $decomposed = \Normalizer::normalize($name, \Normalizer::FORM_D);
+            if ($decomposed !== false) {
+                // Remove all combining diacritical marks (accents, tildes, carons, cedillas, ogoneks, etc.)
+                $name = preg_replace('/\p{Mn}+/u', '', $decomposed);
+            }
+        } elseif (function_exists('iconv')) {
+            $translit = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name);
+            if ($translit !== false) {
+                $name = $translit;
+            }
+        }
+
+        // 4. Fallback table for any remaining diacritics
         $search = [
-            'á', 'à', 'â', 'ã', 'ä', 'å', 'ā', 'ă', 'ą',
-            'č', 'ć', 'ç', 'ĉ', 'ċ',
-            'ď', 'đ',
-            'é', 'è', 'ê', 'ë', 'ě', 'ē', 'ĕ', 'ę',
-            'í', 'ì', 'î', 'ï', 'ī', 'ĭ', 'į',
-            'ň', 'ń', 'ñ', 'ņ',
-            'ó', 'ò', 'ô', 'õ', 'ö', 'ø', 'ō', 'ŏ', 'ő',
-            'ř', 'ŕ', 'ŗ',
-            'š', 'ś', 'ŝ', 'ş', 'ș', 'ß',
-            'ť', 'ţ', 'ț',
-            'ú', 'ù', 'û', 'ü', 'ů', 'ū', 'ŭ', 'ų', 'ű',
-            'ý', 'ỳ', 'ŷ', 'ÿ',
-            'ž', 'ź', 'ż',
-            'ł', 'æ', 'œ'
+            'á','à','â','ã','ä','å','ą','ā','ă',
+            'é','è','ê','ë','ě','ę','ē','ė','ĕ',
+            'í','ì','î','ï','ī','ĭ','į',
+            'ó','ò','ô','õ','ö','ø','ō','ŏ','ő',
+            'ú','ù','û','ü','ů','ū','ŭ','ų','ű',
+            'ý','ỳ','ŷ','ÿ',
+            'č','ć','ç','ĉ','ċ',
+            'ď','đ',
+            'ň','ñ','ń','ņ',
+            'ř','ŕ','ŗ',
+            'š','ś','ş','ŝ','ș',
+            'ť','ţ','ț',
+            'ž','ź','ż'
         ];
         $replace = [
-            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
-            'c', 'c', 'c', 'c', 'c',
-            'd', 'd',
-            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
-            'i', 'i', 'i', 'i', 'i', 'i', 'i',
-            'n', 'n', 'n', 'n',
-            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
-            'r', 'r', 'r',
-            's', 's', 's', 's', 's', 'ss',
-            't', 't', 't',
-            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
-            'y', 'y', 'y', 'y',
-            'z', 'z', 'z',
-            'l', 'ae', 'oe'
+            'a','a','a','a','a','a','a','a','a',
+            'e','e','e','e','e','e','e','e','e',
+            'i','i','i','i','i','i','i',
+            'o','o','o','o','o','o','o','o','o',
+            'u','u','u','u','u','u','u','u','u',
+            'y','y','y','y',
+            'c','c','c','c','c',
+            'd','d',
+            'n','n','n','n',
+            'r','r','r',
+            's','s','s','s','s',
+            't','t','t',
+            'z','z','z'
         ];
+        $name = mb_strtolower($name, 'UTF-8');
         $name = str_replace($search, $replace, $name);
+
+        // 5. Keep only lowercase alphanumeric characters and single spaces
+        $name = preg_replace('/[^a-z0-9\s]/', '', $name);
 
         return trim(preg_replace('/\s+/', ' ', $name));
     }
